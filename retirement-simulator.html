@@ -3,31 +3,29 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>台灣勞工退休精算系統 · Apple 原生體驗版</title>
+  <title>退休準備三支柱精算系統</title>
   <style>
     :root {
-      --system-bg: #f2f2f7;
+      --system-bg: #f5f5f7;
       --card-bg: #ffffff;
-      --card-subtle: #f8f8fa;
+      --card-subtle: #f9f9fb;
       --separator: rgba(60, 60, 67, 0.12);
       --separator-hairline: rgba(60, 60, 67, 0.08);
-      --label-primary: #1c1c1e;
-      --label-secondary: #636366;
-      --label-tertiary: #8e8e93;
-      --accent: #007aff;
-      --accent-tint: rgba(0, 122, 255, 0.08);
+      --label-primary: #1d1d1f;
+      --label-secondary: #6e6e73;
+      --label-tertiary: #86868b;
+      --accent: #0071e3;
+      --accent-tint: rgba(0, 113, 227, 0.08);
       --system-green: #34c759;
       --system-green-tint: rgba(52, 199, 89, 0.12);
-      --system-green-dark: #1e7e34;
+      --system-green-dark: #1b7a36;
       --system-red: #ff3b30;
-      --system-red-tint: rgba(255, 59, 48, 0.1);
-      --system-red-dark: #b8251e;
+      --system-red-tint: rgba(255, 59, 48, 0.08);
+      --system-red-dark: #c92a2a;
       --system-orange: #ff9500;
       --system-orange-tint: rgba(255, 149, 0, 0.12);
-      --system-indigo: #5856d6;
-      --card-radius: 16px;
-      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.03), 0 4px 16px rgba(0, 0, 0, 0.03);
-      --shadow-md: 0 4px 24px rgba(0, 0, 0, 0.06);
+      --card-radius: 14px;
+      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.02);
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -43,139 +41,89 @@
     }
 
     .container {
-      max-width: 1240px;
+      max-width: 1200px;
       margin: 0 auto;
-      padding: 36px 24px 80px;
+      padding: 40px 24px 80px;
     }
 
-    /* Apple Navigation Header */
+    /* Header */
     header {
       margin-bottom: 28px;
     }
-    .header-eyebrow {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--accent);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .header-title {
-      font-size: clamp(26px, 3.2vw, 36px);
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      color: var(--label-primary);
-      margin: 0 0 10px;
-    }
-    .header-desc {
-      font-size: 15px;
-      color: var(--label-secondary);
-      max-width: 820px;
-      line-height: 1.5;
-      margin: 0 0 20px;
-    }
-
-    /* Action Toolbar & Segmented Picker */
-    .toolbar-row {
+    .header-row {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      gap: 16px;
+      align-items: flex-end;
+      gap: 20px;
       flex-wrap: wrap;
-      margin-bottom: 8px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--separator);
     }
-    .segmented-control {
-      background-color: rgba(118, 118, 128, 0.12);
-      border-radius: 10px;
-      padding: 3px;
-      display: inline-flex;
-      gap: 2px;
-    }
-    .segmented-btn {
-      border: none;
-      background: transparent;
-      padding: 7px 16px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--label-secondary);
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .segmented-btn.active {
-      background-color: var(--card-bg);
+    .header-title {
+      font-size: clamp(24px, 3vw, 32px);
+      font-weight: 700;
+      letter-spacing: -0.025em;
       color: var(--label-primary);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      margin: 0 0 6px;
     }
-    .btn-badge {
-      font-size: 11px;
-      padding: 1px 6px;
-      border-radius: 6px;
-      background: var(--accent-tint);
-      color: var(--accent);
-      font-weight: 600;
+    .header-desc {
+      font-size: 14px;
+      color: var(--label-secondary);
+      max-width: 720px;
+      line-height: 1.5;
+      margin: 0;
     }
-    .btn-share {
+    .btn-reset {
       border: 1px solid var(--separator);
       background-color: var(--card-bg);
-      color: var(--accent);
+      color: var(--label-primary);
       font-size: 13px;
       font-weight: 600;
-      padding: 8px 16px;
-      border-radius: 10px;
+      padding: 8px 14px;
+      border-radius: 980px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: all 0.15s;
+      transition: all 0.15s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
     }
-    .btn-share:hover {
-      background-color: var(--card-subtle);
+    .btn-reset:hover {
+      background-color: #f2f2f5;
+      border-color: rgba(60, 60, 67, 0.2);
+    }
+    .btn-reset:active {
+      transform: scale(0.98);
     }
 
-    /* Main Grid Layout */
+    /* Layout Grid */
     .layout-grid {
       display: grid;
       grid-template-columns: minmax(0, 1.15fr) minmax(380px, 0.85fr);
-      gap: 26px;
+      gap: 24px;
       align-items: start;
     }
 
-    /* Apple Inset Grouped Card */
+    /* Apple Grouped Card */
     .apple-card {
       background-color: var(--card-bg);
       border-radius: var(--card-radius);
-      padding: 24px;
-      margin-bottom: 20px;
+      padding: 22px 24px;
+      margin-bottom: 18px;
       box-shadow: var(--shadow-sm);
       border: 1px solid var(--separator-hairline);
     }
-    .card-title-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-    }
     .card-title {
-      font-size: 17px;
+      font-size: 16px;
       font-weight: 650;
       letter-spacing: -0.015em;
-      margin: 0;
+      margin: 0 0 4px;
       color: var(--label-primary);
-      display: flex;
-      align-items: center;
-      gap: 8px;
     }
     .card-subtitle {
-      font-size: 13px;
+      font-size: 12.5px;
       color: var(--label-secondary);
-      margin: 0 0 20px;
+      margin: 0 0 18px;
       line-height: 1.45;
     }
 
@@ -183,7 +131,7 @@
     .fields-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 18px 16px;
+      gap: 16px;
     }
     .field-full {
       grid-column: span 2;
@@ -191,22 +139,21 @@
     .field-cell {
       display: flex;
       flex-direction: column;
-      position: relative;
     }
     .field-header {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
     .field-label {
       font-size: 13px;
       font-weight: 600;
       color: var(--label-primary);
     }
-    .field-tag {
+    .field-badge-note {
       font-size: 11px;
-      color: var(--label-tertiary);
+      color: var(--accent);
       font-weight: 500;
     }
     .input-wrapper {
@@ -216,12 +163,12 @@
     }
     .apple-input, .apple-select {
       width: 100%;
-      height: 42px;
+      height: 38px;
       border: 1px solid var(--separator);
       background-color: var(--card-subtle);
-      border-radius: 10px;
-      padding: 0 46px 0 12px;
-      font-size: 14px;
+      border-radius: 9px;
+      padding: 0 44px 0 12px;
+      font-size: 13.5px;
       font-weight: 600;
       color: var(--label-primary);
       outline: none;
@@ -229,7 +176,7 @@
       transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
     }
     .apple-select {
-      padding-right: 30px;
+      padding-right: 28px;
       cursor: pointer;
     }
     .apple-input:focus, .apple-select:focus {
@@ -238,7 +185,7 @@
       box-shadow: 0 0 0 3px var(--accent-tint);
     }
     .apple-input[readonly] {
-      background-color: #f0f0f4;
+      background-color: #f0f0f3;
       color: var(--label-secondary);
       cursor: not-allowed;
     }
@@ -250,114 +197,66 @@
       color: var(--label-tertiary);
       pointer-events: none;
     }
-
-    /* Structured Field Guide Disclosure */
-    .guide-trigger {
-      margin-top: 6px;
-      border: none;
-      background: transparent;
-      padding: 0;
+    .field-desc {
       font-size: 11.5px;
-      color: var(--accent);
-      font-weight: 500;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      text-align: left;
-      transition: opacity 0.15s;
-    }
-    .guide-trigger:hover {
-      opacity: 0.8;
-    }
-    .guide-drawer {
-      display: none;
-      background-color: var(--card-subtle);
-      border-radius: 10px;
-      padding: 10px 12px;
-      margin-top: 8px;
-      font-size: 12px;
-      line-height: 1.5;
-      color: var(--label-secondary);
-      border-left: 3px solid var(--accent);
-      animation: expandDrawer 0.18s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .guide-drawer.open {
-      display: block;
-    }
-    @keyframes expandDrawer {
-      from { opacity: 0; transform: translateY(-4px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .drawer-item {
-      margin-bottom: 5px;
-    }
-    .drawer-item:last-child {
-      margin-bottom: 0;
-    }
-    .drawer-item strong {
-      color: var(--label-primary);
-      font-weight: 600;
+      color: var(--label-tertiary);
+      margin-top: 4px;
+      line-height: 1.4;
     }
 
-    /* Right Sticky Inspector */
+    /* Right Inspector */
     .inspector-sticky {
       position: sticky;
       top: 24px;
     }
 
-    /* Hero Summary Card */
+    /* Summary Card */
     .hero-summary {
-      background: linear-gradient(135deg, #163629 0%, #0f2319 100%);
-      color: #ffffff;
-      border-radius: 18px;
-      padding: 24px;
-      margin-bottom: 18px;
-      box-shadow: var(--shadow-md);
-      position: relative;
-      overflow: hidden;
+      background-color: var(--card-subtle);
+      border: 1px solid var(--separator);
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 16px;
     }
     .hero-top {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      font-size: 12px;
-      color: rgba(255, 255, 255, 0.7);
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--label-secondary);
     }
     .hero-pill {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      padding: 3px 10px;
-      border-radius: 20px;
+      padding: 3px 9px;
+      border-radius: 980px;
       font-size: 11.5px;
       font-weight: 600;
-      background: rgba(255, 255, 255, 0.16);
-      backdrop-filter: blur(10px);
     }
     .hero-metric {
-      font-size: clamp(34px, 4.5vw, 44px);
-      font-weight: 750;
-      letter-spacing: -0.035em;
-      margin: 8px 0 4px;
+      font-size: clamp(30px, 3.8vw, 40px);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin: 8px 0 3px;
       font-variant-numeric: tabular-nums;
+      color: var(--label-primary);
     }
     .hero-subtitle {
       font-size: 12.5px;
-      color: rgba(255, 255, 255, 0.75);
+      color: var(--label-tertiary);
     }
 
-    /* Live Delta Diff Badge */
+    /* Delta Badge */
     .delta-banner {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       font-size: 11.5px;
-      font-weight: 650;
-      padding: 4px 10px;
-      border-radius: 8px;
+      font-weight: 600;
+      padding: 3px 8px;
+      border-radius: 6px;
       margin-top: 10px;
-      transition: all 0.2s;
     }
     .delta-banner.good {
       background-color: var(--system-green-tint);
@@ -368,7 +267,7 @@
       color: var(--system-red-dark);
     }
     .delta-banner.neutral {
-      background-color: rgba(142, 142, 147, 0.15);
+      background-color: rgba(142, 142, 147, 0.12);
       color: var(--label-secondary);
     }
 
@@ -382,62 +281,30 @@
     .triad-cell {
       background-color: var(--card-subtle);
       border: 1px solid var(--separator-hairline);
-      border-radius: 12px;
-      padding: 12px 10px;
+      border-radius: 10px;
+      padding: 10px 10px;
     }
     .triad-label {
       font-size: 11px;
       color: var(--label-tertiary);
       margin-bottom: 4px;
+      font-weight: 500;
     }
     .triad-value {
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 700;
       color: var(--label-primary);
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
     }
 
-    /* Cashflow Phase Badges & Cards */
-    .cashflow-phase-card {
-      background-color: var(--card-subtle);
-      border-radius: 12px;
-      padding: 14px;
-      margin-bottom: 12px;
-      border: 1px solid var(--separator-hairline);
-    }
-    .cashflow-phase-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--label-primary);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      margin-bottom: 10px;
-    }
-    .phase-badge {
-      font-size: 11px;
-      padding: 2px 8px;
-      border-radius: 6px;
-      font-weight: 600;
-      display: inline-block;
-    }
-    .phase-badge.bridge {
-      background-color: var(--system-orange-tint);
-      color: #b45309;
-    }
-    .phase-badge.life {
-      background-color: var(--system-green-tint);
-      color: var(--system-green-dark);
-    }
-
     /* Native Progress Bar */
     .native-bar-track {
-      height: 8px;
+      height: 6px;
       background-color: var(--separator-hairline);
       border-radius: 99px;
       overflow: hidden;
-      margin-top: 12px;
+      margin-top: 10px;
     }
     .native-bar-fill {
       height: 100%;
@@ -451,35 +318,62 @@
       justify-content: space-between;
       font-size: 11px;
       color: var(--label-tertiary);
-      margin-top: 6px;
+      margin-top: 5px;
     }
 
     /* Cashflow Waterfall */
     .cashflow-box {
-      margin-top: 20px;
+      margin-top: 18px;
       border-top: 1px solid var(--separator-hairline);
-      padding-top: 16px;
+      padding-top: 14px;
     }
     .cashflow-header {
       font-size: 12px;
       font-weight: 600;
-      color: var(--label-tertiary);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+      color: var(--label-secondary);
+      letter-spacing: 0.02em;
       margin-bottom: 10px;
+    }
+    .cashflow-phase-card {
+      background-color: var(--card-subtle);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      border: 1px solid var(--separator-hairline);
+    }
+    .cashflow-phase-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--label-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .phase-badge {
+      font-size: 10.5px;
+      padding: 1px 7px;
+      border-radius: 5px;
+      font-weight: 600;
+      display: inline-block;
+    }
+    .phase-badge.bridge {
+      background-color: var(--system-orange-tint);
+      color: #b45309;
+    }
+    .phase-badge.life {
+      background-color: var(--system-green-tint);
+      color: var(--system-green-dark);
     }
     .cashflow-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 7px 0;
-      font-size: 13px;
+      padding: 5px 0;
+      font-size: 12.5px;
     }
     .cashflow-row-name {
       color: var(--label-secondary);
-      display: flex;
-      align-items: center;
-      gap: 6px;
     }
     .cashflow-row-val {
       font-weight: 600;
@@ -488,8 +382,8 @@
     }
     .cashflow-row.final {
       border-top: 1px dashed var(--separator);
-      margin-top: 6px;
-      padding-top: 12px;
+      margin-top: 4px;
+      padding-top: 8px;
     }
     .cashflow-row.final .cashflow-row-name {
       color: var(--label-primary);
@@ -498,56 +392,51 @@
     .cashflow-row.final .cashflow-row-val {
       color: var(--accent);
       font-weight: 700;
-      font-size: 15px;
+      font-size: 14px;
     }
 
-    /* Native Alert Callout */
+    /* System Callouts */
     .system-callout {
-      border-radius: 12px;
-      padding: 12px 14px;
-      font-size: 12.5px;
+      border-radius: 10px;
+      padding: 11px 13px;
+      font-size: 12px;
       line-height: 1.5;
-      margin-top: 14px;
-      display: flex;
-      gap: 10px;
-      align-items: flex-start;
+      margin-top: 12px;
+      border-left: 3px solid transparent;
     }
     .system-callout.info {
       background-color: var(--accent-tint);
-      color: #0c4d87;
+      border-left-color: var(--accent);
+      color: #0d4b81;
     }
     .system-callout.warning {
       background-color: var(--system-orange-tint);
-      color: #794300;
+      border-left-color: var(--system-orange);
+      color: #874900;
     }
     .system-callout.success {
       background-color: var(--system-green-tint);
-      color: #175e33;
-    }
-    .callout-icon {
-      font-size: 14px;
-      line-height: 1.2;
+      border-left-color: var(--system-green);
+      color: var(--system-green-dark);
     }
 
-    /* Sensitivity Matrix Table */
+    /* Matrix Table */
     .matrix-table {
       width: 100%;
       border-collapse: collapse;
       font-size: 12px;
-      margin-top: 10px;
+      margin-top: 8px;
     }
     .matrix-table th {
       text-align: right;
-      padding: 8px 6px;
+      padding: 7px 5px;
       font-weight: 600;
       color: var(--label-tertiary);
       border-bottom: 1px solid var(--separator);
     }
-    .matrix-table th:first-child {
-      text-align: left;
-    }
+    .matrix-table th:first-child { text-align: left; }
     .matrix-table td {
-      padding: 10px 6px;
+      padding: 9px 5px;
       text-align: right;
       border-bottom: 1px solid var(--separator-hairline);
       font-variant-numeric: tabular-nums;
@@ -556,75 +445,6 @@
     .matrix-table td:first-child {
       text-align: left;
       font-weight: 600;
-    }
-
-    /* Guided SOP Drawer */
-    .sop-card {
-      background-color: var(--card-bg);
-      border-radius: var(--card-radius);
-      padding: 22px 24px;
-      border: 1px solid var(--separator-hairline);
-      margin-top: 24px;
-    }
-    .sop-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      cursor: pointer;
-    }
-    .sop-title {
-      font-size: 15px;
-      font-weight: 650;
-      color: var(--label-primary);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .sop-steps {
-      margin-top: 16px;
-      border-top: 1px solid var(--separator-hairline);
-      padding-top: 16px;
-      font-size: 13px;
-      color: var(--label-secondary);
-      line-height: 1.6;
-    }
-    .sop-step-box {
-      background-color: var(--card-subtle);
-      border-radius: 10px;
-      padding: 12px 14px;
-      margin-bottom: 10px;
-    }
-    .sop-step-box strong {
-      color: var(--label-primary);
-      display: block;
-      margin-bottom: 3px;
-    }
-
-    /* Toast Notification */
-    .toast-pill {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      background: rgba(28, 28, 30, 0.94);
-      color: #fff;
-      padding: 10px 20px;
-      border-radius: 99px;
-      font-size: 13px;
-      font-weight: 600;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-      backdrop-filter: blur(16px);
-      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s;
-      opacity: 0;
-      pointer-events: none;
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .toast-pill.show {
-      transform: translateX(-50%) translateY(0);
-      opacity: 1;
     }
 
     @media (max-width: 960px) {
@@ -636,233 +456,163 @@
       .fields-grid { grid-template-columns: 1fr; }
       .field-full { grid-column: span 1; }
       .triad-grid { grid-template-columns: 1fr; }
-      .triad-cell { display: flex; justify-content: space-between; align-items: center; }
-      .triad-label { margin-bottom: 0; }
-    }
-    @media print {
-      body { background: #fff; }
-      .toolbar-row, .guide-trigger, .btn-share, .sop-card { display: none; }
-      .layout-grid { grid-template-columns: 1fr 1fr; }
-      .apple-card, .hero-summary { box-shadow: none; border: 1px solid #ccc; break-inside: avoid; }
     }
   </style>
 </head>
 <body>
 
 <div class="container">
-  <!-- 頂部導航 -->
+  <!-- 頂部標題與工具列 -->
   <header>
-    <div class="header-eyebrow">
-      <span></span> Retirement Capital Architecture · Taiwan
-    </div>
-    <h1 class="header-title">退休準備三支柱精算系統</h1>
-    <p class="header-desc">
-      將所有現金流折算至「今日購買力」，整合法定勞保天花板、勞退個人專戶與自有指數資產（0050+VOO）。每項參數附帶白話定義、官方查詢路徑與連鎖影響。
-    </p>
-
-    <div class="toolbar-row">
-      <!-- 一鍵複製發送清單按鈕 -->
-      <div></div>
-      <button class="btn-share" onclick="copyGuidanceMessage()">
-        <span>📋</span> 一鍵複製指導他人修改清單
+    <div class="header-row">
+      <div>
+        <h1 class="header-title">退休準備三支柱精算系統</h1>
+        <p class="header-desc">
+          以今日實質購買力為基準，整合勞保年金、勞退新制專戶與自有投資資產，精算各階段現金流與資產缺口。
+        </p>
+      </div>
+      <button class="btn-reset" onclick="applyPreset()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        重置為預設值
       </button>
     </div>
   </header>
 
-  <!-- 核心主體雙欄佈局 -->
+  <!-- 雙欄佈局 -->
   <div class="layout-grid">
-    <!-- 左側：輸入表單與結構化小抄 -->
+    <!-- 左側：輸入表單 -->
     <main>
-      <!-- 區塊 1：生活目標與提領 -->
+      <!-- 區塊 1：生活目標與提領設定 -->
       <section class="apple-card">
-        <div class="card-title-row">
-          <h2 class="card-title">1. 生活目標與提領設定</h2>
-        </div>
-        <p class="card-subtitle">生活費請填寫以「今日物價」你想享有的生活品質，系統自動依長期通膨換算成退休當年的實際名目開銷。</p>
+        <h2 class="card-title">1. 生活目標與提領設定</h2>
+        <p class="card-subtitle">生活費請填寫今日物價感受，系統會自動按長期通膨折算退休當年的實際名目開銷。</p>
 
         <div class="fields-grid">
-          <!-- 1. 出生年次（民國） — 自動換算年齡 -->
+          <!-- 出生年次 -->
           <div class="field-cell">
             <div class="field-header">
               <span class="field-label">出生年次（民國）</span>
-              <span class="field-tag">填這個就好</span>
             </div>
             <div class="input-wrapper">
               <input type="number" id="birthYear" class="apple-input" value="80" step="1" min="40" max="100">
               <span class="input-unit">年次</span>
             </div>
-            <div style="margin-top:6px; font-size:12px; color:var(--label-secondary);">
-              👤 換算年齡：<strong id="displayAge">35</strong> 歲 ｜ 距退休 <strong id="displayYearsLeft">30</strong> 年 ｜ 法定全額請領 <strong id="displayNormalAge">65</strong> 歲
+            <div class="field-desc">
+              換算實歲 <strong id="displayAge">35</strong> 歲 ｜ 距退休 <strong id="displayYearsLeft">30</strong> 年 ｜ 法定請領 <strong id="displayNormalAge">65</strong> 歲
             </div>
           </div>
 
-          <!-- 2. 停止工作年齡 -->
+          <!-- 停止全職工作年齡 -->
           <div class="field-cell">
             <div class="field-header">
               <span class="field-label">停止全職工作年齡</span>
-              <span class="field-tag">退場節點</span>
             </div>
             <div class="input-wrapper">
               <input type="number" id="retireAge" class="apple-input" value="65" step="1">
               <span class="input-unit">歲</span>
             </div>
-            <button class="guide-trigger" onclick="toggleDrawer('drawer_retireAge')">ⓘ 代表意思與影響</button>
-            <div id="drawer_retireAge" class="guide-drawer">
-              <div class="drawer-item"><strong>📌 代表意思：</strong>預計向公司提出離職、正職薪水與勞保停止加保的年齡。</div>
-              <div class="drawer-item"><strong>🔍 規劃考量：</strong>個人退休目標。例如滿 60 歲時信貸等負債全數清償完畢，實現無負債退場。</div>
-              <div class="drawer-item"><strong>💡 填寫範例：</strong><code>60</code></div>
-              <div class="drawer-item"><strong>⚡ 改動影響：</strong>延後退休（例如改為 62 歲），會增加複利時間、多累積勞保年資，缺口將顯著縮小。</div>
-            </div>
+            <div class="field-desc">預計離開正職、停止勞保加保的年齡</div>
           </div>
 
-          <!-- 3. 每月生活費 -->
+          <!-- 每月生活費 -->
           <div class="field-cell">
             <div class="field-header">
               <span class="field-label">每月生活費（今日幣值）</span>
-              <span class="field-tag">生活預算</span>
             </div>
             <div class="input-wrapper">
               <input type="number" id="targetToday" class="apple-input" value="40000" step="1000">
               <span class="input-unit">元</span>
             </div>
-            <button class="guide-trigger" onclick="toggleDrawer('drawer_targetToday')">ⓘ 代表意思與影響</button>
-            <div id="drawer_targetToday" class="guide-drawer">
-              <div class="drawer-item"><strong>📌 代表意思：</strong>以今天的商品物價，你每個月希望有多少可用生活費。</div>
-              <div class="drawer-item"><strong>🔍 去哪裡查：</strong>依據個人記帳紀錄。建議設定在 4 萬～6 萬元。</div>
-              <div class="drawer-item"><strong>💡 填寫範例：</strong><code>50000</code></div>
-              <div class="drawer-item"><strong>⚡ 改動影響：</strong><strong>全系統最敏感指標！</strong>每多 1 萬元月生活費，退休需自備的股票資產目標需增加將近 <strong>300 萬元</strong>。</div>
-            </div>
+            <div class="field-desc">以今日物價估算退休後每月的充裕生活開銷</div>
           </div>
 
-          <!-- 4. 長期年通膨率 -->
+          <!-- 長期年通膨率 -->
           <div class="field-cell">
             <div class="field-header">
               <span class="field-label">長期年通膨率</span>
-              <span class="field-tag">折算系數</span>
             </div>
             <div class="input-wrapper">
               <input type="number" id="inflation" class="apple-input" value="2.0" step="0.1">
               <span class="input-unit">%</span>
             </div>
-            <button class="guide-trigger" onclick="toggleDrawer('drawer_inflation')">ⓘ 代表意思與影響</button>
-            <div id="drawer_inflation" class="guide-drawer">
-              <div class="drawer-item"><strong>📌 代表意思：</strong>未來物價每年平均上漲幅度。</div>
-              <div class="drawer-item"><strong>🔍 去哪裡查：</strong>主計總處長期 CPI 年增率歷史中位數約 1.8%～2.2%。</div>
-              <div class="drawer-item"><strong>💡 填寫範例：</strong>標準保守填 <code>2.0%</code>。</div>
-              <div class="drawer-item"><strong>⚡ 改動影響：</strong>通膨 2.0% 下，10 年後的 5 萬元生活費，名目金額會自動放大至約 6.1 萬元。</div>
-            </div>
+            <div class="field-desc">主計總處長期 CPI 年增率中位數約 1.8%～2.2%</div>
           </div>
 
-          <!-- 5. 退休後兼職 -->
+          <!-- 退休後兼職 -->
           <div class="field-cell">
             <div class="field-header">
               <span class="field-label">退休後微型兼職（今日幣值）</span>
-              <span class="field-tag">彈性槓桿</span>
             </div>
             <div class="input-wrapper">
               <input type="number" id="partTime" class="apple-input" value="0" step="1000">
               <span class="input-unit">元</span>
             </div>
-            <button class="guide-trigger" onclick="toggleDrawer('drawer_partTime')">ⓘ 代表意思與影響</button>
-            <div id="drawer_partTime" class="guide-drawer">
-              <div class="drawer-item"><strong>📌 代表意思：</strong>60 歲退職後，是否安排每週 1～2 天顧問、指導或排班兼職。</div>
-              <div class="drawer-item"><strong>🔍 評估方式：</strong>完全不想工作填 <code>0</code>；願意輕度活動填 <code>10000 ~ 15000</code>。</div>
-              <div class="drawer-item"><strong>💡 填寫範例：</strong><code>0</code> 或 <code>15000</code></div>
-              <div class="drawer-item"><strong>⚡ 改動影響：</strong><strong>撫平缺口王牌！</strong>退休後每有 1.5 萬月收入，自備本金壓力直接降低近 <strong>300 萬元</strong>。</div>
-            </div>
+            <div class="field-desc">退職後預計每週排班或顧問收入，無兼職填 0</div>
           </div>
 
-          <!-- 6. 股票規劃提領率 -->
+          <!-- 股票規劃提領率 -->
           <div class="field-cell">
             <div class="field-header">
               <span class="field-label">股票資產規劃提領率</span>
-              <span class="field-tag">安全界限</span>
             </div>
             <div class="input-wrapper">
               <input type="number" id="withdrawRate" class="apple-input" value="4.0" step="0.1">
               <span class="input-unit">%</span>
             </div>
-            <button class="guide-trigger" onclick="toggleDrawer('drawer_withdrawRate')">ⓘ 代表意思與影響</button>
-            <div id="drawer_withdrawRate" class="guide-drawer">
-              <div class="drawer-item"><strong>📌 代表意思：</strong>每年從 0050+VOO 股票池中賣出/提領股息的比例（三一研究法則 Trinity Study）。</div>
-              <div class="drawer-item"><strong>🔍 理論依據：</strong>國際退休規劃標準值為 4.0%，超保守可設定 3.5%。</div>
-              <div class="drawer-item"><strong>💡 填寫範例：</strong><code>4.0%</code></div>
-              <div class="drawer-item"><strong>⚡ 改動影響：</strong>提領率越低（如 3.5%），抗跌能力越強，但所需自備本金倍數會從 25 倍上升至 28.5 倍。</div>
-            </div>
+            <div class="field-desc">國際退休規劃常態基準（三一研究法則建議 3.5%～4.0%）</div>
           </div>
         </div>
       </section>
 
-      <!-- 區塊 2：勞保老年年金 -->
+      <!-- 區塊 2：第一支柱 勞保老年年金 -->
       <section class="apple-card">
-        <div class="card-title-row">
-          <h2 class="card-title">2. 第一支柱：勞保老年年金</h2>
-        </div>
-        <p class="card-subtitle">勞保年金是由勞保局按月終身發放的月退金。關鍵戰略在於：可以 60 歲離職退保，但「放至 65 歲」足額請領，避免永久被打折！</p>
+        <h2 class="card-title">2. 第一支柱：勞保老年年金</h2>
+        <p class="card-subtitle">按月終身發放。可選擇於法定年齡滿額領取，或提前（減額）/延後（增額）請領。</p>
+
+        <!-- 隱藏同步欄位 -->
+        <input type="hidden" id="birthROC" value="80">
 
         <div class="fields-grid">
-          <!-- birthROC: 隱藏同步欄位 -->
-          <input type="hidden" id="birthROC" value="80">
-
-          <!-- 8. 預計向勞保局起領年齡 -->
+          <!-- 預計起領年齡 -->
           <div class="field-cell">
             <div class="field-header">
               <span class="field-label">預計向勞保局起領年齡</span>
-              <span class="field-tag">關鍵戰略</span>
             </div>
             <div class="input-wrapper">
               <input type="number" id="claimAge" class="apple-input" value="65" step="1">
               <span class="input-unit">歲</span>
             </div>
-            <button class="guide-trigger" onclick="toggleDrawer('drawer_claimAge')">ⓘ 代表意思與巨大差異</button>
-            <div id="drawer_claimAge" class="guide-drawer">
-              <div class="drawer-item"><strong>📌 代表意思：</strong>幾歲開始正式向勞保局申請每個月匯發年金。</div>
-              <div class="drawer-item"><strong>🔍 策略差別（勝負手）：</strong>
-                • 填 <code>60 歲</code>：提前 5 年領，給付<strong>永久被打 8 折（減額 20%）</strong>，月領約 2.1 萬。<br>
-                • 填 <code>65 歲</code>：滿額請領，終身領取 100% 完整年金（近 3 萬/月）。
-              </div>
-              <div class="drawer-item"><strong>⚡ 改動影響：</strong>延後至 65 歲領，每個月終身多領將近 <strong>8,000 元</strong>！</div>
-            </div>
+            <div class="field-desc">每提前 1 年扣減 4%（最多扣 20%）；每延後 1 年增額 4%</div>
           </div>
 
-          <!-- 9. 目前累計勞保年資 -->
+          <!-- 目前累計年資 -->
           <div class="field-cell">
             <div class="field-header">
               <span class="field-label">目前累計勞保年資</span>
-              <span class="field-tag">既有年資</span>
             </div>
             <div class="input-wrapper">
               <input type="number" id="laborYearsNow" class="apple-input" value="10" step="0.1">
               <span class="input-unit">年</span>
             </div>
-            <button class="guide-trigger" onclick="toggleDrawer('drawer_laborYearsNow')">ⓘ 去哪裡查精確數字</button>
-            <div id="drawer_laborYearsNow" class="guide-drawer">
-              <div class="drawer-item"><strong>📌 代表意思：</strong>職涯至今在所有投保單位累積的勞保有效年資。</div>
-              <div class="drawer-item"><strong>🔍 去哪裡查：</strong>免讀卡機，用手機直接登入「勞保局 e 化服務系統」→ 點選「個人網路申報及查詢」→「勞工保險異動與年資」，即可看到精確年資。</div>
-              <div class="drawer-item"><strong>💡 填寫範例：</strong>依查詢結果填寫（範例：<code>27.0</code> 年）。</div>
-            </div>
+            <div class="field-desc">可透過健保卡或行動電話認證至勞保局 e 化系統查詢</div>
           </div>
 
-          <!-- 10. 未來新增勞保年資（自動計算） -->
+          <!-- 未來新增年資 -->
           <div class="field-cell">
             <div class="field-header">
-              <span class="field-label">未來新增年資</span>
-              <span class="field-tag">自動計算</span>
+              <span class="field-label">未來新增年資（自動計算）</span>
             </div>
             <div class="input-wrapper">
               <input type="number" id="futureLaborYears" class="apple-input" value="30" readonly>
               <span class="input-unit">年</span>
             </div>
-            <div style="margin-top:4px; font-size:11px; color:var(--label-tertiary);">
-              = 退休年齡 − 目前年齡（自動帶入）｜ 退休總年資：<strong id="displayTotalYears">40</strong> 年
-            </div>
+            <div class="field-desc">退休年齡 − 目前年齡 ｜ 退休總年資：<strong id="displayTotalYears">40</strong> 年</div>
           </div>
 
-          <!-- 11. 最高 60 個月投保薪資 -->
-          <div class="field-cell field-full">
+          <!-- 最高60個月平均投保薪資 -->
+          <div class="field-cell">
             <div class="field-header">
               <span class="field-label">最高 60 個月平均投保薪資</span>
-              <span class="field-tag">依個人薪資</span>
             </div>
             <div class="input-wrapper">
               <select id="avgInsuredSalary" class="apple-select">
@@ -877,300 +627,264 @@
                 <option value="45800" selected>$45,800（法定上限，月薪 ≥ 4.58 萬）</option>
               </select>
             </div>
-            <div style="margin-top:4px; font-size:11px; color:var(--label-tertiary);">
-              查詢方式：薪資單上的「勞保投保薪資」或至勞保局 e 化系統查詢
-            </div>
+            <div class="field-desc">依個人歷史投保紀錄選擇，長年月薪逾 4.6 萬選最高級距</div>
           </div>
         </div>
       </section>
 
-      <!-- 區塊 3：勞退新制個人專戶 -->
+      <!-- 區塊 3：第二支柱 勞退新制個人專戶 -->
       <section class="apple-card">
-        <div class="card-title-row">
-          <h2 class="card-title">3. 第二支柱：勞退新制個人專戶</h2>
-        </div>
-        <p class="card-subtitle">雇主依法每月強制額外提撥 6% 到你的專屬專戶。這筆錢 100% 歸你個人所有，不進政府大水庫，毫無破產風險。</p>
+        <h2 class="card-title">3. 第二支柱：勞退新制個人專戶</h2>
+        <p class="card-subtitle">雇主依法每月提繳 6% 至個人獨立專戶，亦可自願提繳 0%～6%，專戶本利歸個人所有。</p>
 
         <div class="fields-grid">
-          <!-- 12. 目前專戶餘額 -->
+          <!-- 目前專戶累積金額 -->
           <div class="field-cell">
             <div class="field-header">
               <span class="field-label">目前專戶累積金額</span>
-              <span class="field-tag">既有老本</span>
             </div>
             <div class="input-wrapper">
               <input type="number" id="pensionBalance" class="apple-input" value="300000" step="10000">
               <span class="input-unit">元</span>
             </div>
-            <button class="guide-trigger" onclick="toggleDrawer('drawer_pensionBalance')">ⓘ 去哪裡查精確數字</button>
-            <div id="drawer_pensionBalance" class="guide-drawer">
-              <div class="drawer-item"><strong>📌 代表意思：</strong>雇主歷年提撥加上歷年政府投資收益的本利和。</div>
-              <div class="drawer-item"><strong>🔍 去哪裡查：</strong>手機登入「勞保局 e 化服務系統」→ 點「勞工退休金個人專戶核發金額」，即可看到精確到個位數的金額。</div>
-              <div class="drawer-item"><strong>💡 填寫範例：</strong>依查詢結果填寫（範例：<code>300000</code> 元）。</div>
-            </div>
+            <div class="field-desc">登入勞保局 e 化系統查詢「個人退休金專戶核發金額」</div>
           </div>
 
-          <!-- 13. 勞退月提繳工資 -->
+          <!-- 月提繳工資級距 -->
           <div class="field-cell">
             <div class="field-header">
               <span class="field-label">勞退月提繳工資級距</span>
-              <span class="field-tag">雇主提撥依據</span>
             </div>
             <div class="input-wrapper">
               <input type="number" id="pensionWage" class="apple-input" value="45800" step="100">
               <span class="input-unit">元</span>
             </div>
-            <button class="guide-trigger" onclick="toggleDrawer('drawer_pensionWage')">ⓘ 代表意思與查法</button>
-            <div id="drawer_pensionWage" class="guide-drawer">
-              <div class="drawer-item"><strong>📌 代表意思：</strong>雇主為你提繳 6% 所對應的官方薪資級距。</div>
-              <div class="drawer-item"><strong>🔍 去哪裡查：</strong>薪資單上的「勞退提繳工資」。月薪 5 萬對應級距為 <code>$50,600</code>，雇主依法每月為你額外存入 <strong>$3,036</strong>。</div>
-            </div>
+            <div class="field-desc">薪資單上的勞退提繳工資（上限為 $150,000）</div>
           </div>
 
-          <!-- 14. 個人自提率 -->
+          <!-- 個人自提率 -->
           <div class="field-cell">
             <div class="field-header">
               <span class="field-label">勞工自願提繳率</span>
-              <span class="field-tag">自提決策</span>
             </div>
             <div class="input-wrapper">
               <input type="number" id="selfRate" class="apple-input" value="6" min="0" max="6" step="1">
               <span class="input-unit">%</span>
             </div>
-            <button class="guide-trigger" onclick="toggleDrawer('drawer_selfRate')">ⓘ 實務建議填法</button>
-            <div id="drawer_selfRate" class="guide-drawer">
-              <div class="drawer-item"><strong>📌 代表意思：</strong>是否每月從薪水額外提撥 0%～6% 到勞退專戶。</div>
-              <div class="drawer-item"><strong>💡 實務建議：</strong><strong>強烈建議填 0%</strong>。自提由政府代操年化僅約 3%，把現金留在自己身邊定期定額 0050+VOO（長期 8%），複利威力高出數倍。</div>
-            </div>
+            <div class="field-desc">可自選 0%～6%，自提金額可自當年度所得總額全額扣除</div>
           </div>
 
-          <!-- 15. 專戶年報酬假設 -->
+          <!-- 專戶年收益率 -->
           <div class="field-cell">
             <div class="field-header">
               <span class="field-label">專戶長期年收益率</span>
-              <span class="field-tag">保本收益</span>
             </div>
             <div class="input-wrapper">
               <input type="number" id="pensionReturn" class="apple-input" value="3.0" step="0.1">
               <span class="input-unit">%</span>
             </div>
-            <button class="guide-trigger" onclick="toggleDrawer('drawer_pensionReturn')">ⓘ 代表意思與數值依據</button>
-            <div id="drawer_pensionReturn" class="guide-drawer">
-              <div class="drawer-item"><strong>📌 代表意思：</strong>政府勞退基金代操專戶的長期年化報酬率。</div>
-              <div class="drawer-item"><strong>🔍 歷史經驗：</strong>法定有兩年期定存利率保底，長線保守估計 <code>2.5% ~ 3.5%</code>。</div>
-            </div>
+            <div class="field-desc">勞動基金歷年長期保本投資收益率約 3%～4%</div>
           </div>
 
-          <!-- 16. 請領方式 -->
+          <!-- 請領方式 -->
           <div class="field-cell field-full">
             <div class="field-header">
-              <span class="field-label">60 歲退職時請領方式</span>
-              <span class="field-tag">過渡戰略關鍵</span>
+              <span class="field-label">退職時請領方式</span>
             </div>
             <div class="input-wrapper">
               <select id="pensionMode" class="apple-select">
+                <option value="monthly" selected>按月請領（由勞保局依平均餘命攤提至約 84 歲）</option>
                 <option value="lump">一次全額領出（保留為過渡生活費與現金防火牆）</option>
-                <option value="lump_invest">一次全額領出（全數再投入 0050 等大盤指數參與複利）</option>
-                <option value="monthly" selected>月退休金（由勞保局按生命表攤提至 84 歲止）</option>
+                <option value="lump_invest">一次全額領出（全數再投入大盤指數 ETF 參與複利）</option>
               </select>
             </div>
-            <button class="guide-trigger" onclick="toggleDrawer('drawer_pensionMode')">ⓘ 為什麼強烈建議一次領？</button>
-            <div id="drawer_pensionMode" class="guide-drawer">
-              <div class="drawer-item"><strong>📌 關鍵戰略：</strong>滿 60 歲退職時一次領出，這筆錢剛好拿來支應 60～65 歲這 5 年的生活費。這樣第一支柱勞保就能安心放至 65 歲才請領，換取終身 100% 滿額年金！</div>
-            </div>
+            <div class="field-desc">滿 60 歲且年資滿 15 年可自由選擇月領或一次請領</div>
           </div>
         </div>
       </section>
 
-      <!-- 區塊 4：自有投資組合 -->
+      <!-- 區塊 4：第三支柱 自有投資組合 -->
       <section class="apple-card">
-        <div class="card-title-row">
-          <h2 class="card-title">4. 第三支柱：自有投資組合（ETF / 基金 / 股票）</h2>
-        </div>
-        <p class="card-subtitle">完全由你掌控的終身資產引擎。可直接選取常見的經典配置模板代入歷史數據，亦可完全自由調整。</p>
+        <h2 class="card-title">4. 第三支柱：自有投資組合（ETF / 基金 / 股票）</h2>
+        <p class="card-subtitle">完全自主掌控的終身資產引擎。可選用經典配置模板，亦可完全自訂預期回報。</p>
 
         <div class="fields-grid">
           <!-- 模板選擇器 -->
           <div class="field-cell field-full">
             <div class="field-header">
-              <span class="field-label">常用投資配置模板</span>
-              <span class="field-tag">快速套用</span>
+              <span class="field-label">投資配置組合模板</span>
+              <span class="field-badge-note" id="tagNetReturn">實質淨年化 7.80%</span>
             </div>
             <div class="input-wrapper">
               <select id="portfolioPreset" class="apple-select" onchange="applyPortfolioPreset()">
-                <option value="tw_us_flagship" selected>🇹🇼 台美大盤旗艦型（0050/006208 80% ＋ VOO 20% ｜ 預期年化 8.0%、費用 0.20%）</option>
-                <option value="world_passive">🌍 全球全市場被動型（VT / VWRA ｜ 預期年化 7.5%、費用 0.22%）</option>
-                <option value="us_sp500">🇺🇸 純美股標普 500（VOO / SPY / IVV ｜ 預期年化 9.0%、費用 0.08%）</option>
-                <option value="dividend_income">💰 高股息現金流型（00878 / 0056 / 00919 ｜ 預期年化 6.0%、費用 0.45%）</option>
-                <option value="balanced_6040">⚖️ 經典股債平衡型（全球股票 60% ＋ 美國公債 40% ｜ 預期年化 5.5%、費用 0.30%）</option>
-                <option value="custom">⚙️ 自訂投資組合（自由填寫下方報酬率與費用）</option>
+                <option value="tw_us_flagship" selected>台美大盤旗艦型（0050 / 006208 80% ＋ VOO 20% ｜ 年化 8.0%、費用 0.20%）</option>
+                <option value="world_passive">全球全市場被動型（VT / VWRA ｜ 年化 7.5%、費用 0.22%）</option>
+                <option value="us_sp500">純美股標普 500（VOO / SPY ｜ 年化 9.0%、費用 0.08%）</option>
+                <option value="dividend_income">高股息配置型（00878 / 0056 / 00919 ｜ 年化 6.0%、費用 0.45%）</option>
+                <option value="balanced_6040">經典股債平衡型（全球股票 60% ＋ 美國長債 40% ｜ 年化 5.5%、費用 0.30%）</option>
+                <option value="custom">自訂投資組合（手動輸入下方報酬率與費用）</option>
               </select>
             </div>
           </div>
 
-          <!-- 17. 目前股票資產 -->
+          <!-- 現有投資部位 -->
           <div class="field-cell">
             <div class="field-header">
               <span class="field-label">現有投資部位總現值</span>
-              <span class="field-tag">起始資金</span>
             </div>
             <div class="input-wrapper">
               <input type="number" id="assetsNow" class="apple-input" value="500000" step="10000">
               <span class="input-unit">元</span>
             </div>
-            <div style="margin-top:4px; font-size:11px; color:var(--label-tertiary);">目前證券戶股票、ETF 或基金現值，尚未投資填 0</div>
+            <div class="field-desc">目前證券戶股票、ETF 或基金現值，尚未投資填 0</div>
           </div>
 
-          <!-- 18. 每月定投金額 -->
+          <!-- 每月定投金額 -->
           <div class="field-cell">
             <div class="field-header">
               <span class="field-label">每月定期定額總額</span>
-              <span class="field-tag">核心引擎</span>
             </div>
             <div class="input-wrapper">
               <input type="number" id="monthlyInvest" class="apple-input" value="10000" step="1000">
               <span class="input-unit">元</span>
             </div>
-            <div style="margin-top:4px; font-size:11px; color:var(--label-tertiary);">每月固定扣款買入投資組合的金額</div>
+            <div class="field-desc">每月固定由薪資或結餘扣款買入投資組合的金額</div>
           </div>
 
-          <!-- 19. 組合長期年化總報酬 -->
+          <!-- 長期年化報酬 -->
           <div class="field-cell">
             <div class="field-header">
               <span class="field-label">長期年化報酬（名目）</span>
-              <span class="field-tag" id="tagNetReturn">實質淨年化 7.80%</span>
             </div>
             <div class="input-wrapper">
               <input type="number" id="expectedReturn" class="apple-input" value="8.0" step="0.1" oninput="onCustomReturnInput()">
               <span class="input-unit">%</span>
             </div>
-            <div style="margin-top:4px; font-size:11px; color:var(--label-tertiary);">長期大盤含息年化約 7%～10%，高股息約 5%～7%</div>
+            <div class="field-desc">歷史長期大盤含息年化約 7%～10%，高股息約 5%～7%</div>
           </div>
 
-          <!-- 20. 費用與稅負拖累 -->
+          <!-- 費用率 -->
           <div class="field-cell">
             <div class="field-header">
               <span class="field-label">費用與摩擦成本率</span>
-              <span class="field-tag">內扣損耗</span>
             </div>
             <div class="input-wrapper">
               <input type="number" id="fee" class="apple-input" value="0.2" step="0.05" oninput="onCustomReturnInput()">
               <span class="input-unit">%</span>
             </div>
-            <div style="margin-top:4px; font-size:11px; color:var(--label-tertiary);">ETF 經理費、保管費與券商手續費等長期成本</div>
+            <div class="field-desc">ETF 經理費、保管費與手續費等長期成本損耗</div>
           </div>
         </div>
       </section>
 
-      <!-- 區塊 5：進階戰略 -->
+      <!-- 區塊 5：進階戰略 股票質押 -->
       <section class="apple-card">
-        <div class="card-title-row">
-          <h2 class="card-title">5. 進階戰略 (股票質押)</h2>
-        </div>
-        <p class="card-subtitle">利用股票質押借款度過 60~65 歲空窗期，避免賣股，讓資產繼續滾動。</p>
+        <h2 class="card-title">5. 進階戰略：股票質押</h2>
+        <p class="card-subtitle">利用股票資產作為擔保品向券商貸款，活化資產流動性，無須在市場低點變賣持股。</p>
 
         <div class="fields-grid">
           <div class="field-cell field-full">
             <div class="field-header">
               <span class="field-label">質押戰略選擇</span>
-              <span class="field-tag">資產活化</span>
             </div>
             <div class="input-wrapper">
               <select id="pledgeStrategy" class="apple-select" onchange="calculate(false)">
                 <option value="none" selected>不使用股票質押</option>
-                <option value="bridge">僅用於度過 60~65 歲空窗期 (借生活費不賣股)</option>
-                <option value="reinvest">質押借款全數再投入 (放大本金與實質提領率)</option>
+                <option value="bridge">僅用於度過退休空窗期（借生活費不賣股）</option>
+                <option value="reinvest">質押借款全數再投入（放大資產基底與提領率）</option>
               </select>
             </div>
           </div>
-          
+
           <div class="field-cell">
             <div class="field-header">
-              <span class="field-label">質押年利率</span>
+              <span class="field-label">質押借款年利率</span>
             </div>
             <div class="input-wrapper">
               <input type="number" id="pledgeRate" class="apple-input" value="2.5" step="0.1">
               <span class="input-unit">%</span>
             </div>
+            <div class="field-desc">目前台灣券商質押借款年息約 2.3%～3.0%</div>
           </div>
 
           <div class="field-cell" id="boxLTV" style="display:none;">
             <div class="field-header">
-              <span class="field-label">質押借款再投入成數</span>
+              <span class="field-label">質押借款成數</span>
             </div>
             <div class="input-wrapper">
               <input type="number" id="pledgeLTV" class="apple-input" value="40" step="5" max="60">
               <span class="input-unit">%</span>
             </div>
+            <div class="field-desc">建議設定 20%～40%，維持安全擔保率防範波動</div>
           </div>
         </div>
       </section>
     </main>
 
-    <!-- 右側：結果精算與即時對照面板 -->
+    <!-- 右側：結果精算面板 -->
     <aside class="inspector-sticky">
-      <!-- 總覽主卡片 -->
-      <div class="apple-card" style="padding-bottom: 22px;">
+      <div class="apple-card" style="padding-bottom: 20px;">
+        <!-- 核心總覽卡片 -->
         <div class="hero-summary">
           <div class="hero-top">
-            <span>60 歲退職自備資產缺口</span>
+            <span>退休自備資產缺口</span>
             <span class="hero-pill" id="badgeStatus">計算中</span>
           </div>
           <div class="hero-metric" id="valShortfall">$0</div>
           <div class="hero-subtitle" id="valShortfallReal">折合今日幣值 $0（退休當年名目金額）</div>
-          <div id="bannerDeltaShortfall" class="delta-banner neutral">基準對照方案中</div>
+          <div>
+            <span id="bannerDeltaShortfall" class="delta-banner neutral">標準基準對照</span>
+          </div>
         </div>
 
         <!-- 3 個關鍵指標 -->
         <div class="triad-grid">
           <div class="triad-cell">
-            <div class="triad-label">【現在】目前已備資產</div>
+            <div class="triad-label">【現在】目前已備</div>
             <div class="triad-value" id="valCurrent">$0</div>
           </div>
           <div class="triad-cell">
-            <div class="triad-label">【未來】預估累積資產</div>
+            <div class="triad-label">【未來】預估累積</div>
             <div class="triad-value" id="valProjected">$0</div>
           </div>
           <div class="triad-cell">
-            <div class="triad-label">【結果】目標所需本金</div>
+            <div class="triad-label">【結果】目標所需</div>
             <div class="triad-value" id="valRequired">$0</div>
           </div>
         </div>
 
-        <!-- 原生進度條 -->
+        <!-- 進度條 -->
         <div class="native-bar-track">
           <div class="native-bar-fill" id="progressBar"></div>
         </div>
         <div class="bar-footer">
           <span>起點</span>
           <span id="txtProgressLabel">達成率 0%</span>
-          <span>100% 財務自由</span>
+          <span>100% 目標達成</span>
         </div>
 
-        <!-- 退休現金流細項對照（動態雙階段渲染） -->
+        <!-- 動態雙階段現金流拆解 -->
         <div class="cashflow-box" id="cashflowContainer"></div>
 
-        <!-- 智慧提示框 -->
+        <!-- 提示說明 -->
         <div class="system-callout info" id="bridgeNotice">
-          <span class="callout-icon">💡</span>
           <span id="bridgeNoticeText">載入中...</span>
         </div>
         <div class="system-callout" id="resultNotice">
-          <span class="callout-icon">📌</span>
           <span id="resultNoticeText">載入中...</span>
         </div>
       </div>
 
-      <!-- 市場報酬敏感度表格 -->
+      <!-- 市場敏感度測試 -->
       <div class="apple-card">
-        <h3 class="card-title" style="font-size: 15px; margin-bottom: 4px;">大盤報酬敏感度壓力測試</h3>
-        <p class="card-subtitle" style="margin-bottom: 12px;">未來 10 年行情不如預期或多頭增長時的自備資產對比：</p>
+        <h3 class="card-title" style="font-size: 14.5px; margin-bottom: 2px;">大盤報酬敏感度壓力測試</h3>
+        <p class="card-subtitle" style="margin-bottom: 10px;">長線行情不如預期或多頭增長時之預估對比：</p>
         <table class="matrix-table">
           <thead>
             <tr>
               <th>市場情境</th>
               <th>淨報酬</th>
-              <th>60歲股票總值</th>
+              <th>退休時總值</th>
               <th>缺口狀態</th>
             </tr>
           </thead>
@@ -1179,35 +893,6 @@
       </div>
     </aside>
   </div>
-
-  <!-- 底部：如何指導他人使用 SOP 手冊 -->
-  <div class="sop-card">
-    <div class="sop-header" onclick="toggleSop()">
-      <div class="sop-title">
-        <span>📖</span> 如何指導他人使用這份試算？（3 步驟標準教學話術）
-      </div>
-      <span id="sopArrow" style="font-size: 12px; color: var(--accent); font-weight: 600;">展開手冊 ▾</span>
-    </div>
-    <div class="sop-steps" id="sopContent" style="display:none;">
-      <div class="sop-step-box">
-        <strong>第 1 步：查 2 個底牌數字（其他 18 項保持預設不用動）</strong>
-        請對方用手機登入「勞保局 e 化服務系統」，只要查填兩項：①『目前累計勞保年資』填進第 2 區；②『勞退專戶核發金額』填進第 3 區。投保薪資不用改，直接鎖定 $45,800 最高天花板。
-      </div>
-      <div class="sop-step-box">
-        <strong>第 2 步：看 1 個最震撼的差異（60 歲提前領 vs 65 歲滿額領）</strong>
-        讓對方在頂部點擊切換【方案 A】與【方案 B】。他會立刻在右上方看到：如果 60 歲就急著領勞保，每個月會被永久打 8 折（終身每月少領 20%！）。延後到 65 歲領滿額，中間 5 年的空窗期，直接用勞退一次領出的錢當過渡生活費就綽綽有餘。
-      </div>
-      <div class="sop-step-box">
-        <strong>第 3 步：動 1 個調整旋鈕（撫平自備缺口）</strong>
-        看右邊的「需自備資產缺口」：如果還有紅字缺口，就在『每月定期定額總額』填上他每個月真正能擠出來買 0050+VOO 的金額（例如 25,000 元）；若手頭緊，只要在『退休後兼職』填上 10,000 元（每週輕鬆排班 1 天），缺口立刻被兼職威力徹底撫平！
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- 吐司通知 (Toast) -->
-<div class="toast-pill" id="toastPill">
-  <span>✓</span> 已將指導他人修改話術複製至剪貼簿！
 </div>
 
 <script>
@@ -1228,44 +913,12 @@
   const fmtMoney = v => '$' + Math.round(Math.max(0, v)).toLocaleString('zh-TW');
   const fmtPct = v => (v * 100).toFixed(0) + '%';
 
-  function toggleDrawer(id) {
-    const el = $(id);
-    if (el) el.classList.toggle('open');
-  }
-
-  function toggleSop() {
-    const content = $('sopContent');
-    const arrow = $('sopArrow');
-    if (content.style.display === 'none') {
-      content.style.display = 'block';
-      arrow.textContent = '收起手冊 ▴';
-    } else {
-      content.style.display = 'none';
-      arrow.textContent = '展開手冊 ▾';
-    }
-  }
-
   // 複利終值 FV
   function fv(pv, pmt, annualRate, months) {
     if (months <= 0) return pv;
     const r = Math.pow(1 + annualRate, 1/12) - 1;
     if (Math.abs(r) < 1e-10) return pv + pmt * months;
     return pv * Math.pow(1 + r, months) + pmt * (Math.pow(1 + r, months) - 1) / r;
-  }
-
-  // 勞保老年年金計算
-  function calcLaborPension(salary, years, claimAge, birthROC) {
-    let normalAge = 65;
-    if (birthROC <= 46) normalAge = 60;
-    else if (birthROC === 47) normalAge = 61;
-    else if (birthROC === 48) normalAge = 62;
-    else if (birthROC === 49) normalAge = 63;
-    else if (birthROC === 50) normalAge = 64;
-    else normalAge = 65;
-
-    const base = Math.max(salary * years * 0.00775 + 3000, salary * years * 0.0155);
-    const diff = Math.max(-5, Math.min(5, claimAge - normalAge));
-    return base * (1 + diff * 0.04);
   }
 
   // 常用投資組合模板定義
@@ -1298,6 +951,21 @@
     if ($('tagNetReturn')) $('tagNetReturn').textContent = `實質淨年化 ${net}%`;
   }
 
+  // 勞保老年年金計算
+  function calcLaborPension(salary, years, claimAge, birthROC) {
+    let normalAge = 65;
+    if (birthROC <= 46) normalAge = 60;
+    else if (birthROC === 47) normalAge = 61;
+    else if (birthROC === 48) normalAge = 62;
+    else if (birthROC === 49) normalAge = 63;
+    else if (birthROC === 50) normalAge = 64;
+    else normalAge = 65;
+
+    const base = Math.max(salary * years * 0.00775 + 3000, salary * years * 0.0155);
+    const diff = Math.max(-5, Math.min(5, claimAge - normalAge));
+    return base * (1 + diff * 0.04);
+  }
+
   // 根據出生年次自動計算法定全額請領年齡
   function getNormalAge(birthROC) {
     if (birthROC <= 46) return 60;
@@ -1317,10 +985,7 @@
     const futureYears = Math.max(0, retire - age);
     const normalAge = getNormalAge(birthYear);
 
-    // 同步隱藏欄位
     $('birthROC').value = birthYear;
-    // 不需要 currentAge input 了，但 n('currentAge') 還在被 calculate 使用
-    // 所以我們用 hidden input
     if (!$('currentAge')) {
       const h = document.createElement('input');
       h.type = 'hidden'; h.id = 'currentAge';
@@ -1328,23 +993,19 @@
     }
     $('currentAge').value = age;
 
-    // 同步未來年資
     $('futureLaborYears').value = futureYears.toFixed(1);
 
-    // 更新顯示文字
     if ($('displayAge')) $('displayAge').textContent = age;
     if ($('displayYearsLeft')) $('displayYearsLeft').textContent = futureYears;
     if ($('displayNormalAge')) $('displayNormalAge').textContent = normalAge;
     if ($('displayTotalYears')) $('displayTotalYears').textContent = (n('laborYearsNow') + futureYears).toFixed(1);
   }
 
-  // 監聽出生年次與退休年齡的變動
   ['birthYear', 'retireAge', 'laborYearsNow'].forEach(id => {
     const el = $(id);
     if (el) el.addEventListener('input', () => { syncFromBirthYear(); calculate(false); });
   });
 
-  // 基準數值（標準方案：65歲滿額領）
   let baselineShortfall = null;
 
   function calculate(isSettingBaseline = false) {
@@ -1371,19 +1032,18 @@
     const pensionMonthly = (pensionMode === 'monthly') ? (pensionTotal / (24 * 12)) : 0;
     const pensionLump = (pensionMode.startsWith('lump')) ? pensionTotal : 0;
 
-    // 第三支柱：自有大盤 ETF
+    // 第三支柱：自有投資資產
     const netReturn = (n('expectedReturn') - n('fee')) / 100;
     updateNetReturnTag();
     const etfProjected = fv(n('assetsNow'), n('monthlyInvest'), netReturn, months);
     const totalProjected = etfProjected + pensionLump;
 
-    // 缺口計算 (修正版: 考慮過橋與終身階段、質押再投入)
+    // 缺口計算
     const wr = n('withdrawRate') / 100;
     const pledgeStrategy = $('pledgeStrategy') ? $('pledgeStrategy').value : 'none';
     const pledgeRate = $('pledgeRate') ? n('pledgeRate') / 100 : 0.025;
     const pledgeLTV = $('pledgeLTV') ? n('pledgeLTV') / 100 : 0.4;
     
-    // UI 控制
     if($('boxLTV')) $('boxLTV').style.display = (pledgeStrategy === 'reinvest') ? 'flex' : 'none';
     
     let requiredAssets = 0;
@@ -1391,11 +1051,9 @@
     let monthlyInterestDisplay = 0;
     let effectiveWR = wr;
     
-    // 基本缺口
     const bridgeYears = Math.max(0, claim - retire);
     const bridgeMonthlyGap = Math.max(0, targetNominal - pensionMonthly - partTimeNominal);
     const bridgeTotalCost = bridgeMonthlyGap * 12 * bridgeYears;
-    // 若選「一次領(保留現金)」，勞退一次領出的錢用來支應過橋生活費
     const lumpForBridge = (pensionMode === 'lump') ? pensionLump : 0;
     let bridgeRequired = Math.max(0, bridgeTotalCost - lumpForBridge);
     let endgameGap = Math.max(0, targetNominal - laborFullMonthly - pensionMonthly - partTimeNominal);
@@ -1403,27 +1061,40 @@
     if (pledgeStrategy === 'bridge' && claim > retire) {
         const totalDebt = bridgeRequired;
         monthlyInterestDisplay = (totalDebt * pledgeRate) / 12;
-        endgameGap += monthlyInterestDisplay; // 利息成為終身固定支出
+        endgameGap += monthlyInterestDisplay;
         bridgeRequired = 0; 
     } else if (pledgeStrategy === 'reinvest') {
         effectiveWR = (1 + pledgeLTV) * wr - pledgeLTV * pledgeRate;
         const loan = totalProjected * pledgeLTV;
-        monthlyInterestDisplay = (loan * pledgeRate) / 12; // 僅供展示，不加進 endgameGap (已透過 effectiveWR 抵銷)
+        monthlyInterestDisplay = (loan * pledgeRate) / 12;
     }
 
     monthlyNeed = endgameGap;
     const endgameRequired = effectiveWR > 0 ? (endgameGap * 12 / effectiveWR) : Infinity;
     requiredAssets = bridgeRequired + endgameRequired;
     
-    // 質押與過橋提示文案
+    // 提示說明
     if (pledgeStrategy !== 'none' && monthlyInterestDisplay > 0) {
         if (pledgeStrategy === 'reinvest') {
-            $('bridgeNoticeText').innerHTML = `<strong>📈 質押槓桿發威：</strong>藉由 ${pledgeLTV*100}% 的質押再投入，實質提領率從 ${(wr*100).toFixed(1)}% 躍升至 <strong>${(effectiveWR*100).toFixed(2)}%</strong>！雖然每月產生 ${fmtMoney(monthlyInterestDisplay)} 利息，但已被大盤預期報酬完全覆蓋。`;
+            $('bridgeNotice').className = 'system-callout info';
+            $('bridgeNoticeText').innerHTML = `<strong>質押再投入效益</strong>：藉由 ${(pledgeLTV*100).toFixed(0)}% 質押借款再投入，實質提領率提升至 <strong>${(effectiveWR*100).toFixed(2)}%</strong>。每月利息支出 ${fmtMoney(monthlyInterestDisplay)} 已由擴大後的長期資產報酬完全覆蓋。`;
         } else {
-            $('bridgeNoticeText').innerHTML = `<strong>🛡️ 過橋質押啟動：</strong>60~65 歲空窗期生活費不賣股，全數由質押借款支應。65 歲後每月需支付利息 <strong>${fmtMoney(monthlyInterestDisplay)}</strong>。`;
+            $('bridgeNotice').className = 'system-callout info';
+            $('bridgeNoticeText').innerHTML = `<strong>過橋質押方案</strong>：空窗期生活費由質押借款全數支應，無須在退休初期變賣持股。滿額起領後每月利息支出為 <strong>${fmtMoney(monthlyInterestDisplay)}</strong>。`;
         }
     } else {
-        $('bridgeNoticeText').innerHTML = `<strong>💡 完美過橋戰略：</strong>你在 60 歲退職時勞保暫不領，靠勞退與股票提領支應 60~65 歲；等到 65 歲起終身領滿額勞保。`;
+        const normalAge = getNormalAge(n('birthROC'));
+        if (claim < normalAge) {
+            $('bridgeNotice').className = 'system-callout warning';
+            const reduction = Math.round((normalAge - claim) * 4);
+            $('bridgeNoticeText').innerHTML = `<strong>提前請領減額提示</strong>：於 ${claim} 歲請領勞保，每月給付永久減額 ${reduction}%（月領 ${fmtMoney(laborAtRetire)}）。延至 ${normalAge} 歲可領取全額。`;
+        } else if (claim > retire) {
+            $('bridgeNotice').className = 'system-callout info';
+            $('bridgeNoticeText').innerHTML = `<strong>過橋規劃配置</strong>：${retire} 歲離職退保、${claim} 歲足額請領勞保。中間 ${claim - retire} 年生活費由既有累積資產支應。`;
+        } else {
+            $('bridgeNotice').className = 'system-callout info';
+            $('bridgeNoticeText').innerHTML = `<strong>標準無空窗配置</strong>：退休與勞保請領年齡同步，無過渡空窗期。`;
+        }
     }
 
     const shortfall = Math.max(0, requiredAssets - totalProjected);
@@ -1448,23 +1119,55 @@
     $('txtProgressLabel').textContent = `達成率 ${fmtPct(readiness)}`;
     $('progressBar').style.backgroundColor = readiness >= 1 ? 'var(--system-green)' : (readiness >= 0.7 ? 'var(--system-orange)' : 'var(--system-red)');
 
-    // 動態渲染現金流拆解（清晰兩階段或單階段）
+    // 狀態徽章
+    if (shortfall <= 0) {
+      $('badgeStatus').textContent = '目標已達標';
+      $('badgeStatus').style.background = 'var(--system-green-tint)';
+      $('badgeStatus').style.color = 'var(--system-green-dark)';
+    } else {
+      $('badgeStatus').textContent = '尚有自備缺口';
+      $('badgeStatus').style.background = 'var(--system-orange-tint)';
+      $('badgeStatus').style.color = '#b45309';
+    }
+
+    // 差異對比徽章
+    const deltaDiff = shortfall - baselineShortfall;
+    const deltaBox = $('bannerDeltaShortfall');
+    if (Math.abs(deltaDiff) < 1000) {
+      deltaBox.className = 'delta-banner neutral';
+      deltaBox.textContent = '此為標準基準對照線';
+    } else if (deltaDiff < 0) {
+      deltaBox.className = 'delta-banner good';
+      deltaBox.textContent = `缺口較基準減少 ${fmtMoney(Math.abs(deltaDiff))}`;
+    } else {
+      deltaBox.className = 'delta-banner bad';
+      deltaBox.textContent = `缺口較基準增加 ${fmtMoney(deltaDiff)}`;
+    }
+
+    if (shortfall <= 0) {
+      $('resultNotice').className = 'system-callout success';
+      $('resultNoticeText').innerHTML = `<strong>資產準備充足</strong>：退休時累積總資產高於規劃所需本金 <strong>${fmtMoney(totalProjected - requiredAssets)}</strong>。`;
+    } else {
+      $('resultNotice').className = 'system-callout warning';
+      $('resultNoticeText').innerHTML = `<strong>目前尚有自備缺口 ${fmtMoney(shortfall)}</strong>：可透過提高定期定額扣款額度、適度安排退休兼職、或調整提領率平衡缺口。`;
+    }
+
+    // 動態渲染現金流拆解
     const normalAge = getNormalAge(n('birthROC'));
     const container = $('cashflowContainer');
     
     if (claim > retire) {
-      // ═════ 雙階段渲染 ═════
       container.innerHTML = `
-        <div class="cashflow-header">退休後每月名目現金流拆解（雙階段）</div>
+        <div class="cashflow-header">退休後每月現金流拆解（名目金額）</div>
         
         <!-- 階段一：過橋期 -->
         <div class="cashflow-phase-card">
           <div class="cashflow-phase-title">
             <span class="phase-badge bridge">階段一</span>
-            <span>${retire}～${claim} 歲（過橋空窗期，共 ${bridgeYears} 年）</span>
+            <span>${retire}～${claim} 歲（過渡期共 ${bridgeYears} 年）</span>
           </div>
           <div class="cashflow-row">
-            <span class="cashflow-row-name">生活費目標需求</span>
+            <span class="cashflow-row-name">生活費需求目標</span>
             <span class="cashflow-row-val">${fmtMoney(targetNominal)}／月</span>
           </div>
           <div class="cashflow-row">
@@ -1472,19 +1175,19 @@
             <span class="cashflow-row-val" style="color:var(--label-tertiary);">$0／月</span>
           </div>
           <div class="cashflow-row">
-            <span class="cashflow-row-name">第二支柱：勞退月退金</span>
+            <span class="cashflow-row-name">第二支柱：勞退月領</span>
             <span class="cashflow-row-val" style="color:var(--label-tertiary);">${pensionMode === 'monthly' ? fmtMoney(pensionMonthly) + '／月' : '$0／月'}</span>
           </div>
           <div class="cashflow-row">
-            <span class="cashflow-row-name">彈性微型兼職收入</span>
+            <span class="cashflow-row-name">微型兼職收入</span>
             <span class="cashflow-row-val" style="color:var(--label-tertiary);">${partTimeNominal > 0 ? '-' + fmtMoney(partTimeNominal) + '／月' : '$0／月'}</span>
           </div>
           <div class="cashflow-row final">
             <span class="cashflow-row-name">此階段每月需自備提領</span>
             <span class="cashflow-row-val" style="color:var(--system-orange);">${fmtMoney(bridgeMonthlyGap)}／月</span>
           </div>
-          <div style="font-size:11.5px; color:var(--label-secondary); margin-top:8px; line-height:1.5;">
-            📌 ${bridgeYears} 年過橋累計需準備 <strong>${fmtMoney(bridgeTotalCost)}</strong>${pensionMode === 'lump' ? `（勞退一次領 ${fmtMoney(pensionLump)} 抵扣後，自備準備金實需 <strong>${fmtMoney(bridgeRequired)}</strong>）` : (pensionMode === 'lump_invest' ? `（勞退一次領全投 0050 參與複利，過橋金全由資產池撥付）` : '')}。
+          <div style="font-size:11px; color:var(--label-secondary); margin-top:6px; line-height:1.45;">
+            ${bridgeYears} 年累計生活開銷需自備 <strong>${fmtMoney(bridgeTotalCost)}</strong>${pensionMode === 'lump' ? `（勞退一次請領 ${fmtMoney(pensionLump)} 抵沖後，需自備 <strong>${fmtMoney(bridgeRequired)}</strong>）` : ''}。
           </div>
         </div>
 
@@ -1495,70 +1198,69 @@
             <span>${claim} 歲起（終身現金流安定期）</span>
           </div>
           <div class="cashflow-row">
-            <span class="cashflow-row-name">生活費目標需求</span>
+            <span class="cashflow-row-name">生活費需求目標</span>
             <span class="cashflow-row-val">${fmtMoney(targetNominal)}／月</span>
           </div>
           <div class="cashflow-row">
             <span class="cashflow-row-name">第一支柱：勞保年金（終身月領）</span>
-            <span class="cashflow-row-val" style="color:var(--system-green); font-weight:700;">-${fmtMoney(laborFullMonthly)}／月</span>
+            <span class="cashflow-row-val" style="color:var(--system-green-dark); font-weight:700;">-${fmtMoney(laborFullMonthly)}／月</span>
           </div>
           <div class="cashflow-row">
-            <span class="cashflow-row-name">第二支柱：勞退月退金</span>
-            <span class="cashflow-row-val">${pensionMode === 'monthly' ? '-' + fmtMoney(pensionMonthly) + '／月' : '$0／月（已轉入投資本金）'}</span>
+            <span class="cashflow-row-name">第二支柱：勞退月領</span>
+            <span class="cashflow-row-val">${pensionMode === 'monthly' ? '-' + fmtMoney(pensionMonthly) + '／月' : '$0／月（已併入投資本金）'}</span>
           </div>
           <div class="cashflow-row">
-            <span class="cashflow-row-name">彈性微型兼職收入</span>
+            <span class="cashflow-row-name">微型兼職收入</span>
             <span class="cashflow-row-val">${partTimeNominal > 0 ? '-' + fmtMoney(partTimeNominal) + '／月' : '$0／月'}</span>
           </div>
           ${pledgeStrategy === 'bridge' ? `
           <div class="cashflow-row">
             <span class="cashflow-row-name">過橋質押借款利息</span>
-            <span class="cashflow-row-val" style="color:var(--system-red);">+${fmtMoney(monthlyInterestDisplay)}／月</span>
+            <span class="cashflow-row-val" style="color:var(--system-red-dark);">+${fmtMoney(monthlyInterestDisplay)}／月</span>
           </div>
           ` : ''}
           <div class="cashflow-row final">
             <span class="cashflow-row-name">需由自有股票資產提領支應</span>
             <span class="cashflow-row-val" style="color:var(--accent);">${fmtMoney(monthlyNeed)}／月</span>
           </div>
-          <div style="font-size:11.5px; color:var(--label-secondary); margin-top:8px; line-height:1.5;">
+          <div style="font-size:11px; color:var(--label-secondary); margin-top:6px; line-height:1.45;">
             ${pledgeStrategy === 'reinvest' 
-              ? `📈 質押再投入利息 ${fmtMoney(monthlyInterestDisplay)}／月 已由擴大後的 4.20% 實質提領率超額覆蓋，淨提領只需 <strong>${fmtMoney(monthlyNeed)}／月</strong>。` 
-              : `💡 終身每月僅需從股票資產提領 <strong>${fmtMoney(monthlyNeed)}</strong>，其餘由勞保足額保障。`}
+              ? `質押借款利息 ${fmtMoney(monthlyInterestDisplay)}／月 已由實質提領率 ${(effectiveWR*100).toFixed(2)}% 完全覆蓋，實質淨提領為 <strong>${fmtMoney(monthlyNeed)}／月</strong>。` 
+              : `終身每月僅需自自有投資組合提領 <strong>${fmtMoney(monthlyNeed)}</strong>，其餘由法定年金完全覆蓋。`}
           </div>
         </div>
       `;
     } else {
-      // ═════ 單階段渲染（退休即領勞保） ═════
-      let laborNote = '（法定滿額請領）';
+      let laborNote = '（法定全額請領）';
       if (claim < normalAge) {
         const reduction = Math.round((normalAge - claim) * 4);
-        laborNote = `（提前${normalAge - claim}年，永久減額${reduction}%）`;
+        laborNote = `（提前${normalAge - claim}年減額${reduction}%）`;
       } else if (claim > normalAge) {
         const bonus = Math.round((claim - normalAge) * 4);
-        laborNote = `（延後${claim - normalAge}年，增額${bonus}%）`;
+        laborNote = `（延後${claim - normalAge}年增額${bonus}%）`;
       }
 
       container.innerHTML = `
-        <div class="cashflow-header">退休後每月名目現金流拆解</div>
+        <div class="cashflow-header">退休後每月現金流拆解（名目金額）</div>
         <div class="cashflow-phase-card">
           <div class="cashflow-phase-title">
             <span class="phase-badge life">終身階段</span>
             <span>${retire} 歲起（無空窗期，同步請領）</span>
           </div>
           <div class="cashflow-row">
-            <span class="cashflow-row-name">生活費目標需求</span>
+            <span class="cashflow-row-name">生活費需求目標</span>
             <span class="cashflow-row-val">${fmtMoney(targetNominal)}／月</span>
           </div>
           <div class="cashflow-row">
             <span class="cashflow-row-name">第一支柱：勞保年金 ${laborNote}</span>
-            <span class="cashflow-row-val" style="color:var(--system-green); font-weight:700;">-${fmtMoney(laborAtRetire)}／月</span>
+            <span class="cashflow-row-val" style="color:var(--system-green-dark); font-weight:700;">-${fmtMoney(laborAtRetire)}／月</span>
           </div>
           <div class="cashflow-row">
-            <span class="cashflow-row-name">第二支柱：勞退月退金</span>
-            <span class="cashflow-row-val">${pensionMode === 'monthly' ? '-' + fmtMoney(pensionMonthly) + '／月' : '$0／月（已轉入投資本金）'}</span>
+            <span class="cashflow-row-name">第二支柱：勞退月領</span>
+            <span class="cashflow-row-val">${pensionMode === 'monthly' ? '-' + fmtMoney(pensionMonthly) + '／月' : '$0／月（已併入投資本金）'}</span>
           </div>
           <div class="cashflow-row">
-            <span class="cashflow-row-name">彈性微型兼職收入</span>
+            <span class="cashflow-row-name">微型兼職收入</span>
             <span class="cashflow-row-val">${partTimeNominal > 0 ? '-' + fmtMoney(partTimeNominal) + '／月' : '$0／月'}</span>
           </div>
           <div class="cashflow-row final">
@@ -1569,61 +1271,11 @@
       `;
     }
 
-    // 狀態徽章
-    if (shortfall <= 0) {
-      $('badgeStatus').textContent = '目標已達標';
-      $('badgeStatus').style.background = 'rgba(52, 199, 89, 0.25)';
-      $('badgeStatus').style.color = '#86efac';
-    } else {
-      $('badgeStatus').textContent = '尚有自備缺口';
-      $('badgeStatus').style.background = 'rgba(255, 149, 0, 0.25)';
-      $('badgeStatus').style.color = '#fed7aa';
-    }
-
-    // 差異對比徽章 (Delta Badge)
-    const deltaDiff = shortfall - baselineShortfall;
-    const deltaBox = $('bannerDeltaShortfall');
-    if (Math.abs(deltaDiff) < 1000) {
-      deltaBox.className = 'delta-banner neutral';
-      deltaBox.textContent = '此為標準基準對照線';
-    } else if (deltaDiff < 0) {
-      deltaBox.className = 'delta-banner good';
-      deltaBox.textContent = `▼ 相比標準基準：缺口少需 ${fmtMoney(Math.abs(deltaDiff))}`;
-    } else {
-      deltaBox.className = 'delta-banner bad';
-      deltaBox.textContent = `▲ 相比標準基準：缺口增加 ${fmtMoney(deltaDiff)}`;
-    }
-
-    // 提示說明（質押提示已在上方處理，這裡處理非質押情境）
-    if (pledgeStrategy === 'none') {
-        if (claim < normalAge) {
-            // 提前請領警示
-            $('bridgeNotice').className = 'system-callout warning';
-            const reduction = Math.round((normalAge - claim) * 4);
-            $('bridgeNoticeText').innerHTML = `<strong>⚠️ 提早請領永久減額</strong>：你在 ${claim} 歲請領勞保，每月被永久減額 ${reduction}%（月領僅 ${fmtMoney(laborAtRetire)}）。建議延至 ${normalAge} 歲滿額領取。`;
-        } else if (claim > retire) {
-            // 有過橋期
-            $('bridgeNotice').className = 'system-callout info';
-            $('bridgeNoticeText').innerHTML = `<strong>💡 過橋戰略</strong>：你在 ${retire} 歲退職，${claim} 歲才開始領勞保。中間 ${claim - retire} 年空窗期由自有資產支應。`;
-        } else {
-            $('bridgeNotice').className = 'system-callout info';
-            $('bridgeNoticeText').innerHTML = `<strong>✅ 最佳配置</strong>：退休與請領同步於 ${retire} 歲，無空窗期。`;
-        }
-    }
-
-    if (shortfall <= 0) {
-      $('resultNotice').className = 'system-callout success';
-      $('resultNoticeText').innerHTML = `<strong>資金充裕無虞</strong>：60 歲累積總資產高於所需本金 <strong>${fmtMoney(totalProjected - requiredAssets)}</strong>，現金流穩健抗通膨。`;
-    } else {
-      $('resultNotice').className = 'system-callout warning';
-      $('resultNoticeText').innerHTML = `<strong>缺口撫平建議</strong>：目前尚差 ${fmtMoney(shortfall)}。可透過每週兼職賺取 1 萬元，或每月多定投 4,000 元，缺口即可完全撫平。`;
-    }
-
     // 敏感度表格
     const scenarios = [
-      ['保守衰退', netReturn - 0.02],
-      ['基準常態', netReturn],
-      ['多頭增長', netReturn + 0.02]
+      ['保守衰退情境', netReturn - 0.02],
+      ['基準常態情境', netReturn],
+      ['樂觀成長情境', netReturn + 0.02]
     ];
     $('sensitivityBody').innerHTML = scenarios.map(([name, r]) => {
       const proj = fv(n('assetsNow'), n('monthlyInvest'), Math.max(0, r), months) + (pensionMode.startsWith('lump') ? pensionLump : 0);
@@ -1633,70 +1285,40 @@
         <td>${name}</td>
         <td>${(r * 100).toFixed(1)}%</td>
         <td>${fmtMoney(proj)}</td>
-        <td>${isOk ? '<span style="color:var(--system-green); font-weight:700;">完全達標</span>' : fmtMoney(gap)}</td>
+        <td>${isOk ? '<span style="color:var(--system-green-dark); font-weight:700;">完全達標</span>' : fmtMoney(gap)}</td>
       </tr>`;
     }).join('');
   }
 
   // 初始化預設值
   function applyPreset() {
-      $('birthYear').value = 80;
-      $('retireAge').value = 65;
-      $('targetToday').value = 40000;
-      $('inflation').value = 2.0;
-      $('partTime').value = 0;
-      $('withdrawRate').value = 4.0;
-      $('claimAge').value = 65;
-      $('laborYearsNow').value = 10;
-      $('avgInsuredSalary').value = 45800;
-      $('pensionBalance').value = 300000;
-      $('pensionWage').value = 45800;
-      $('selfRate').value = 6;
-      $('pensionReturn').value = 3.0;
-      $('pensionMode').value = 'monthly';
-      $('assetsNow').value = 500000;
-      $('monthlyInvest').value = 10000;
-      $('expectedReturn').value = 8.0;
-      $('fee').value = 0.2;
-      if($('portfolioPreset')) $('portfolioPreset').value = 'tw_us_flagship';
-      updateNetReturnTag();
-      $('pledgeStrategy').value = 'none';
-      $('pledgeRate').value = 2.5;
-      $('pledgeLTV').value = 40;
-      syncFromBirthYear();
-      calculate(true);
+    $('birthYear').value = 80;
+    $('retireAge').value = 65;
+    $('targetToday').value = 40000;
+    $('inflation').value = 2.0;
+    $('partTime').value = 0;
+    $('withdrawRate').value = 4.0;
+    $('claimAge').value = 65;
+    $('laborYearsNow').value = 10;
+    $('avgInsuredSalary').value = 45800;
+    $('pensionBalance').value = 300000;
+    $('pensionWage').value = 45800;
+    $('selfRate').value = 6;
+    $('pensionReturn').value = 3.0;
+    $('pensionMode').value = 'monthly';
+    $('assetsNow').value = 500000;
+    $('monthlyInvest').value = 10000;
+    $('expectedReturn').value = 8.0;
+    $('fee').value = 0.2;
+    if($('portfolioPreset')) $('portfolioPreset').value = 'tw_us_flagship';
+    $('pledgeStrategy').value = 'none';
+    $('pledgeRate').value = 2.5;
+    $('pledgeLTV').value = 40;
+    syncFromBirthYear();
+    calculate(true);
   }
 
-  // 一鍵複製指導話術清單
-  function copyGuidanceMessage() {
-    const text = `【台灣勞工退休精算系統 · 使用指導】
-
-這份模擬器已經幫你設定好黃金標準配置。整份表單 20 格，你個人只要確認 2 個數字，其他全部保持預設：
-
-1. 查你的真實底牌（填第 2 與第 3 區）：
-請用手機登入「勞保局 e 化服務系統」，查你個人的：
--「累計勞保年資」（填第 2 區）
--「勞退專戶核發金額」（填第 3 區）
-投保薪資直接鎖定 45,800 最高天花板，不用更改。
-
-2. 看最震撼的差異（切換第 2 區起領年齡）：
-試著在頂部切換「方案 A（65歲滿額領）」與「方案 B（60歲提早領）」。你會在右上角看到：
-- 若 60 歲急著領，每個月會被「永久打 8 折」，終身每個月少領將近 8,000 元！
-- 延後至 65 歲滿額領，中間 60~65 歲空窗期，直接用勞退一次領出的錢當過渡生活費，
-
-3. 撫平右邊缺口（調第 4 區）：
-看右上方自備缺口：如果還有缺口，在「每月定期定額」填入你能投資的金額；或者在「退休後兼職」填 10,000 元（每週輕鬆排班 1 天），兼職的威力能讓缺口瞬間歸零！`;
-
-    navigator.clipboard.writeText(text).then(() => {
-      const toast = $('toastPill');
-      toast.classList.add('show');
-      setTimeout(() => {
-        toast.classList.remove('show');
-      }, 2500);
-    });
-  }
-
-  // 初始化執行
+  // 啟動執行
   syncFromBirthYear();
   applyPreset();
 </script>
