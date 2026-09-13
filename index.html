@@ -671,6 +671,158 @@
         padding: 7px 3px !important;
       }
     }
+
+    /* Advisor Enhancements CSS */
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-action-outline {
+      border: 1px solid var(--separator);
+      background-color: var(--card-bg);
+      color: var(--label-primary);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 8px 14px;
+      border-radius: 980px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .btn-action-outline:hover {
+      background-color: #f2f2f5;
+      border-color: rgba(60, 60, 67, 0.2);
+    }
+    .btn-action-outline:active {
+      transform: scale(0.98);
+    }
+
+    /* Breakeven Timeline Capsule */
+    .breakeven-card {
+      background: var(--card-subtle);
+      border: 1px solid var(--separator-hairline);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin-top: 14px;
+    }
+    .breakeven-header {
+      font-size: 12px;
+      font-weight: 650;
+      color: var(--label-primary);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .breakeven-badge {
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 5px;
+      font-weight: 600;
+      background: var(--accent-tint);
+      color: var(--accent);
+    }
+    .breakeven-track {
+      height: 8px;
+      border-radius: 99px;
+      background: var(--separator-hairline);
+      overflow: hidden;
+      display: flex;
+      margin: 8px 0 6px;
+    }
+    .breakeven-bar-early {
+      background: #f59e0b;
+      height: 100%;
+    }
+    .breakeven-bar-normal {
+      background: var(--system-green);
+      height: 100%;
+    }
+    .breakeven-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10.5px;
+      color: var(--label-tertiary);
+    }
+
+    /* SORR Meter Badge */
+    .sorr-box {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--card-subtle);
+      border: 1px solid var(--separator-hairline);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+    }
+
+    /* Privacy Footer */
+    .privacy-footer {
+      text-align: center;
+      margin-top: 36px;
+      padding-top: 20px;
+      border-top: 1px solid var(--separator-hairline);
+      color: var(--label-tertiary);
+      font-size: 11.5px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    /* Print Stylesheet */
+    @media print {
+      body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-size: 11pt !important;
+      }
+      .container {
+        max-width: 100% !important;
+        padding: 0 !important;
+      }
+      .mobile-nav-segmented,
+      .mobile-floating-bar,
+      .btn-reset,
+      .btn-action-outline,
+      .quick-chips,
+      header .btn-reset,
+      #tabBtnInputs,
+      #tabBtnResults {
+        display: none !important;
+      }
+      .layout-grid {
+        display: block !important;
+      }
+      #mainContent {
+        display: none !important; /* 列印時專注於精算報告結果 */
+      }
+      #asideContent {
+        display: block !important;
+        position: static !important;
+      }
+      .apple-card {
+        box-shadow: none !important;
+        border: 1px solid #d1d1d6 !important;
+        break-inside: avoid;
+        margin-bottom: 12px !important;
+        padding: 16px !important;
+      }
+      .hero-summary {
+        background: #f8f8fa !important;
+        border: 1px solid #e5e5ea !important;
+      }
+      .privacy-footer {
+        display: block !important;
+        margin-top: 20px !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -685,10 +837,16 @@
           以今日實質購買力為基準，整合勞保年金、勞退新制專戶與自有投資資產，精算各階段現金流與資產缺口。
         </p>
       </div>
-      <button class="btn-reset" onclick="applyPreset()">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-        重置為預設值
-      </button>
+      <div class="header-actions">
+        <button class="btn-action-outline" onclick="exportPlanPDF()" title="以系統乾淨排版列印或存為 PDF 規劃書">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          匯出 PDF 報告
+        </button>
+        <button class="btn-reset" onclick="applyPreset()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          重置為預設值
+        </button>
+      </div>
     </div>
   </header>
 
@@ -1136,9 +1294,16 @@
           </thead>
           <tbody id="sensitivityBody"></tbody>
         </table>
+        <div class="sorr-box" id="boxSorrMeter" style="display:block; margin-top:14px;"></div>
       </div>
     </aside>
   </div>
+  <!-- 本地運算與隱私承諾頁尾 -->
+  <div class="privacy-footer">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+    <span>全端本機精算 · 參數自動安全暫存於您的裝置端 · 零雲端留存保證</span>
+  </div>
+
   <!-- 手機專屬即時懸浮島 -->
   <div class="mobile-floating-bar" id="mobileFloatingBar">
     <div class="floating-left">
@@ -1157,6 +1322,48 @@
 
 <script>
   const $ = id => document.getElementById(id);
+  // 匯出 / 列印高質感 Apple 原生 PDF 報告
+  function exportPlanPDF() {
+    if (window.innerWidth <= 960) {
+      // 若手機端在輸入 tab，先切換至結果 tab 便於呈現
+      switchMobileTab('results');
+    }
+    window.print();
+  }
+
+  // LocalStorage 自動記住設定與還原
+  const STORAGE_KEY = 'tw_retire_simulator_state_v2';
+  function saveStateToLocal() {
+    try {
+      const state = {};
+      inputIds.forEach(id => {
+        const el = $(id);
+        if (el) state[id] = el.value;
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (e) {}
+  }
+
+  function loadStateFromLocal() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return false;
+      const state = JSON.parse(raw);
+      inputIds.forEach(id => {
+        if (state[id] !== undefined && $(id)) {
+          $(id).value = state[id];
+        }
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function clearLocalState() {
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+  }
+
   // 手機專屬 Tab 切換邏輯
   function switchMobileTab(tab) {
     if (window.innerWidth > 960) return;
@@ -1215,7 +1422,10 @@
 
   inputIds.forEach(id => {
     const el = $(id);
-    if (el) el.addEventListener('input', () => calculate(false));
+    if (el) el.addEventListener('input', () => {
+      calculate(false);
+      saveStateToLocal();
+    });
   });
 
   const n = id => Number($(id).value);
@@ -1488,6 +1698,24 @@
       } else {
         $('claimAgeHint').textContent = '延後 ' + (claim - statutoryAge) + ' 年請領，展延增額 ' + ((claim - statutoryAge) * 4) + '%（上限 ' + laborResult.maxClaimAge + ' 歲）。';
       }
+      // 附帶黃金交叉與法定 CPI 抗通膨說明
+      $('claimAgeHint').innerHTML += '<div class="breakeven-card">' +
+        '<div class="breakeven-header">' +
+          '<span>勞保請領「黃金交叉平衡點」精算</span>' +
+          '<span class="breakeven-badge">平衡年齡約 ' + breakevenAge + ' 歲</span>' +
+        '</div>' +
+        '<div class="breakeven-track">' +
+          '<div class="breakeven-bar-early" style="width:55%;" title="60歲早領先行優勢"></div>' +
+          '<div class="breakeven-bar-normal" style="width:45%;" title="' + breakevenAge + '歲後足額領累計更多"></div>' +
+        '</div>' +
+        '<div class="breakeven-labels">' +
+          '<span>60 歲早領先拿 60 個月給付</span>' +
+          '<span>' + breakevenAge + ' 歲前早領總額多 ｜ 之後足額領超越</span>' +
+        '</div>' +
+        '<div style="font-size:11px; color:var(--label-tertiary); margin-top:6px; line-height:1.4;">' +
+          'ⓘ 勞保享有法定通膨調整（累計 CPI 達 5% 同步調升給付），能有效抗衡長線物價侵蝕。' +
+        '</div>' +
+      '</div>';
     }
 
     // 第二支柱：勞退新制
@@ -1505,6 +1733,41 @@
     // 質押控制
     const enablePledge = $('pledgeStrategy') && $('pledgeStrategy').value === 'pledge';
     togglePledgeFields();
+
+    // ── 顧問增強運算 1：勞保請領黃金交叉點（76歲平衡點）──
+    // 基準：60 歲早領（打 8 折） vs 65 歲足額（100%）
+    const earlyAge = statutoryAge - 5;
+    const normalLaborMonthly = baseLaborMonthly; // 65 歲 100%
+    const earlyLaborMonthly = baseLaborMonthly * 0.8; // 60 歲 80%
+    // 65 歲當下，早領者已先領 5 年 (60 個月) 的總額
+    const earlyHeadStart = earlyLaborMonthly * 60;
+    // 65 歲起，足額者每月多領 (normal - early)
+    const monthlyAdvantage = normalLaborMonthly - earlyLaborMonthly;
+    // 交叉所需月數
+    const catchupMonths = monthlyAdvantage > 0 ? (earlyHeadStart / monthlyAdvantage) : 0;
+    const breakevenAge = Number((statutoryAge + catchupMonths / 12).toFixed(1));
+
+    // ── 顧問增強運算 2：0050/VOO 配息自然覆蓋率 ──
+    const naturalDivRate = 0.028; // 長期大盤配息率約 2.8%
+    const naturalDivMonthly = (R.totalPortfolioValue * naturalDivRate) / 12;
+    const capGainMonthly = Math.max(0, R.monthlySWRIncome - naturalDivMonthly);
+
+    // ── 顧問增強運算 3：報酬順序風險 (SORR) 防禦力 ──
+    // 固定剛性現金流入涵蓋生活費的比例 (不依賴賣股的部分)
+    const fixedInflow = R.laborFullMonthly + R.pensionMonthly + R.nominalPartTime;
+    const sorrCoverage = R.nominalExpense > 0 ? (fixedInflow / R.nominalExpense) : 1;
+    let sorrBadge = '高防禦體質';
+    let sorrColor = 'var(--system-green-dark)';
+    let sorrBg = 'var(--system-green-tint)';
+    if (sorrCoverage < 0.35) {
+      sorrBadge = '高度依賴賣股（需注意開局回撤）';
+      sorrColor = 'var(--system-red-dark)';
+      sorrBg = 'var(--system-red-tint)';
+    } else if (sorrCoverage < 0.55) {
+      sorrBadge = '中度防禦體質';
+      sorrColor = '#b45309';
+      sorrBg = 'var(--system-orange-tint)';
+    }
 
     // ── 呼叫解耦引擎 ──
     const R = runRetirementEngine({
@@ -1606,7 +1869,7 @@
     } else if (R.hasBridgePeriod) {
       const earlyPenalty = Math.min(20, (statutoryAge - retire) * 4);
       $('bridgeNotice').className = 'system-callout info';
-      $('bridgeNoticeText').innerHTML = '<strong>過渡空窗期</strong>：' + retire + '～' + claim + ' 歲共 ' + R.bridgeYears + ' 年勞保尚未起領，生活費全額由 4% 賣股支應。若提前至 ' + retire + ' 歲起領（減額 ' + earlyPenalty + '%），可立即啟動雙現金流。';
+      $('bridgeNoticeText').innerHTML = '<strong>過渡空窗期（共 ' + R.bridgeYears + ' 年）</strong>：' + retire + '～' + claim + ' 歲勞保尚未起領，生活費由 4% 賣股支應。<br><span style="color:var(--label-secondary); font-size:11.5px;">ⓘ 實務提點：離職待退期間，依法將收到國民年金繳費單（每月約 $1,186）及全民健保第六類自付額，請留意此段固定現金流支出。</span>';
     } else {
       $('bridgeNotice').className = 'system-callout info';
       $('bridgeNoticeText').innerHTML = '<strong>無空窗期</strong>：退休與勞保同步於 ' + retire + ' 歲啟動，立即享有完整現金流。';
@@ -1672,7 +1935,7 @@
           partTimeRow +
           '<div class="cashflow-row final"><span class="cashflow-row-name">月淨現金流</span><span class="cashflow-row-val">' + fmtNet(R.netCashflowEndgame) + '／月</span></div>' +
           '<div style="font-size:11.5px; color:var(--label-secondary); margin-top:6px; line-height:1.5;">' +
-            '終身每月由投資組合依 <strong>' + (swr*100).toFixed(1) + '%</strong> SWR 提領 <strong style="color:var(--accent);">' + fmtMoney(R.monthlySWRIncome) + '</strong>，搭配勞保年金 <strong style="color:var(--system-green-dark);">' + fmtMoney(R.laborFullMonthly) + '</strong>，達成收支平衡。' +
+            '終身每月由投資組合提領 <strong style="color:var(--accent);">' + fmtMoney(R.monthlySWRIncome) + '</strong>（4% SWR）：其中約 <strong style="color:var(--system-green-dark);">+' + fmtMoney(naturalDivMonthly) + '</strong>（2.8%）由大盤指數自然配息進帳，每年僅需動態調度約 <strong style="color:var(--accent);">+' + fmtMoney(capGainMonthly) + '</strong> 資本利得，免受大量賣股恐慌。' +
           '</div>' +
         '</div>';
 
@@ -1731,6 +1994,7 @@
 
   // 初始化預設值
   function applyPreset() {
+    clearLocalState();
     $('birthYear').value = 80;
     $('retireAge').value = 65;
     $('targetToday').value = 40000;
@@ -1758,9 +2022,15 @@
     calculate(true);
   }
 
-  // 啟動執行
+  // 初始化：優先載入本地已存設定，無暫存才套用預設
   syncFromBirthYear();
-  applyPreset();
+  if (!loadStateFromLocal()) {
+    applyPreset();
+  } else {
+    togglePledgeFields();
+    syncFromBirthYear();
+    calculate(true);
+  }
 
   // 頁面初始化：手機端強制單欄 Tab
   if (window.innerWidth <= 960) {
