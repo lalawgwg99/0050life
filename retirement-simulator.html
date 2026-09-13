@@ -582,7 +582,7 @@
               <input type="number" id="claimAge" class="apple-input" value="65" step="1">
               <span class="input-unit">歲</span>
             </div>
-            <div class="field-desc">每提前 1 年扣減 4%（最多扣 20%）；每延後 1 年增額 4%</div>
+            <div class="field-desc" id="claimAgeHint">法定請領年齡為 65 歲。若 60 歲退職、65 歲請領，屬於「法定全額領取」，非展延加計年齡。</div>
           </div>
 
           <!-- 目前累計年資 -->
@@ -693,12 +693,11 @@
             </div>
             <div class="input-wrapper">
               <select id="pensionMode" class="apple-select">
-                <option value="monthly" selected>按月請領（由勞保局依平均餘命攤提至約 84 歲）</option>
-                <option value="lump">一次全額領出（保留為過渡生活費與現金防火牆）</option>
-                <option value="lump_invest">一次全額領出（全數再投入大盤指數 ETF 參與複利）</option>
+                <option value="lump" selected>一次全額請領（優先充當過渡期生活費水庫，差額併入股票資產）</option>
+                <option value="monthly">按月請領（由勞保局依平均餘命現值因子按月發放）</option>
               </select>
             </div>
-            <div class="field-desc">滿 60 歲且年資滿 15 年可自由選擇月領或一次請領</div>
+            <div class="field-desc">滿 60 歲且年資滿 15 年可自選一次領或按月領；一次領可直接抵沖 60～65 歲過渡期生活費</div>
           </div>
         </div>
       </section>
@@ -777,26 +776,25 @@
         </div>
       </section>
 
-      <!-- 區塊 5：進階戰略 股票質押 -->
+      <!-- 區塊 5：進階功能 股票質押 -->
       <section class="apple-card">
-        <h2 class="card-title">5. 進階戰略：股票質押</h2>
-        <p class="card-subtitle">利用股票資產作為擔保品向券商貸款，活化資產流動性，無須在市場低點變賣持股。</p>
+        <h2 class="card-title">5. 進階功能：股票質押流動性調度（非推薦常態策略）</h2>
+        <p class="card-subtitle">質押屬於負債調度工具，嚴禁視為無風險增加提領率之手段。僅供極端市場回撤時避免被迫拋售之應急模擬。</p>
 
         <div class="fields-grid">
           <div class="field-cell field-full">
             <div class="field-header">
-              <span class="field-label">質押戰略選擇</span>
+              <span class="field-label">質押功能模擬</span>
             </div>
             <div class="input-wrapper">
               <select id="pledgeStrategy" class="apple-select" onchange="calculate(false)">
-                <option value="none" selected>不使用股票質押</option>
-                <option value="bridge">僅用於度過退休空窗期（借生活費不賣股）</option>
-                <option value="reinvest">質押借款全數再投入（放大資產基底與提領率）</option>
+                <option value="none" selected>不啟用股票質押（遵循標準安全提領率 SWR）</option>
+                <option value="bridge">過渡期質押借款模擬（以借貸支應過渡期生活費，附維持率警示）</option>
               </select>
             </div>
           </div>
 
-          <div class="field-cell">
+          <div class="field-cell" id="boxPledgeRate" style="display:none;">
             <div class="field-header">
               <span class="field-label">質押借款年利率</span>
             </div>
@@ -804,19 +802,12 @@
               <input type="number" id="pledgeRate" class="apple-input" value="2.5" step="0.1">
               <span class="input-unit">%</span>
             </div>
-            <div class="field-desc">目前台灣券商質押借款年息約 2.3%～3.0%</div>
+            <div class="field-desc">目前券商牌告質押年息約 2.3%～3.0%</div>
           </div>
+        </div>
 
-          <div class="field-cell" id="boxLTV" style="display:none;">
-            <div class="field-header">
-              <span class="field-label">質押借款成數</span>
-            </div>
-            <div class="input-wrapper">
-              <input type="number" id="pledgeLTV" class="apple-input" value="40" step="5" max="60">
-              <span class="input-unit">%</span>
-            </div>
-            <div class="field-desc">建議設定 20%～40%，維持安全擔保率防範波動</div>
-          </div>
+        <div id="pledgeWarningBox" class="system-callout warning" style="display:none; margin-top:12px;">
+          <strong>高風險警示</strong>：質押借款存在利率波動與追繳斷頭風險。退休提領期若遭遇市場回撤 30%～40%，借款部位極易引發斷頭強制拋售，嚴禁將質押借款視為提高提領率之常態工具。
         </div>
       </section>
     </main>
@@ -1012,106 +1003,143 @@
     const age = n('currentAge');
     const retire = n('retireAge');
     const claim = n('claimAge');
-    const years = Math.max(0, retire - age);
-    const months = Math.round(years * 12);
+    const birthROC = n('birthROC');
+    const yearsToRetire = Math.max(0, retire - age);
+    const monthsToRetire = Math.round(yearsToRetire * 12);
 
     const infl = n('inflation') / 100;
-    const inflationFactor = Math.pow(1 + infl, years);
-    const targetNominal = n('targetToday') * inflationFactor;
-    const partTimeNominal = n('partTime') * inflationFactor;
+    const inflationFactor = Math.pow(1 + infl, yearsToRetire);
+    const nominalMonthlyExpense = n('targetToday') * inflationFactor;
+    const nominalPartTime = n('partTime') * inflationFactor;
 
-    // 第一支柱：勞保
+    // 1. 第一支柱：勞保老年年金（官方兩式擇優與法定年齡）
+    const statutoryAge = getNormalAge(birthROC);
     const totalLaborYears = n('laborYearsNow') + n('futureLaborYears');
-    const laborFullMonthly = calcLaborPension(n('avgInsuredSalary'), totalLaborYears, claim, n('birthROC'));
-    const laborAtRetire = (claim <= retire) ? laborFullMonthly : 0;
+    const formulaA = (n('avgInsuredSalary') * totalLaborYears * 0.00775) + 3000;
+    const formulaB = n('avgInsuredSalary') * totalLaborYears * 0.0155;
+    const baseLaborMonthly = Math.max(formulaA, formulaB);
 
-    // 第二支柱：勞退新制
-    const pensionMonthlyPmt = n('pensionWage') * (0.06 + n('selfRate') / 100);
-    const pensionTotal = fv(n('pensionBalance'), pensionMonthlyPmt, n('pensionReturn') / 100, months);
+    // 增減額比例（提前或展延，最多 5 年，每年 4%）
+    const diffYears = Math.max(-5, Math.min(5, claim - statutoryAge));
+    const laborMonthlyAtClaim = baseLaborMonthly * (1 + diffYears * 0.04);
+    const laborAtRetire = (claim <= retire) ? laborMonthlyAtClaim : 0;
+
+    // 更新起領年齡說明標籤
+    if ($('claimAgeHint')) {
+      if (claim === statutoryAge) {
+        $('claimAgeHint').textContent = `法定請領年齡為 ${statutoryAge} 歲。若 ${retire} 歲退職、${claim} 歲請領，屬於「法定全額領取」，非展延加計年齡。`;
+      } else if (claim < statutoryAge) {
+        $('claimAgeHint').textContent = `法定請領年齡為 ${statutoryAge} 歲。提前 ${statutoryAge - claim} 年請領，每月給付永久減額 ${(statutoryAge - claim) * 4}%。`;
+      } else {
+        $('claimAgeHint').textContent = `法定請領年齡為 ${statutoryAge} 歲。延後 ${claim - statutoryAge} 年請領，每月給付展延增額 ${(claim - statutoryAge) * 4}%。`;
+      }
+    }
+
+    // 2. 第二支柱：勞退新制專戶
+    const monthlyEmployerContrib = n('pensionWage') * (0.06 + (n('selfRate') / 100));
+    const projectedPensionLump = fv(
+      n('pensionBalance'),
+      monthlyEmployerContrib,
+      n('pensionReturn') / 100,
+      monthsToRetire
+    );
+    
+    // 官方年金現值因子 (60歲約242.88，65歲約207.24)
+    const pensionFactor = retire >= 65 ? 207.24 : 242.88;
     const pensionMode = $('pensionMode').value;
-    const pensionMonthly = (pensionMode === 'monthly') ? (pensionTotal / (24 * 12)) : 0;
-    const pensionLump = (pensionMode.startsWith('lump')) ? pensionTotal : 0;
+    const projectedPensionMonthly = (pensionMode === 'monthly')
+      ? (projectedPensionLump / pensionFactor)
+      : 0;
 
-    // 第三支柱：自有投資資產
+    // 3. 第三支柱：自有投資資產終值 (不含任何質押膨脹)
     const netReturn = (n('expectedReturn') - n('fee')) / 100;
     updateNetReturnTag();
-    const etfProjected = fv(n('assetsNow'), n('monthlyInvest'), netReturn, months);
-    const totalProjected = etfProjected + pensionLump;
+    const projectedStockAssets = fv(n('assetsNow'), n('monthlyInvest'), netReturn, monthsToRetire);
 
-    // 缺口計算
-    const wr = n('withdrawRate') / 100;
+    // 4. 質押控制
     const pledgeStrategy = $('pledgeStrategy') ? $('pledgeStrategy').value : 'none';
     const pledgeRate = $('pledgeRate') ? n('pledgeRate') / 100 : 0.025;
-    const pledgeLTV = $('pledgeLTV') ? n('pledgeLTV') / 100 : 0.4;
-    
-    if($('boxLTV')) $('boxLTV').style.display = (pledgeStrategy === 'reinvest') ? 'flex' : 'none';
-    
-    let requiredAssets = 0;
-    let monthlyNeed = 0;
-    let monthlyInterestDisplay = 0;
-    let effectiveWR = wr;
-    
-    const bridgeYears = Math.max(0, claim - retire);
-    const bridgeMonthlyGap = Math.max(0, targetNominal - pensionMonthly - partTimeNominal);
-    const bridgeTotalCost = bridgeMonthlyGap * 12 * bridgeYears;
-    const lumpForBridge = (pensionMode === 'lump') ? pensionLump : 0;
-    let bridgeRequired = Math.max(0, bridgeTotalCost - lumpForBridge);
-    let endgameGap = Math.max(0, targetNominal - laborFullMonthly - pensionMonthly - partTimeNominal);
-    
-    if (pledgeStrategy === 'bridge' && claim > retire) {
-        const totalDebt = bridgeRequired;
-        monthlyInterestDisplay = (totalDebt * pledgeRate) / 12;
-        endgameGap += monthlyInterestDisplay;
-        bridgeRequired = 0; 
-    } else if (pledgeStrategy === 'reinvest') {
-        effectiveWR = (1 + pledgeLTV) * wr - pledgeLTV * pledgeRate;
-        const loan = totalProjected * pledgeLTV;
-        monthlyInterestDisplay = (loan * pledgeRate) / 12;
-    }
+    if ($('boxPledgeRate')) $('boxPledgeRate').style.display = (pledgeStrategy === 'bridge') ? 'flex' : 'none';
+    if ($('pledgeWarningBox')) $('pledgeWarningBox').style.display = (pledgeStrategy === 'bridge') ? 'block' : 'none';
 
-    monthlyNeed = endgameGap;
-    const endgameRequired = effectiveWR > 0 ? (endgameGap * 12 / effectiveWR) : Infinity;
-    requiredAssets = bridgeRequired + endgameRequired;
-    
-    // 提示說明
-    if (pledgeStrategy !== 'none' && monthlyInterestDisplay > 0) {
-        if (pledgeStrategy === 'reinvest') {
-            $('bridgeNotice').className = 'system-callout info';
-            $('bridgeNoticeText').innerHTML = `<strong>質押再投入效益</strong>：藉由 ${(pledgeLTV*100).toFixed(0)}% 質押借款再投入，實質提領率提升至 <strong>${(effectiveWR*100).toFixed(2)}%</strong>。每月利息支出 ${fmtMoney(monthlyInterestDisplay)} 已由擴大後的長期資產報酬完全覆蓋。`;
-        } else {
-            $('bridgeNotice').className = 'system-callout info';
-            $('bridgeNoticeText').innerHTML = `<strong>過橋質押方案</strong>：空窗期生活費由質押借款全數支應，無須在退休初期變賣持股。滿額起領後每月利息支出為 <strong>${fmtMoney(monthlyInterestDisplay)}</strong>。`;
+    // 5. 顧問級修正版：過渡期現金流與終身自備本金整合
+    const swr = n('withdrawRate') / 100; // 嚴格採用安全提領率 SWR (不膨脹)
+    let targetRequiredAssets = 0;
+    let totalAvailableAssets = projectedStockAssets;
+    let bridgeCostTotal = 0;
+    let bridgeMonthlySelfNeed = 0;
+    let bridgeYears = 0;
+    let bridgeSurplus = 0;
+    let endgameMonthlyGap = 0;
+    let endgameRequiredPrincipal = 0;
+    let bridgeInterestDisplay = 0;
+
+    if (claim > retire) {
+      bridgeYears = claim - retire;
+      bridgeMonthlySelfNeed = Math.max(0, nominalMonthlyExpense - nominalPartTime);
+      bridgeCostTotal = bridgeMonthlySelfNeed * 12 * bridgeYears;
+
+      endgameMonthlyGap = Math.max(
+        0,
+        nominalMonthlyExpense - laborMonthlyAtClaim - nominalPartTime - projectedPensionMonthly
+      );
+      endgameRequiredPrincipal = swr > 0 ? (endgameMonthlyGap * 12 / swr) : 0;
+
+      if (pledgeStrategy === 'bridge') {
+        // 質押過橋模擬：過渡期生活費由借款支付，退休後每月需支付利息
+        const bridgeLoan = bridgeCostTotal;
+        bridgeInterestDisplay = (bridgeLoan * pledgeRate) / 12;
+        const endgameGapWithInterest = endgameMonthlyGap + bridgeInterestDisplay;
+        endgameRequiredPrincipal = swr > 0 ? (endgameGapWithInterest * 12 / swr) : 0;
+        targetRequiredAssets = endgameRequiredPrincipal;
+        if (pensionMode === 'lump') {
+          totalAvailableAssets += projectedPensionLump;
         }
+      } else if (pensionMode === 'lump') {
+        // 關鍵修正：勞退一次領優先抵扣過渡期生活費水庫
+        bridgeSurplus = projectedPensionLump - bridgeCostTotal;
+        if (bridgeSurplus >= 0) {
+          // 勞退足以覆蓋過渡期，剩餘款項匯入終身資產
+          totalAvailableAssets += bridgeSurplus;
+          targetRequiredAssets = endgameRequiredPrincipal;
+        } else {
+          // 勞退不足以完全覆蓋過渡期，不足差額併入自備本金需求
+          targetRequiredAssets = endgameRequiredPrincipal + Math.abs(bridgeSurplus);
+        }
+      } else {
+        // 若勞退選月領，過渡期總成本必須全額由自備資產承擔
+        targetRequiredAssets = endgameRequiredPrincipal + bridgeCostTotal;
+      }
     } else {
-        const normalAge = getNormalAge(n('birthROC'));
-        if (claim < normalAge) {
-            $('bridgeNotice').className = 'system-callout warning';
-            const reduction = Math.round((normalAge - claim) * 4);
-            $('bridgeNoticeText').innerHTML = `<strong>提前請領減額提示</strong>：於 ${claim} 歲請領勞保，每月給付永久減額 ${reduction}%（月領 ${fmtMoney(laborAtRetire)}）。延至 ${normalAge} 歲可領取全額。`;
-        } else if (claim > retire) {
-            $('bridgeNotice').className = 'system-callout info';
-            $('bridgeNoticeText').innerHTML = `<strong>過橋規劃配置</strong>：${retire} 歲離職退保、${claim} 歲足額請領勞保。中間 ${claim - retire} 年生活費由既有累積資產支應。`;
-        } else {
-            $('bridgeNotice').className = 'system-callout info';
-            $('bridgeNoticeText').innerHTML = `<strong>標準無空窗配置</strong>：退休與勞保請領年齡同步，無過渡空窗期。`;
-        }
+      // 同步退休起領 (無過渡期)
+      if (pensionMode === 'lump') {
+        totalAvailableAssets += projectedPensionLump;
+      }
+      const monthlyGapAtRetire = Math.max(
+        0,
+        nominalMonthlyExpense - laborAtRetire - projectedPensionMonthly - nominalPartTime
+      );
+      endgameMonthlyGap = monthlyGapAtRetire;
+      targetRequiredAssets = swr > 0 ? (monthlyGapAtRetire * 12 / swr) : 0;
+      endgameRequiredPrincipal = targetRequiredAssets;
     }
 
-    const shortfall = Math.max(0, requiredAssets - totalProjected);
-    const readiness = requiredAssets > 0 ? (totalProjected / requiredAssets) : 1;
+    // 實質缺口與達成率
+    const shortfall = Math.max(0, targetRequiredAssets - totalAvailableAssets);
+    const readiness = targetRequiredAssets > 0 ? (totalAvailableAssets / targetRequiredAssets) : 1;
 
     if (isSettingBaseline || baselineShortfall === null) {
       baselineShortfall = shortfall;
     }
 
-    // 渲染數值
+    // 渲染上方關鍵指標
     $('valShortfall').textContent = fmtMoney(shortfall);
-    $('valShortfallReal').textContent = `折合今日幣值約 ${fmtMoney(shortfall / inflationFactor)}（以退休名目金額計）`;
+    $('valShortfallReal').textContent = `折合今日幣值約 ${fmtMoney(shortfall / inflationFactor)}（以退休當年名目金額計）`;
     
-    // triad grid
+    // triad grid (現在 -> 未來可用 -> 結果目標)
     $('valCurrent').textContent = fmtMoney(n('assetsNow') + n('pensionBalance'));
-    $('valProjected').textContent = fmtMoney(totalProjected);
-    $('valRequired').textContent = fmtMoney(requiredAssets);
+    $('valProjected').textContent = fmtMoney(totalAvailableAssets);
+    $('valRequired').textContent = fmtMoney(targetRequiredAssets);
 
     // 進度條
     const barWidth = Math.min(100, Math.max(0, readiness * 100));
@@ -1144,50 +1172,86 @@
       deltaBox.textContent = `缺口較基準增加 ${fmtMoney(deltaDiff)}`;
     }
 
+    // 提示說明
     if (shortfall <= 0) {
       $('resultNotice').className = 'system-callout success';
-      $('resultNoticeText').innerHTML = `<strong>資產準備充足</strong>：退休時累積總資產高於規劃所需本金 <strong>${fmtMoney(totalProjected - requiredAssets)}</strong>。`;
+      $('resultNoticeText').innerHTML = `<strong>資產準備充足</strong>：可用資產高於規劃所需本金 <strong>${fmtMoney(totalAvailableAssets - targetRequiredAssets)}</strong>，各階段現金流安全無虞。`;
     } else {
       $('resultNotice').className = 'system-callout warning';
-      $('resultNoticeText').innerHTML = `<strong>目前尚有自備缺口 ${fmtMoney(shortfall)}</strong>：可透過提高定期定額扣款額度、適度安排退休兼職、或調整提領率平衡缺口。`;
+      $('resultNoticeText').innerHTML = `<strong>目前尚有自備缺口 ${fmtMoney(shortfall)}</strong>：可透過提高定期定額扣款、適度安排退休兼職、或微調請領年齡撫平缺口。`;
     }
 
-    // 動態渲染現金流拆解
-    const normalAge = getNormalAge(n('birthROC'));
+    if (pledgeStrategy === 'bridge') {
+      $('bridgeNotice').className = 'system-callout warning';
+      $('bridgeNoticeText').innerHTML = `<strong>質押借款過橋模擬</strong>：過渡期生活費全數由質押貸款支付，65 歲起終身每月需額外支付利息 <strong>${fmtMoney(bridgeInterestDisplay)}</strong>。請密切注意擔保品維持率與市場大跌追繳風險。`;
+    } else if (claim > retire) {
+      $('bridgeNotice').className = 'system-callout info';
+      if (pensionMode === 'lump') {
+        if (bridgeSurplus >= 0) {
+          $('bridgeNoticeText').innerHTML = `<strong>過渡期專款全額覆蓋</strong>：${retire}～${claim} 歲過渡期總開銷 ${fmtMoney(bridgeCostTotal)}，已由勞退一次請領 ${fmtMoney(projectedPensionLump)} 全額支付，剩餘款項 <strong>${fmtMoney(bridgeSurplus)}</strong> 自動滾入終身股票資產。`;
+        } else {
+          $('bridgeNoticeText').innerHTML = `<strong>過渡期水庫抵沖</strong>：${retire}～${claim} 歲過渡期總開銷 ${fmtMoney(bridgeCostTotal)}，勞退一次領 ${fmtMoney(projectedPensionLump)} 優先抵沖，自備款僅需負擔差額 <strong>${fmtMoney(Math.abs(bridgeSurplus))}</strong>。`;
+        }
+      } else {
+        $('bridgeNoticeText').innerHTML = `<strong>過渡期全額自備</strong>：勞退選擇按月領，故 ${retire}～${claim} 歲過渡期總開銷 <strong>${fmtMoney(bridgeCostTotal)}</strong> 需全數由自備投資資產承擔。`;
+      }
+    } else {
+      $('bridgeNotice').className = 'system-callout info';
+      $('bridgeNoticeText').innerHTML = `<strong>無過渡空窗期</strong>：退休年齡與勞保請領同步於 ${retire} 歲，立即享有雙年金現金流。`;
+    }
+
+    // 動態雙階段現金流拆解
     const container = $('cashflowContainer');
-    
     if (claim > retire) {
+      let phase1SelfNeed = 0;
+      let phase1Note = '';
+      if (pledgeStrategy === 'bridge') {
+        phase1SelfNeed = 0;
+        phase1Note = `過渡期 ${bridgeYears} 年總開銷 ${fmtMoney(bridgeCostTotal)}，模擬由質押借款全數代墊。`;
+      } else if (pensionMode === 'lump') {
+        if (bridgeSurplus >= 0) {
+          phase1SelfNeed = 0;
+          phase1Note = `過渡期 5 年總開銷 ${fmtMoney(bridgeCostTotal)}，已由勞退一次領 ${fmtMoney(projectedPensionLump)} <strong>全額吸收</strong>，剩餘 ${fmtMoney(bridgeSurplus)} 併入股票資產。`;
+        } else {
+          phase1SelfNeed = Math.ceil(Math.abs(bridgeSurplus) / (bridgeYears * 12));
+          phase1Note = `過渡期總開銷 ${fmtMoney(bridgeCostTotal)}，由勞退一次領 ${fmtMoney(projectedPensionLump)} <strong>直接吸收</strong>，自備款僅需負擔淨差額 <strong>${fmtMoney(Math.abs(bridgeSurplus))}</strong>。`;
+        }
+      } else {
+        phase1SelfNeed = bridgeMonthlySelfNeed;
+        phase1Note = `勞退選擇按月領，過渡期 ${bridgeYears} 年累計開銷 <strong>${fmtMoney(bridgeCostTotal)}</strong> 需全數由自備資產提領。`;
+      }
+
       container.innerHTML = `
-        <div class="cashflow-header">退休後每月現金流拆解（名目金額）</div>
+        <div class="cashflow-header">退休後每月名目現金流拆解（雙階段）</div>
         
         <!-- 階段一：過橋期 -->
         <div class="cashflow-phase-card">
           <div class="cashflow-phase-title">
             <span class="phase-badge bridge">階段一</span>
-            <span>${retire}～${claim} 歲（過渡期共 ${bridgeYears} 年）</span>
+            <span>${retire}～${claim} 歲（過渡空窗期，共 ${bridgeYears} 年）</span>
           </div>
           <div class="cashflow-row">
             <span class="cashflow-row-name">生活費需求目標</span>
-            <span class="cashflow-row-val">${fmtMoney(targetNominal)}／月</span>
+            <span class="cashflow-row-val">${fmtMoney(nominalMonthlyExpense)}／月</span>
           </div>
           <div class="cashflow-row">
             <span class="cashflow-row-name">第一支柱：勞保年金（尚未起領）</span>
-            <span class="cashflow-row-val" style="color:var(--label-tertiary);">$0／月</span>
+            <span class="cashflow-row-val" style="color:var(--label-tertiary);">$0／月（退職待退中）</span>
           </div>
           <div class="cashflow-row">
-            <span class="cashflow-row-name">第二支柱：勞退月領</span>
-            <span class="cashflow-row-val" style="color:var(--label-tertiary);">${pensionMode === 'monthly' ? fmtMoney(pensionMonthly) + '／月' : '$0／月'}</span>
+            <span class="cashflow-row-name">第二支柱：勞退專戶水庫</span>
+            <span class="cashflow-row-val" style="color:var(--label-primary);">${pensionMode === 'lump' ? `一次領 ${fmtMoney(projectedPensionLump)}（專款轉入過渡水庫）` : `$0／月`}</span>
           </div>
           <div class="cashflow-row">
             <span class="cashflow-row-name">微型兼職收入</span>
-            <span class="cashflow-row-val" style="color:var(--label-tertiary);">${partTimeNominal > 0 ? '-' + fmtMoney(partTimeNominal) + '／月' : '$0／月'}</span>
+            <span class="cashflow-row-val" style="color:var(--label-tertiary);">${nominalPartTime > 0 ? '-' + fmtMoney(nominalPartTime) + '／月' : '$0／月'}</span>
           </div>
           <div class="cashflow-row final">
             <span class="cashflow-row-name">此階段每月需自備提領</span>
-            <span class="cashflow-row-val" style="color:var(--system-orange);">${fmtMoney(bridgeMonthlyGap)}／月</span>
+            <span class="cashflow-row-val" style="color:var(--system-orange);">${fmtMoney(phase1SelfNeed)}／月</span>
           </div>
-          <div style="font-size:11px; color:var(--label-secondary); margin-top:6px; line-height:1.45;">
-            ${bridgeYears} 年累計生活開銷需自備 <strong>${fmtMoney(bridgeTotalCost)}</strong>${pensionMode === 'lump' ? `（勞退一次請領 ${fmtMoney(pensionLump)} 抵沖後，需自備 <strong>${fmtMoney(bridgeRequired)}</strong>）` : ''}。
+          <div style="font-size:11.5px; color:var(--label-secondary); margin-top:6px; line-height:1.5;">
+            ${phase1Note}
           </div>
         </div>
 
@@ -1199,49 +1263,48 @@
           </div>
           <div class="cashflow-row">
             <span class="cashflow-row-name">生活費需求目標</span>
-            <span class="cashflow-row-val">${fmtMoney(targetNominal)}／月</span>
+            <span class="cashflow-row-val">${fmtMoney(nominalMonthlyExpense)}／月</span>
           </div>
           <div class="cashflow-row">
-            <span class="cashflow-row-name">第一支柱：勞保年金（終身月領）</span>
-            <span class="cashflow-row-val" style="color:var(--system-green-dark); font-weight:700;">-${fmtMoney(laborFullMonthly)}／月</span>
+            <span class="cashflow-row-name">第一支柱：勞保年金（終身足額）</span>
+            <span class="cashflow-row-val" style="color:var(--system-green-dark); font-weight:700;">-${fmtMoney(laborMonthlyAtClaim)}／月</span>
           </div>
           <div class="cashflow-row">
-            <span class="cashflow-row-name">第二支柱：勞退月領</span>
-            <span class="cashflow-row-val">${pensionMode === 'monthly' ? '-' + fmtMoney(pensionMonthly) + '／月' : '$0／月（已併入投資本金）'}</span>
+            <span class="cashflow-row-name">第二支柱：勞退專戶</span>
+            <span class="cashflow-row-val">${pensionMode === 'monthly' ? '-' + fmtMoney(projectedPensionMonthly) + '／月' : '$0／月（過渡期已專款運用）'}</span>
           </div>
           <div class="cashflow-row">
             <span class="cashflow-row-name">微型兼職收入</span>
-            <span class="cashflow-row-val">${partTimeNominal > 0 ? '-' + fmtMoney(partTimeNominal) + '／月' : '$0／月'}</span>
+            <span class="cashflow-row-val">${nominalPartTime > 0 ? '-' + fmtMoney(nominalPartTime) + '／月' : '$0／月'}</span>
           </div>
           ${pledgeStrategy === 'bridge' ? `
           <div class="cashflow-row">
             <span class="cashflow-row-name">過橋質押借款利息</span>
-            <span class="cashflow-row-val" style="color:var(--system-red-dark);">+${fmtMoney(monthlyInterestDisplay)}／月</span>
+            <span class="cashflow-row-val" style="color:var(--system-red-dark);">+${fmtMoney(bridgeInterestDisplay)}／月</span>
           </div>
           ` : ''}
           <div class="cashflow-row final">
-            <span class="cashflow-row-name">需由自有股票資產提領支應</span>
-            <span class="cashflow-row-val" style="color:var(--accent);">${fmtMoney(monthlyNeed)}／月</span>
+            <span class="cashflow-row-name">需由自有投資資產提領支應</span>
+            <span class="cashflow-row-val" style="color:var(--accent);">${fmtMoney(endgameMonthlyGap + bridgeInterestDisplay)}／月</span>
           </div>
-          <div style="font-size:11px; color:var(--label-secondary); margin-top:6px; line-height:1.45;">
-            ${pledgeStrategy === 'reinvest' 
-              ? `質押借款利息 ${fmtMoney(monthlyInterestDisplay)}／月 已由實質提領率 ${(effectiveWR*100).toFixed(2)}% 完全覆蓋，實質淨提領為 <strong>${fmtMoney(monthlyNeed)}／月</strong>。` 
-              : `終身每月僅需自自有投資組合提領 <strong>${fmtMoney(monthlyNeed)}</strong>，其餘由法定年金完全覆蓋。`}
+          <div style="font-size:11.5px; color:var(--label-secondary); margin-top:6px; line-height:1.5;">
+            終身每月僅需依 <strong>${(swr*100).toFixed(1)}%</strong> 安全提領率自股票部位提領 <strong>${fmtMoney(endgameMonthlyGap + bridgeInterestDisplay)}</strong>，對應終身本金需 <strong>${fmtMoney(endgameRequiredPrincipal)}</strong>。
           </div>
         </div>
       `;
     } else {
+      // 無空窗期
       let laborNote = '（法定全額請領）';
-      if (claim < normalAge) {
-        const reduction = Math.round((normalAge - claim) * 4);
-        laborNote = `（提前${normalAge - claim}年減額${reduction}%）`;
-      } else if (claim > normalAge) {
-        const bonus = Math.round((claim - normalAge) * 4);
-        laborNote = `（延後${claim - normalAge}年增額${bonus}%）`;
+      if (claim < statutoryAge) {
+        const reduction = Math.round((statutoryAge - claim) * 4);
+        laborNote = `（提前${statutoryAge - claim}年減額${reduction}%）`;
+      } else if (claim > statutoryAge) {
+        const bonus = Math.round((claim - statutoryAge) * 4);
+        laborNote = `（延後${claim - statutoryAge}年增額${bonus}%）`;
       }
 
       container.innerHTML = `
-        <div class="cashflow-header">退休後每月現金流拆解（名目金額）</div>
+        <div class="cashflow-header">退休後每月名目現金流拆解</div>
         <div class="cashflow-phase-card">
           <div class="cashflow-phase-title">
             <span class="phase-badge life">終身階段</span>
@@ -1249,42 +1312,52 @@
           </div>
           <div class="cashflow-row">
             <span class="cashflow-row-name">生活費需求目標</span>
-            <span class="cashflow-row-val">${fmtMoney(targetNominal)}／月</span>
+            <span class="cashflow-row-val">${fmtMoney(nominalMonthlyExpense)}／月</span>
           </div>
           <div class="cashflow-row">
             <span class="cashflow-row-name">第一支柱：勞保年金 ${laborNote}</span>
             <span class="cashflow-row-val" style="color:var(--system-green-dark); font-weight:700;">-${fmtMoney(laborAtRetire)}／月</span>
           </div>
           <div class="cashflow-row">
-            <span class="cashflow-row-name">第二支柱：勞退月領</span>
-            <span class="cashflow-row-val">${pensionMode === 'monthly' ? '-' + fmtMoney(pensionMonthly) + '／月' : '$0／月（已併入投資本金）'}</span>
+            <span class="cashflow-row-name">第二支柱：勞退專戶</span>
+            <span class="cashflow-row-val">${pensionMode === 'monthly' ? '-' + fmtMoney(projectedPensionMonthly) + '／月' : '$0／月（一次領併入資產）'}</span>
           </div>
           <div class="cashflow-row">
             <span class="cashflow-row-name">微型兼職收入</span>
-            <span class="cashflow-row-val">${partTimeNominal > 0 ? '-' + fmtMoney(partTimeNominal) + '／月' : '$0／月'}</span>
+            <span class="cashflow-row-val">${nominalPartTime > 0 ? '-' + fmtMoney(nominalPartTime) + '／月' : '$0／月'}</span>
           </div>
           <div class="cashflow-row final">
-            <span class="cashflow-row-name">需由自有股票資產提領支應</span>
-            <span class="cashflow-row-val" style="color:var(--accent);">${fmtMoney(monthlyNeed)}／月</span>
+            <span class="cashflow-row-name">需由自有投資資產提領支應</span>
+            <span class="cashflow-row-val" style="color:var(--accent);">${fmtMoney(endgameMonthlyGap)}／月</span>
+          </div>
+          <div style="font-size:11.5px; color:var(--label-secondary); margin-top:6px; line-height:1.5;">
+            退休後每月由投資資產依 <strong>${(swr*100).toFixed(1)}%</strong> 提領 <strong>${fmtMoney(endgameMonthlyGap)}</strong> 即可達成收支平衡。
           </div>
         </div>
       `;
     }
 
-    // 敏感度表格
+    // 敏感度表格 (以自有投資資產進行壓力測試)
     const scenarios = [
       ['保守衰退情境', netReturn - 0.02],
       ['基準常態情境', netReturn],
       ['樂觀成長情境', netReturn + 0.02]
     ];
     $('sensitivityBody').innerHTML = scenarios.map(([name, r]) => {
-      const proj = fv(n('assetsNow'), n('monthlyInvest'), Math.max(0, r), months) + (pensionMode.startsWith('lump') ? pensionLump : 0);
-      const gap = Math.max(0, requiredAssets - proj);
+      let scenAvail = fv(n('assetsNow'), n('monthlyInvest'), Math.max(0, r), monthsToRetire);
+      if (claim > retire) {
+        if (pensionMode === 'lump') {
+          if (bridgeSurplus >= 0) scenAvail += bridgeSurplus;
+        }
+      } else if (pensionMode === 'lump') {
+        scenAvail += projectedPensionLump;
+      }
+      const gap = Math.max(0, targetRequiredAssets - scenAvail);
       const isOk = gap <= 0;
       return `<tr>
         <td>${name}</td>
         <td>${(r * 100).toFixed(1)}%</td>
-        <td>${fmtMoney(proj)}</td>
+        <td>${fmtMoney(scenAvail)}</td>
         <td>${isOk ? '<span style="color:var(--system-green-dark); font-weight:700;">完全達標</span>' : fmtMoney(gap)}</td>
       </tr>`;
     }).join('');
@@ -1305,7 +1378,7 @@
     $('pensionWage').value = 45800;
     $('selfRate').value = 6;
     $('pensionReturn').value = 3.0;
-    $('pensionMode').value = 'monthly';
+    $('pensionMode').value = 'lump';
     $('assetsNow').value = 500000;
     $('monthlyInvest').value = 10000;
     $('expectedReturn').value = 8.0;

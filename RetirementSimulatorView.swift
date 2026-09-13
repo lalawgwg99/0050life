@@ -54,54 +54,82 @@ struct RetirementSimulatorView: View {
         return pv * pow(1 + r, Double(months)) + pmt * (pow(1 + r, Double(months)) - 1) / r
     }
     
-    private var totalProjected: Double {
-        let months = Int(yearsToRetire * 12)
-        let netReturn = (expectedReturn - fee) / 100.0
-        let etfProjected = futureValue(pv: Double(assetsNow), pmt: Double(monthlyInvest), rate: netReturn, months: months)
-        
-        let pensionMonthlyPmt = Double(pensionWage) * (0.06 + Double(selfRate) / 100.0)
-        let pensionTotal = futureValue(pv: Double(pensionBalance), pmt: pensionMonthlyPmt, rate: pensionReturn / 100.0, months: months)
-        
-        return etfProjected + (isPensionLumpSum ? pensionTotal : 0)
-    }
+    private var statutoryAge: Int { 65 }
     
     private var laborFullMonthly: Double {
         let totalYears = laborYearsNow + futureLaborYears
         let base = max(Double(avgInsuredSalary) * totalYears * 0.00775 + 3000, Double(avgInsuredSalary) * totalYears * 0.0155)
-        let diff = max(-5.0, min(5.0, Double(claimAge - 65)))
+        let diff = max(-5.0, min(5.0, Double(claimAge - statutoryAge)))
         return base * (1 + diff * 0.04)
     }
     
-    private var requiredAssets: Double {
-        let wr = withdrawRate / 100.0
-        let pensionMonths = Int(yearsToRetire * 12)
+    private var projectedStockAssets: Double {
+        let months = Int(yearsToRetire * 12)
+        let netReturn = (expectedReturn - fee) / 100.0
+        return futureValue(pv: Double(assetsNow), pmt: Double(monthlyInvest), rate: netReturn, months: months)
+    }
+    
+    private var projectedPensionLump: Double {
+        let months = Int(yearsToRetire * 12)
         let pensionMonthlyPmt = Double(pensionWage) * (0.06 + Double(selfRate) / 100.0)
-        let pensionTotal = futureValue(pv: Double(pensionBalance), pmt: pensionMonthlyPmt, rate: pensionReturn / 100.0, months: pensionMonths)
-        let pensionMonthly = isPensionLumpSum ? 0 : (pensionTotal / (24.0 * 12.0))
-        
-        var req = 0.0
+        return futureValue(pv: Double(pensionBalance), pmt: pensionMonthlyPmt, rate: pensionReturn / 100.0, months: months)
+    }
+    
+    private var projectedPensionMonthly: Double {
+        if isPensionLumpSum { return 0 }
+        let pensionFactor = retireAge >= 65 ? 207.24 : 242.88
+        return projectedPensionLump / pensionFactor
+    }
+    
+    private var bridgeCostTotal: Double {
+        if claimAge <= retireAge { return 0 }
+        let bridgeYears = Double(claimAge - retireAge)
+        let bridgeMonthlySelfNeed = max(0, targetNominal - partTimeNominal)
+        return bridgeMonthlySelfNeed * 12 * bridgeYears
+    }
+    
+    private var bridgeSurplus: Double {
+        projectedPensionLump - bridgeCostTotal
+    }
+    
+    private var endgameRequiredPrincipal: Double {
+        let wr = withdrawRate / 100.0
+        let gap = max(0, targetNominal - laborFullMonthly - partTimeNominal - projectedPensionMonthly)
+        return wr > 0 ? (gap * 12 / wr) : 0
+    }
+    
+    private var totalAvailableAssets: Double {
         if claimAge > retireAge {
-            let bridgeYears = Double(claimAge - retireAge)
-            let bridgeGap = max(0, targetNominal - pensionMonthly - partTimeNominal)
-            let endgameGap = max(0, targetNominal - laborFullMonthly - pensionMonthly - partTimeNominal)
-            
-            let bridgeRequired = bridgeGap * 12 * bridgeYears
-            let endgameRequired = wr > 0 ? (endgameGap * 12 / wr) : 0
-            req = bridgeRequired + endgameRequired
+            if isPensionLumpSum {
+                return bridgeSurplus >= 0 ? (projectedStockAssets + bridgeSurplus) : projectedStockAssets
+            } else {
+                return projectedStockAssets
+            }
         } else {
-            let laborAtRetire = laborFullMonthly
-            let gap = max(0, targetNominal - laborAtRetire - pensionMonthly - partTimeNominal)
-            req = wr > 0 ? (gap * 12 / wr) : 0
+            return projectedStockAssets + (isPensionLumpSum ? projectedPensionLump : 0)
         }
-        return req
+    }
+    
+    private var requiredAssets: Double {
+        if claimAge > retireAge {
+            if isPensionLumpSum {
+                return bridgeSurplus >= 0 ? endgameRequiredPrincipal : (endgameRequiredPrincipal + abs(bridgeSurplus))
+            } else {
+                return endgameRequiredPrincipal + bridgeCostTotal
+            }
+        } else {
+            let gap = max(0, targetNominal - laborFullMonthly - projectedPensionMonthly - partTimeNominal)
+            let wr = withdrawRate / 100.0
+            return wr > 0 ? (gap * 12 / wr) : 0
+        }
     }
     
     private var shortfall: Double {
-        max(0, requiredAssets - totalProjected)
+        max(0, requiredAssets - totalAvailableAssets)
     }
     
     private var readiness: Double {
-        requiredAssets > 0 ? min(1.0, totalProjected / requiredAssets) : 1.0
+        requiredAssets > 0 ? min(1.0, totalAvailableAssets / requiredAssets) : 1.0
     }
     
     private var currentTotalAssets: Double {
@@ -144,7 +172,7 @@ struct RetirementSimulatorView: View {
                         // 現在、未來、目標 (Triad)
                         HStack(spacing: 12) {
                             MetricCell(title: "【現在】已備", value: currentTotalAssets)
-                            MetricCell(title: "【未來】累積", value: totalProjected)
+                            MetricCell(title: "【未來】累積", value: totalAvailableAssets)
                             MetricCell(title: "【結果】目標", value: requiredAssets)
                         }
                         
