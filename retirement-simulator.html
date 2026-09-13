@@ -447,15 +447,158 @@
       font-weight: 600;
     }
 
-    @media (max-width: 960px) {
-      .layout-grid { grid-template-columns: 1fr; }
-      .inspector-sticky { position: static; }
+    /* Quick Chips */
+    .quick-chips {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+      flex-wrap: wrap;
     }
-    @media (max-width: 580px) {
-      .container { padding: 20px 16px 60px; }
-      .fields-grid { grid-template-columns: 1fr; }
+    .chip-btn {
+      border: 1px solid var(--separator);
+      background-color: var(--card-bg);
+      color: var(--label-secondary);
+      border-radius: 980px;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 3px 9px;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      font-variant-numeric: tabular-nums;
+    }
+    .chip-btn:hover, .chip-btn:active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background-color: var(--accent-tint);
+    }
+
+    /* Mobile Segmented Nav & Floating Bar */
+    .mobile-nav-segmented {
+      display: none;
+    }
+    .mobile-floating-bar {
+      display: none;
+    }
+
+    @media (max-width: 960px) {
+      .container { padding: 16px 14px 100px; }
+      .header-row { padding-bottom: 14px; margin-bottom: 14px; }
+      .header-desc { font-size: 13px; }
+      .apple-card { padding: 18px 16px; margin-bottom: 14px; border-radius: 12px; }
+      .fields-grid { grid-template-columns: 1fr; gap: 14px; }
       .field-full { grid-column: span 1; }
-      .triad-grid { grid-template-columns: 1fr; }
+
+      /* 防止 iOS Safari 在點選 input 時強制放大縮放畫面 */
+      .apple-input, .apple-select {
+        font-size: 16px !important;
+        height: 44px;
+        border-radius: 10px;
+      }
+      .input-unit {
+        right: 14px;
+        font-size: 13px;
+      }
+
+      /* 手機頂部切換鈕 */
+      .mobile-nav-segmented {
+        display: flex;
+        background-color: rgba(120, 120, 128, 0.14);
+        padding: 3px;
+        border-radius: 11px;
+        margin-bottom: 16px;
+        position: sticky;
+        top: 10px;
+        z-index: 100;
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      }
+      .mobile-tab-btn {
+        flex: 1;
+        border: none;
+        background: transparent;
+        padding: 9px 12px;
+        border-radius: 9px;
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--label-secondary);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .mobile-tab-btn.active {
+        background-color: #ffffff;
+        color: var(--label-primary);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      }
+      .tab-badge {
+        font-size: 11px;
+        padding: 1px 7px;
+        border-radius: 980px;
+        background-color: var(--system-green-tint);
+        color: var(--system-green-dark);
+        font-weight: 700;
+      }
+
+      /* 手機底部懸浮島即時摘要 */
+      .mobile-floating-bar {
+        display: flex;
+        position: fixed;
+        bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+        left: 14px;
+        right: 14px;
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: blur(24px);
+        -webkit-backdrop-filter: blur(24px);
+        border: 1px solid rgba(0, 0, 0, 0.08);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04);
+        border-radius: 16px;
+        padding: 10px 14px;
+        z-index: 999;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .floating-left {
+        display: flex;
+        flex-direction: column;
+      }
+      .floating-label {
+        font-size: 10.5px;
+        color: var(--label-tertiary);
+        font-weight: 600;
+      }
+      .floating-val {
+        font-size: 16px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        color: var(--label-primary);
+      }
+      .floating-pill {
+        font-size: 11.5px;
+        font-weight: 600;
+        padding: 4px 9px;
+        border-radius: 6px;
+      }
+      .btn-floating-view {
+        border: none;
+        background-color: var(--accent);
+        color: #ffffff;
+        font-size: 12.5px;
+        font-weight: 600;
+        padding: 8px 14px;
+        border-radius: 980px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0, 113, 227, 0.25);
+      }
+      .btn-floating-view:active {
+        transform: scale(0.96);
+      }
     }
   </style>
 </head>
@@ -479,9 +622,18 @@
   </header>
 
   <!-- 雙欄佈局 -->
+    <!-- 手機專屬分段切換器 (在桌機隱藏) -->
+  <div class="mobile-nav-segmented">
+    <button class="mobile-tab-btn active" id="tabBtnInputs" onclick="switchMobileTab('inputs')">
+      參數設定
+    </button>
+    <button class="mobile-tab-btn" id="tabBtnResults" onclick="switchMobileTab('results')">
+      精算報表 <span class="tab-badge" id="mobileTabBadge">0%</span>
+    </button>
+  </div>
   <div class="layout-grid">
     <!-- 左側：輸入表單 -->
-    <main>
+    <main id="mainContent">
       <!-- 區塊 1：生活目標與提領設定 -->
       <section class="apple-card">
         <h2 class="card-title">1. 生活目標與提領設定</h2>
@@ -494,7 +646,7 @@
               <span class="field-label">出生年次（民國）</span>
             </div>
             <div class="input-wrapper">
-              <input type="number" id="birthYear" class="apple-input" value="80" step="1" min="40" max="100">
+              <input type="number" id="birthYear" class="apple-input" inputmode="numeric" value="80" step="1" min="40" max="100">
               <span class="input-unit">年次</span>
             </div>
             <div class="field-desc">
@@ -508,7 +660,7 @@
               <span class="field-label">停止全職工作年齡</span>
             </div>
             <div class="input-wrapper">
-              <input type="number" id="retireAge" class="apple-input" value="65" step="1">
+              <input type="number" id="retireAge" class="apple-input" inputmode="numeric" value="65" step="1">
               <span class="input-unit">歲</span>
             </div>
             <div class="field-desc">預計離開正職、停止勞保加保的年齡</div>
@@ -520,10 +672,16 @@
               <span class="field-label">每月生活費（今日幣值）</span>
             </div>
             <div class="input-wrapper">
-              <input type="number" id="targetToday" class="apple-input" value="40000" step="1000">
+              <input type="number" id="targetToday" class="apple-input" inputmode="numeric" value="40000" step="1000">
               <span class="input-unit">元</span>
             </div>
             <div class="field-desc">以今日物價估算退休後每月的充裕生活開銷</div>
+            <div class="quick-chips">
+              <button class="chip-btn" onclick="setQuickVal('targetToday', 30000)">3 萬</button>
+              <button class="chip-btn" onclick="setQuickVal('targetToday', 40000)">4 萬</button>
+              <button class="chip-btn" onclick="setQuickVal('targetToday', 50000)">5 萬</button>
+              <button class="chip-btn" onclick="setQuickVal('targetToday', 60000)">6 萬</button>
+            </div>
           </div>
 
           <!-- 長期年通膨率 -->
@@ -532,7 +690,7 @@
               <span class="field-label">長期年通膨率</span>
             </div>
             <div class="input-wrapper">
-              <input type="number" id="inflation" class="apple-input" value="2.0" step="0.1">
+              <input type="number" id="inflation" class="apple-input" inputmode="decimal" value="2.0" step="0.1">
               <span class="input-unit">%</span>
             </div>
             <div class="field-desc">主計總處長期 CPI 年增率中位數約 1.8%～2.2%</div>
@@ -544,10 +702,16 @@
               <span class="field-label">退休後微型兼職（今日幣值）</span>
             </div>
             <div class="input-wrapper">
-              <input type="number" id="partTime" class="apple-input" value="0" step="1000">
+              <input type="number" id="partTime" class="apple-input" inputmode="numeric" value="0" step="1000">
               <span class="input-unit">元</span>
             </div>
             <div class="field-desc">退職後預計每週排班或顧問收入，無兼職填 0</div>
+            <div class="quick-chips">
+              <button class="chip-btn" onclick="setQuickVal('partTime', 0)">0 元</button>
+              <button class="chip-btn" onclick="setQuickVal('partTime', 10000)">1 萬</button>
+              <button class="chip-btn" onclick="setQuickVal('partTime', 15000)">1.5 萬</button>
+              <button class="chip-btn" onclick="setQuickVal('partTime', 20000)">2 萬</button>
+            </div>
           </div>
 
           <!-- 股票規劃提領率 -->
@@ -556,7 +720,7 @@
               <span class="field-label">股票資產規劃提領率</span>
             </div>
             <div class="input-wrapper">
-              <input type="number" id="withdrawRate" class="apple-input" value="4.0" step="0.1">
+              <input type="number" id="withdrawRate" class="apple-input" inputmode="decimal" value="4.0" step="0.1">
               <span class="input-unit">%</span>
             </div>
             <div class="field-desc">國際退休規劃常態基準（三一研究法則建議 3.5%～4.0%）</div>
@@ -579,7 +743,7 @@
               <span class="field-label">預計向勞保局起領年齡</span>
             </div>
             <div class="input-wrapper">
-              <input type="number" id="claimAge" class="apple-input" value="65" step="1">
+              <input type="number" id="claimAge" class="apple-input" inputmode="numeric" value="65" step="1">
               <span class="input-unit">歲</span>
             </div>
             <div class="field-desc" id="claimAgeHint">法定請領年齡為 65 歲。若 60 歲退職、65 歲請領，屬於「法定全額領取」，非展延加計年齡。</div>
@@ -591,7 +755,7 @@
               <span class="field-label">目前累計勞保年資</span>
             </div>
             <div class="input-wrapper">
-              <input type="number" id="laborYearsNow" class="apple-input" value="10" step="0.1">
+              <input type="number" id="laborYearsNow" class="apple-input" inputmode="decimal" value="10" step="0.1">
               <span class="input-unit">年</span>
             </div>
             <div class="field-desc">可透過健保卡或行動電話認證至勞保局 e 化系統查詢</div>
@@ -644,7 +808,7 @@
               <span class="field-label">目前專戶累積金額</span>
             </div>
             <div class="input-wrapper">
-              <input type="number" id="pensionBalance" class="apple-input" value="300000" step="10000">
+              <input type="number" id="pensionBalance" class="apple-input" inputmode="numeric" value="300000" step="10000">
               <span class="input-unit">元</span>
             </div>
             <div class="field-desc">登入勞保局 e 化系統查詢「個人退休金專戶核發金額」</div>
@@ -656,7 +820,7 @@
               <span class="field-label">勞退月提繳工資級距</span>
             </div>
             <div class="input-wrapper">
-              <input type="number" id="pensionWage" class="apple-input" value="45800" step="100">
+              <input type="number" id="pensionWage" class="apple-input" inputmode="numeric" value="45800" step="100">
               <span class="input-unit">元</span>
             </div>
             <div class="field-desc">薪資單上的勞退提繳工資（上限為 $150,000）</div>
@@ -668,7 +832,7 @@
               <span class="field-label">勞工自願提繳率</span>
             </div>
             <div class="input-wrapper">
-              <input type="number" id="selfRate" class="apple-input" value="6" min="0" max="6" step="1">
+              <input type="number" id="selfRate" class="apple-input" inputmode="numeric" value="6" min="0" max="6" step="1">
               <span class="input-unit">%</span>
             </div>
             <div class="field-desc">可自選 0%～6%，自提金額可自當年度所得總額全額扣除</div>
@@ -680,7 +844,7 @@
               <span class="field-label">專戶長期年收益率</span>
             </div>
             <div class="input-wrapper">
-              <input type="number" id="pensionReturn" class="apple-input" value="3.0" step="0.1">
+              <input type="number" id="pensionReturn" class="apple-input" inputmode="decimal" value="3.0" step="0.1">
               <span class="input-unit">%</span>
             </div>
             <div class="field-desc">勞動基金歷年長期保本投資收益率約 3%～4%</div>
@@ -732,7 +896,7 @@
               <span class="field-label">現有投資部位總現值</span>
             </div>
             <div class="input-wrapper">
-              <input type="number" id="assetsNow" class="apple-input" value="500000" step="10000">
+              <input type="number" id="assetsNow" class="apple-input" inputmode="numeric" value="500000" step="10000">
               <span class="input-unit">元</span>
             </div>
             <div class="field-desc">目前證券戶股票、ETF 或基金現值，尚未投資填 0</div>
@@ -744,10 +908,17 @@
               <span class="field-label">每月定期定額總額</span>
             </div>
             <div class="input-wrapper">
-              <input type="number" id="monthlyInvest" class="apple-input" value="10000" step="1000">
+              <input type="number" id="monthlyInvest" class="apple-input" inputmode="numeric" value="10000" step="1000">
               <span class="input-unit">元</span>
             </div>
             <div class="field-desc">每月固定由薪資或結餘扣款買入投資組合的金額</div>
+            <div class="quick-chips">
+              <button class="chip-btn" onclick="setQuickVal('monthlyInvest', 5000)">5 千</button>
+              <button class="chip-btn" onclick="setQuickVal('monthlyInvest', 10000)">1 萬</button>
+              <button class="chip-btn" onclick="setQuickVal('monthlyInvest', 15000)">1.5 萬</button>
+              <button class="chip-btn" onclick="setQuickVal('monthlyInvest', 20000)">2 萬</button>
+              <button class="chip-btn" onclick="setQuickVal('monthlyInvest', 25000)">2.5 萬</button>
+            </div>
           </div>
 
           <!-- 長期年化報酬 -->
@@ -756,7 +927,7 @@
               <span class="field-label">長期年化報酬（名目）</span>
             </div>
             <div class="input-wrapper">
-              <input type="number" id="expectedReturn" class="apple-input" value="8.0" step="0.1" oninput="onCustomReturnInput()">
+              <input type="number" id="expectedReturn" class="apple-input" inputmode="decimal" value="8.0" step="0.1" oninput="onCustomReturnInput()">
               <span class="input-unit">%</span>
             </div>
             <div class="field-desc">歷史長期大盤含息年化約 7%～10%，高股息約 5%～7%</div>
@@ -768,7 +939,7 @@
               <span class="field-label">費用與摩擦成本率</span>
             </div>
             <div class="input-wrapper">
-              <input type="number" id="fee" class="apple-input" value="0.2" step="0.05" oninput="onCustomReturnInput()">
+              <input type="number" id="fee" class="apple-input" inputmode="decimal" value="0.2" step="0.05" oninput="onCustomReturnInput()">
               <span class="input-unit">%</span>
             </div>
             <div class="field-desc">ETF 經理費、保管費與手續費等長期成本損耗</div>
@@ -799,7 +970,7 @@
               <span class="field-label">質押借款年利率</span>
             </div>
             <div class="input-wrapper">
-              <input type="number" id="pledgeRate" class="apple-input" value="2.5" step="0.1">
+              <input type="number" id="pledgeRate" class="apple-input" inputmode="decimal" value="2.5" step="0.1">
               <span class="input-unit">%</span>
             </div>
             <div class="field-desc">目前券商牌告質押年息約 2.3%～3.0%</div>
@@ -813,7 +984,7 @@
     </main>
 
     <!-- 右側：結果精算面板 -->
-    <aside class="inspector-sticky">
+    <aside class="inspector-sticky" id="asideContent">
       <div class="apple-card" style="padding-bottom: 20px;">
         <!-- 核心總覽卡片 -->
         <div class="hero-summary">
@@ -884,10 +1055,73 @@
       </div>
     </aside>
   </div>
+  <!-- 手機專屬即時懸浮島 -->
+  <div class="mobile-floating-bar" id="mobileFloatingBar">
+    <div class="floating-left">
+      <div class="floating-label">自備缺口</div>
+      <div class="floating-val" id="mobileBarShortfall">$0</div>
+    </div>
+    <div>
+      <span class="floating-pill" id="mobileBarReadiness">達成率 0%</span>
+    </div>
+    <button class="btn-floating-view" onclick="switchMobileTab('results')">
+      查看報表
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+    </button>
+  </div>
 </div>
 
 <script>
   const $ = id => document.getElementById(id);
+  // 手機專屬 Tab 切換邏輯
+  function switchMobileTab(tab) {
+    if (window.innerWidth > 960) return;
+    const main = $('mainContent');
+    const aside = $('asideContent');
+    const floatBar = $('mobileFloatingBar');
+    const btnIn = $('tabBtnInputs');
+    const btnRes = $('tabBtnResults');
+
+    if (tab === 'inputs') {
+      main.style.display = 'block';
+      aside.style.display = 'none';
+      if (floatBar) floatBar.style.display = 'flex';
+      btnIn.classList.add('active');
+      btnRes.classList.remove('active');
+    } else {
+      main.style.display = 'none';
+      aside.style.display = 'block';
+      if (floatBar) floatBar.style.display = 'none';
+      btnIn.classList.remove('active');
+      btnRes.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  // 快捷微調按鈕
+  function setQuickVal(id, val) {
+    const el = $(id);
+    if (el) {
+      el.value = val;
+      calculate(false);
+    }
+  }
+
+  // 監聽螢幕旋轉/放大適應
+  window.addEventListener('resize', () => {
+    if (window.innerWidth > 960) {
+      if ($('mainContent')) $('mainContent').style.display = 'block';
+      if ($('asideContent')) $('asideContent').style.display = 'block';
+      if ($('mobileFloatingBar')) $('mobileFloatingBar').style.display = 'none';
+    } else {
+      const btnRes = $('tabBtnResults');
+      if (btnRes && btnRes.classList.contains('active')) {
+        switchMobileTab('results');
+      } else {
+        switchMobileTab('inputs');
+      }
+    }
+  });
   const inputIds = [
     'birthYear','retireAge','targetToday','inflation','partTime','withdrawRate',
     'claimAge','laborYearsNow','avgInsuredSalary',
@@ -1146,6 +1380,19 @@
     $('progressBar').style.width = barWidth + '%';
     $('txtProgressLabel').textContent = `達成率 ${fmtPct(readiness)}`;
     $('progressBar').style.backgroundColor = readiness >= 1 ? 'var(--system-green)' : (readiness >= 0.7 ? 'var(--system-orange)' : 'var(--system-red)');
+    // 更新手機專屬懸浮島與分頁徽章
+    if ($('mobileTabBadge')) $('mobileTabBadge').textContent = fmtPct(readiness);
+    if ($('mobileBarShortfall')) $('mobileBarShortfall').textContent = fmtMoney(shortfall);
+    if ($('mobileBarReadiness')) {
+      $('mobileBarReadiness').textContent = `達成率 ${fmtPct(readiness)}`;
+      if (shortfall <= 0) {
+        $('mobileBarReadiness').style.background = 'var(--system-green-tint)';
+        $('mobileBarReadiness').style.color = 'var(--system-green-dark)';
+      } else {
+        $('mobileBarReadiness').style.background = 'var(--system-orange-tint)';
+        $('mobileBarReadiness').style.color = '#b45309';
+      }
+    }
 
     // 狀態徽章
     if (shortfall <= 0) {
