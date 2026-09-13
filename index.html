@@ -1247,19 +1247,43 @@
     if ($('tagNetReturn')) $('tagNetReturn').textContent = `實質淨年化 ${net}%`;
   }
 
-  // 勞保老年年金計算
+  // 勞保老年年金計算（含 15 年法定門檻與合法區間防呆）
   function calcLaborPension(salary, years, claimAge, birthROC) {
-    let normalAge = 65;
-    if (birthROC <= 46) normalAge = 60;
-    else if (birthROC === 47) normalAge = 61;
-    else if (birthROC === 48) normalAge = 62;
-    else if (birthROC === 49) normalAge = 63;
-    else if (birthROC === 50) normalAge = 64;
-    else normalAge = 65;
+    const normalAge = getNormalAge(birthROC);
+    // 年資未滿 15 年者，依法不得請領月年金（僅能請領老年一次金）
+    if (years < 15) {
+      return {
+        isEligible: false,
+        monthly: 0,
+        lumpSum: salary * years, // 老年一次金：每滿 1 年給付 1 個月投保薪資
+        normalAge: normalAge,
+        minClaimAge: normalAge - 5,
+        maxClaimAge: normalAge + 5
+      };
+    }
 
     const base = Math.max(salary * years * 0.00775 + 3000, salary * years * 0.0155);
+    // 提前最多 5 年（扣 20%），展延最多 5 年（加 20%）
     const diff = Math.max(-5, Math.min(5, claimAge - normalAge));
-    return base * (1 + diff * 0.04);
+    const monthly = base * (1 + diff * 0.04);
+
+    return {
+      isEligible: true,
+      monthly: monthly,
+      lumpSum: 0,
+      normalAge: normalAge,
+      minClaimAge: normalAge - 5,
+      maxClaimAge: normalAge + 5
+    };
+  }
+
+  // 勞退新制官方現值因子精確對照 (依年齡 60~65 歲)
+  function getLaborPensionFactor(age) {
+    if (age >= 65) return 207.24;
+    if (age <= 60) return 242.88;
+    // 61~64 歲平滑線性內插
+    const factors = { 60: 242.88, 61: 235.80, 62: 228.69, 63: 221.56, 64: 214.41, 65: 207.24 };
+    return factors[Math.round(age)] || 207.24;
   }
 
   // 根據出生年次自動計算法定全額請領年齡
@@ -1317,26 +1341,27 @@
     const nominalMonthlyExpense = n('targetToday') * inflationFactor;
     const nominalPartTime = n('partTime') * inflationFactor;
 
-    // 1. 第一支柱：勞保老年年金（官方兩式擇優與法定年齡）
-    const statutoryAge = getNormalAge(birthROC);
+    // 1. 第一支柱：勞保老年年金（官方兩式擇優、15年門檻與法定年齡）
     const totalLaborYears = n('laborYearsNow') + n('futureLaborYears');
-    const formulaA = (n('avgInsuredSalary') * totalLaborYears * 0.00775) + 3000;
-    const formulaB = n('avgInsuredSalary') * totalLaborYears * 0.0155;
-    const baseLaborMonthly = Math.max(formulaA, formulaB);
-
-    // 增減額比例（提前或展延，最多 5 年，每年 4%）
-    const diffYears = Math.max(-5, Math.min(5, claim - statutoryAge));
-    const laborMonthlyAtClaim = baseLaborMonthly * (1 + diffYears * 0.04);
+    const laborResult = calcLaborPension(n('avgInsuredSalary'), totalLaborYears, claim, birthROC);
+    const statutoryAge = laborResult.normalAge;
+    const isLaborEligible = laborResult.isEligible;
+    const laborMonthlyAtClaim = laborResult.monthly;
     const laborAtRetire = (claim <= retire) ? laborMonthlyAtClaim : 0;
+    const laborLumpSum = laborResult.lumpSum;
 
-    // 更新起領年齡說明標籤
+    // 更新起領年齡說明標籤與法規防呆
     if ($('claimAgeHint')) {
-      if (claim === statutoryAge) {
+      if (!isLaborEligible) {
+        $('claimAgeHint').innerHTML = `<span style="color:var(--system-red); font-weight:600;">⚠️ 勞保年資共 ${totalLaborYears.toFixed(1)} 年（未達 15 年門檻）：依法無法按月請領年金，僅能一次請領老年一次金 ${fmtMoney(laborLumpSum)}。</span>`;
+      } else if (claim < laborResult.minClaimAge) {
+        $('claimAgeHint').innerHTML = `<span style="color:var(--system-red); font-weight:600;">⚠️ 法規限制：勞保年金依法最多僅能提前 5 年（${laborResult.minClaimAge} 歲）請領，不可早於 ${laborResult.minClaimAge} 歲。</span>`;
+      } else if (claim === statutoryAge) {
         $('claimAgeHint').textContent = `法定請領年齡為 ${statutoryAge} 歲。若 ${retire} 歲退職、${claim} 歲請領，屬於「法定全額領取」，非展延加計年齡。`;
       } else if (claim < statutoryAge) {
-        $('claimAgeHint').textContent = `法定請領年齡為 ${statutoryAge} 歲。提前 ${statutoryAge - claim} 年請領，每月給付永久減額 ${(statutoryAge - claim) * 4}%。`;
+        $('claimAgeHint').textContent = `法定請領年齡為 ${statutoryAge} 歲。提前 ${statutoryAge - claim} 年請領，每月給付永久減額 ${(statutoryAge - claim) * 4}%（合法可請領區間：${laborResult.minClaimAge}～${laborResult.maxClaimAge} 歲）。`;
       } else {
-        $('claimAgeHint').textContent = `法定請領年齡為 ${statutoryAge} 歲。延後 ${claim - statutoryAge} 年請領，每月給付展延增額 ${(claim - statutoryAge) * 4}%。`;
+        $('claimAgeHint').textContent = `法定請領年齡為 ${statutoryAge} 歲。延後 ${claim - statutoryAge} 年請領，每月給付展延增額 ${(claim - statutoryAge) * 4}%（上限採計至 ${laborResult.maxClaimAge} 歲）。`;
       }
     }
 
@@ -1349,8 +1374,8 @@
       monthsToRetire
     );
     
-    // 官方年金現值因子 (60歲約242.88，65歲約207.24)
-    const pensionFactor = retire >= 65 ? 207.24 : 242.88;
+    // 官方年金現值因子 (依 60~65 歲精準對照)
+    const pensionFactor = getLaborPensionFactor(retire);
     const pensionMode = $('pensionMode').value;
     const projectedPensionMonthly = (pensionMode === 'monthly')
       ? (projectedPensionLump / pensionFactor)
@@ -1391,14 +1416,15 @@
       endgameRequiredPrincipal = swr > 0 ? (endgameMonthlyGap * 12 / swr) : 0;
 
       if (pledgeStrategy === 'bridge') {
-        // 質押過橋模擬：過渡期生活費由借款支付，退休後每月需支付利息
-        const bridgeLoan = bridgeCostTotal;
+        // 質押過橋模擬：若有勞退一次領，優先抵扣過渡生活費，僅針對不足之差額進行質押借款
+        const remainingBridgeCost = (pensionMode === 'lump') ? Math.max(0, bridgeCostTotal - projectedPensionLump) : bridgeCostTotal;
+        const bridgeLoan = remainingBridgeCost;
         bridgeInterestDisplay = (bridgeLoan * pledgeRate) / 12;
         const endgameGapWithInterest = endgameMonthlyGap + bridgeInterestDisplay;
         endgameRequiredPrincipal = swr > 0 ? (endgameGapWithInterest * 12 / swr) : 0;
         targetRequiredAssets = endgameRequiredPrincipal;
-        if (pensionMode === 'lump') {
-          totalAvailableAssets += projectedPensionLump;
+        if (pensionMode === 'lump' && projectedPensionLump > bridgeCostTotal) {
+          totalAvailableAssets += (projectedPensionLump - bridgeCostTotal);
         }
       } else if (pensionMode === 'lump') {
         // 關鍵修正：勞退一次領優先抵扣過渡期生活費水庫
