@@ -81,55 +81,38 @@ struct RetirementSimulatorView: View {
         return projectedPensionLump / pensionFactor
     }
     
-    private var bridgeCostTotal: Double {
-        if claimAge <= retireAge { return 0 }
-        let bridgeYears = Double(claimAge - retireAge)
-        let bridgeMonthlySelfNeed = max(0, targetNominal - partTimeNominal)
-        return bridgeMonthlySelfNeed * 12 * bridgeYears
+    private var laborAtRetire: Double {
+        claimAge <= retireAge ? laborFullMonthly : 0
     }
     
-    private var bridgeSurplus: Double {
-        projectedPensionLump - bridgeCostTotal
+    private var netStockEquity: Double {
+        projectedStockAssets + (isPensionLumpSum ? projectedPensionLump : 0)
     }
     
-    private var endgameRequiredPrincipal: Double {
+    private var monthlySWRIncome: Double {
         let wr = withdrawRate / 100.0
-        let gap = max(0, targetNominal - laborFullMonthly - partTimeNominal - projectedPensionMonthly)
-        return wr > 0 ? (gap * 12 / wr) : 0
+        return (netStockEquity * wr) / 12.0
     }
     
-    private var totalAvailableAssets: Double {
-        if claimAge > retireAge {
-            if isPensionLumpSum {
-                return bridgeSurplus >= 0 ? (projectedStockAssets + bridgeSurplus) : projectedStockAssets
-            } else {
-                return projectedStockAssets
-            }
-        } else {
-            return projectedStockAssets + (isPensionLumpSum ? projectedPensionLump : 0)
-        }
+    private var netMonthlyNeedFromEquity: Double {
+        max(0, targetNominal - laborAtRetire - projectedPensionMonthly - partTimeNominal)
     }
     
     private var requiredAssets: Double {
-        if claimAge > retireAge {
-            if isPensionLumpSum {
-                return bridgeSurplus >= 0 ? endgameRequiredPrincipal : (endgameRequiredPrincipal + abs(bridgeSurplus))
-            } else {
-                return endgameRequiredPrincipal + bridgeCostTotal
-            }
-        } else {
-            let gap = max(0, targetNominal - laborFullMonthly - projectedPensionMonthly - partTimeNominal)
-            let wr = withdrawRate / 100.0
-            return wr > 0 ? (gap * 12 / wr) : 0
-        }
+        let wr = withdrawRate / 100.0
+        return wr > 0 ? (netMonthlyNeedFromEquity * 12.0 / wr) : 0
     }
     
     private var shortfall: Double {
-        max(0, requiredAssets - totalAvailableAssets)
+        max(0, requiredAssets - netStockEquity)
     }
     
     private var readiness: Double {
-        requiredAssets > 0 ? min(1.0, totalAvailableAssets / requiredAssets) : 1.0
+        requiredAssets > 0 ? min(1.0, netStockEquity / requiredAssets) : 1.0
+    }
+    
+    private var totalAvailableAssets: Double {
+        netStockEquity
     }
     
     private var currentTotalAssets: Double {
