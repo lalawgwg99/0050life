@@ -1549,6 +1549,34 @@
       .waterfall-phase { width: 100% !important; border: 1px solid #aaa !important; margin-bottom: 10px; }
     }
     
+  
+    /* Apple Native Slider */
+    .apple-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: var(--separator);
+      border-radius: 4px;
+      outline: none;
+      margin-top: 14px;
+      margin-bottom: 4px;
+    }
+    .apple-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.1);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    .apple-slider::-webkit-slider-thumb:active {
+      transform: scale(1.1);
+    }
+    
   </style>
 </head>
 <body>
@@ -1614,6 +1642,7 @@
               <input type="number" id="retireAge" class="apple-input" inputmode="numeric" value="65" step="1">
               <span class="input-unit">歲</span>
             </div>
+            <input type="range" id="retireAgeSlider" class="apple-slider" min="30" max="75" step="1" value="65">
             <div class="field-desc">預計離開正職、停止勞保加保的年齡</div>
           </div>
 
@@ -1755,6 +1784,7 @@
               <input type="number" id="claimAge" class="apple-input" inputmode="numeric" value="65" step="1">
               <span class="input-unit">歲</span>
             </div>
+            <input type="range" id="claimAgeSlider" class="apple-slider" min="60" max="70" step="1" value="65">
             <div class="field-desc" id="claimAgeHint">法定請領年齡為 65 歲。若 60 歲退職、65 歲請領，屬於「法定全額領取」，非展延加計年齡。</div>
           </div>
 
@@ -3028,43 +3058,43 @@
 
   
 
+  
+  function syncSlider(inpId, sldId) {
+    const inp = $(inpId);
+    const sld = $(sldId);
+    if (!inp || !sld) return;
+    sld.addEventListener('input', () => {
+      inp.value = sld.value;
+      calculate(false);
+      saveStateToLocal();
+    });
+    inp.addEventListener('change', () => {
+      sld.value = inp.value;
+    });
+    // Init sync
+    setTimeout(() => { sld.value = inp.value; }, 500);
+  }
+  
+  // Initialize Sliders
+  syncSlider('retireAge', 'retireAgeSlider');
+  syncSlider('claimAge', 'claimAgeSlider');
+
   function calculate(isSettingBaseline = false) {
     const age = n('currentAge') || 44;
     
     // ── 全面防呆邊界檢核 ──
     let retire = n('retireAge');
-    // 1. 退休年齡不得早於目前實歲
-    if (retire < age) {
-      if (document.activeElement !== $('retireAge')) {
-        $('retireAge').value = age;
-        $('retireAge').style.transition = 'background-color 0.3s';
-        $('retireAge').style.backgroundColor = '#FFE5E5';
-        setTimeout(() => $('retireAge').style.backgroundColor = '', 600);
-      }
-      retire = age;
-    }
+    if (retire < age) retire = age; // 計算時內部修正，不強迫蓋掉使用者正在打的字
     
-    // 2. 勞保起領年齡法規限制：60 ～ 70 歲，且不得早於退休退保年齡
     let claim = n('claimAge');
-    if (claim < 60) {
-      if (document.activeElement !== $('claimAge')) {
-        $('claimAge').value = 60;
-      }
-      claim = 60;
-    } else if (claim > 70) {
-      if (document.activeElement !== $('claimAge')) {
-        $('claimAge').value = 70;
-      }
-      claim = 70;
-    }
-    if (claim < retire) {
-      if (document.activeElement !== $('claimAge')) {
-        $('claimAge').value = retire;
-        $('claimAge').style.transition = 'background-color 0.3s';
-        $('claimAge').style.backgroundColor = '#FFE5E5';
-        setTimeout(() => $('claimAge').style.backgroundColor = '', 600);
-      }
-      claim = retire;
+    if (claim < 60) claim = 60;
+    else if (claim > 70) claim = 70;
+    if (claim < retire) claim = retire;
+    
+    // 更新 Slider 邊界
+    if ($('retireAgeSlider')) $('retireAgeSlider').min = age;
+    if ($('claimAgeSlider')) {
+      $('claimAgeSlider').min = Math.max(60, retire);
     }
     
     const birthROC = n('birthROC');
@@ -3580,7 +3610,35 @@
         .waterfall-container .cashflow-row { padding: 6px 0; font-size: 13px; }
         .waterfall-container .final { margin-top: auto; padding-top: 12px; }
         @media (max-width: 768px) { .waterfall-container { flex-direction: column; } }
-      </style>
+      
+    /* Apple Native Slider */
+    .apple-slider {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 6px;
+      background: var(--separator);
+      border-radius: 4px;
+      outline: none;
+      margin-top: 14px;
+      margin-bottom: 4px;
+    }
+    .apple-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: #fff;
+      border: 1px solid rgba(0,0,0,0.1);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+    .apple-slider::-webkit-slider-thumb:active {
+      transform: scale(1.1);
+    }
+    
+  </style>
     `;
 
     if (R.hasBridgePeriod) {
