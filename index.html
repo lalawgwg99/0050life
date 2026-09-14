@@ -2913,7 +2913,7 @@
             </div>
 
             <div class="pledge-dash-item" style="background:#FFFFFF; border:1px solid #E2E8F0; padding:12px; border-radius:12px;">
-              <div class="pledge-dash-label" style="font-size:11.5px; color:#64748B;">4% 基準提領額 (淨資產)</div>
+              <div class="pledge-dash-label" id="lblPledgeBaseWithdraw" style="font-size:11.5px; color:#64748B;">基準提領額 (淨資產)</div>
               <div class="pledge-dash-val" id="valPledgeBaseWithdraw" style="font-size:17px; font-weight:800; color:#0284C7;">$0 / 年</div>
               <div style="font-size:10.5px; color:#94A3B8; margin-top:2px;" id="subPledgeBaseWithdraw">每月 $0</div>
             </div>
@@ -4038,19 +4038,24 @@ class LongevityModel {
       
       
       // Populate the 6 Pledge Dashboard Boxes
+      const isPerpetual = withdrawalMode === 'perpetual';
+      if ($('lblPledgeBaseWithdraw')) {
+        $('lblPledgeBaseWithdraw').textContent = isPerpetual ? '4% 永續提領額 (淨資產)' : '平滑提領額 (淨資產)';
+      }
+
       if ($('valPledgeExposure')) {
         let lev = R.netStockEquity > 0 ? (R.totalPortfolioValue / R.netStockEquity) : 1;
         $('valPledgeExposure').textContent = lev.toFixed(2) + '×';
       }
       if ($('subPledgeExposure')) $('subPledgeExposure').textContent = '總市值 $' + fmtMoney(R.totalPortfolioValue);
       
-      if ($('valPledgeBaseWithdraw')) $('valPledgeBaseWithdraw').textContent = '$' + fmtMoney(R.monthlySWRIncome * 12) + ' / 年';
+      if ($('valPledgeBaseWithdraw')) $('valPledgeBaseWithdraw').textContent = fmtMoney(R.monthlySWRIncome * 12) + ' / 年';
       
-      if ($('valPledgeAnnualInterest')) $('valPledgeAnnualInterest').textContent = '-$' + fmtMoney(R.monthlyPledgeInterest * 12) + ' / 年';
+      if ($('valPledgeAnnualInterest')) $('valPledgeAnnualInterest').textContent = '-' + fmtMoney(R.monthlyPledgeInterest * 12) + ' / 年';
       
       const annualDisposable = (R.monthlySWRIncome * 12) - (R.monthlyPledgeInterest * 12);
-      if ($('valPledgeDisposable')) $('valPledgeDisposable').textContent = '$' + fmtMoney(annualDisposable) + ' / 年';
-      if ($('subPledgeDisposable')) $('subPledgeDisposable').textContent = '每月 $' + fmtMoney(annualDisposable / 12);
+      if ($('valPledgeDisposable')) $('valPledgeDisposable').textContent = fmtMoney(annualDisposable) + ' / 年';
+      if ($('subPledgeDisposable')) $('subPledgeDisposable').textContent = '每月 ' + fmtMoney(annualDisposable / 12);
       
       if ($('valPledgeBurdenRate')) $('valPledgeBurdenRate').textContent = effectiveBurden.toFixed(2) + '%';
       
@@ -4067,14 +4072,25 @@ class LongevityModel {
       const warnBox = $('boxPledgeSWRWarning');
       if (warnBox) {
         if (pledgeStrategy === 'leverage' && R.actualPledgeLoan > 0) {
-          if (effectiveBurden > 4.5 || swr > 0.035) {
+          // 若是平滑提領，負擔率高是正常的(因為要花光本金)，但仍需注意維持率
+          const burdenThreshold = isPerpetual ? 4.5 : 8.0; 
+          const swrThreshold = isPerpetual ? 0.035 : 1.0; // 平滑不看名目 swr
+
+          if (effectiveBurden > burdenThreshold || (isPerpetual && swr > swrThreshold)) {
             warnBox.style.display = 'block';
             warnBox.style.background = '#FEF2F2';
             warnBox.style.border = '1px solid #FECACA';
             warnBox.style.color = '#991B1B';
-            warnBox.innerHTML = '⚠️ <strong>提領超載警示（質押與 4% 法則衝突）：</strong><br>' +
-              '您目前名目提領率設定為 <strong>' + (swr * 100).toFixed(1) + '%</strong>，加計借款利息後，對「自有淨值」的<strong>實質負擔率高達 ' + effectiveBurden.toFixed(1) + '%</strong>（已衝破 4% 安全上限）！<br>' +
-              '若退休初期遭遇大盤股災，將面臨本金快速侵蝕與追加保證金風險。建議：(1) 將提領率調降至 <strong>2.5%～3.0%</strong>，或 (2) 將質押借款降至 <strong>20% 以下</strong>。';
+            
+            if (isPerpetual) {
+              warnBox.innerHTML = '⚠️ <strong>提領超載警示（質押與 4% 法則衝突）：</strong><br>' +
+                '您目前名目提領率設定為 <strong>' + (swr * 100).toFixed(1) + '%</strong>，加計借款利息後，對「自有淨值」的<strong>實質負擔率高達 ' + effectiveBurden.toFixed(1) + '%</strong>（已衝破 4% 安全上限）！<br>' +
+                '若退休初期遭遇大盤股災，將面臨本金快速侵蝕與追加保證金風險。建議：(1) 將提領率調降至 <strong>2.5%～3.0%</strong>，或 (2) 將質押借款降至 <strong>20% 以下</strong>。';
+            } else {
+              warnBox.innerHTML = '⚠️ <strong>本金快速侵蝕警示（平滑提領疊加質押）：</strong><br>' +
+                '您目前採用「平滑提領（耗盡本金）」，加計借款利息後，每年的<strong>實質負擔率高達 ' + effectiveBurden.toFixed(1) + '%</strong>！<br>' +
+                '質押槓桿極度不適合與「耗盡本金」策略同時使用。隨著本金自然消耗，擔保維持率將快速下降。若遭遇股災，極易引發斷頭危機。建議改用「永續提領」或取消質押。';
+            }
           } else {
             warnBox.style.display = 'block';
             warnBox.style.background = '#F0FDF4';
@@ -4096,7 +4112,7 @@ class LongevityModel {
       // 連動 Section 1 的 SWR 提領率提示
       const swrNotice = $('swrPledgeConflictNotice');
       if (swrNotice) {
-        if (enablePledge && pledgeStrategy === 'leverage' && R.actualPledgeLoan > 0 && swr > 0.035) {
+        if (enablePledge && pledgeStrategy === 'leverage' && R.actualPledgeLoan > 0 && (effectiveBurden > 4.5 || (isPerpetual && swr > 0.035))) {
           swrNotice.style.display = 'block';
           swrNotice.innerHTML = '⚠️ <strong>已啟用質押買股</strong>：加計借款利息後，實質資產負擔率達 <strong>' + effectiveBurden.toFixed(1) + '%</strong>。依三一研究安全模型，強烈建議將此處提領率調降至 <strong>2.5%～3.0%</strong>。';
         } else {
