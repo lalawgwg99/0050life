@@ -1215,6 +1215,22 @@
       }
     }
     
+  
+    .cashflow-row.total-inflow {
+      border-top: 1px dashed rgba(0,0,0,0.1);
+      padding-top: 8px;
+      margin-top: 4px;
+    }
+    .cashflow-row.total-inflow .cashflow-row-name {
+      font-weight: 700;
+      color: var(--label-primary);
+    }
+    .cashflow-row.total-inflow .cashflow-row-val {
+      font-size: 15px;
+      font-weight: 800;
+      color: var(--label-primary);
+    }
+
   </style>
 </head>
 <body>
@@ -2667,6 +2683,7 @@
           '<div class="cashflow-row"><span class="cashflow-row-name">第一支柱：勞保年金</span><span class="cashflow-row-val" style="color:var(--label-tertiary);">$0（尚未起領）</span></div>' +
           pensionRowP1 +
           partTimeRow +
+          '<div class=\"cashflow-row total-inflow\"><span class=\"cashflow-row-name\">每月總可用資金 (收入加總)</span><span class=\"cashflow-row-val\">' + fmtMoney(R.totalMonthlyInflow) + '／月</span></div>' +
           '<div class="cashflow-row final"><span class="cashflow-row-name">月淨現金流</span><span class="cashflow-row-val">' + fmtNet(R.netMonthlyCashflow) + '／月</span></div>' +
         '</div>' +
 
@@ -2678,6 +2695,7 @@
           '<div class="cashflow-row"><span class="cashflow-row-name">第一支柱：勞保年金</span><span class="cashflow-row-val" style="color:var(--system-green-dark); font-weight:700;">+' + fmtMoney(R.laborFullMonthly) + '／月</span></div>' +
           pensionRowP2 +
           partTimeRow +
+          '<div class=\"cashflow-row total-inflow\"><span class=\"cashflow-row-name\">每月總可用資金 (收入加總)</span><span class=\"cashflow-row-val\">' + fmtMoney(R.totalInflowEndgame) + '／月</span></div>' +
           '<div class="cashflow-row final"><span class="cashflow-row-name">月淨現金流</span><span class="cashflow-row-val">' + fmtNet(R.netCashflowEndgame) + '／月</span></div>' +
           '<div style="font-size:11.5px; color:var(--label-secondary); margin-top:6px; line-height:1.5;">' +
             '終身每月由投資組合提領 <strong style="color:var(--accent);">' + fmtMoney(R.monthlySWRIncome) + '</strong>（4% SWR）：其中約 <strong style="color:var(--system-green-dark);">+' + fmtMoney(naturalDivMonthly) + '</strong>（2.8%）由大盤指數自然配息進帳，每年僅需動態調度約 <strong style="color:var(--accent);">+' + fmtMoney(capGainMonthly) + '</strong> 資本利得，免受大量賣股恐慌。' +
@@ -2707,6 +2725,7 @@
           '<div class="cashflow-row"><span class="cashflow-row-name">第一支柱：勞保年金 ' + laborNote + '</span><span class="cashflow-row-val" style="color:var(--system-green-dark); font-weight:700;">+' + fmtMoney(R.laborAtRetire) + '／月</span></div>' +
           pensionRowSingle +
           partTimeRow +
+          '<div class=\"cashflow-row total-inflow\"><span class=\"cashflow-row-name\">每月總可用資金 (收入加總)</span><span class=\"cashflow-row-val\">' + fmtMoney(R.totalMonthlyInflow) + '／月</span></div>' +
           '<div class="cashflow-row final"><span class="cashflow-row-name">月淨現金流</span><span class="cashflow-row-val">' + fmtNet(R.netMonthlyCashflow) + '／月</span></div>' +
           '<div style="font-size:11.5px; color:var(--label-secondary); margin-top:6px; line-height:1.5;">' +
             '退休後每月由投資組合依 <strong>' + (swr*100).toFixed(1) + '%</strong> SWR 提領 <strong style="color:var(--accent);">' + fmtMoney(R.monthlySWRIncome) + '</strong>，搭配勞保年金 <strong style="color:var(--system-green-dark);">' + fmtMoney(R.laborAtRetire) + '</strong>。' +
