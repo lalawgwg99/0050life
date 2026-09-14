@@ -1312,6 +1312,31 @@
       }
     }
 
+  
+    /* 勞保局官方外部連結樣式 */
+    .apple-field-link {
+      color: var(--accent);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      font-weight: 600;
+      transition: opacity 0.15s;
+    }
+    .apple-field-link:hover {
+      opacity: 0.75;
+    }
+
+    /* 房產活化模組樣式 */
+    .house-impact-card {
+      background: #FFFFFF;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
   </style>
 </head>
 <body>
@@ -1324,6 +1349,7 @@
         <h1 class="header-title">退休準備三支柱精算系統</h1>
         <p class="header-desc">
           以今日實質購買力為基準，整合勞保年金、勞退新制專戶與自有投資資產，精算各階段現金流與資產缺口。
+          <a href="blog/retirement-asset-allocation-guide.html" class="apple-field-link" style="margin-left:4px; font-weight:650;">新手指南：如何開始三支柱資產配置？ ↗</a>
         </p>
       </div>
       <div class="header-actions">
@@ -1503,7 +1529,7 @@
               <input type="number" id="laborYearsNow" class="apple-input" inputmode="decimal" value="10" step="0.1">
               <span class="input-unit">年</span>
             </div>
-            <div class="field-desc">可透過健保卡或行動電話認證至勞保局 e 化系統查詢</div>
+            <div class="field-desc">可使用健保卡或行動認證，前往 <a href="https://edesk.bli.gov.tw/me/#/na/login" target="_blank" rel="noopener" class="apple-field-link">勞保局 e 化服務系統 ↗</a> 即時查詢實際年資</div>
           </div>
 
           <!-- 未來新增年資 -->
@@ -1556,7 +1582,7 @@
               <input type="number" id="pensionBalance" class="apple-input" inputmode="numeric" value="300000" step="10000">
               <span class="input-unit">元</span>
             </div>
-            <div class="field-desc">登入勞保局 e 化系統查詢「個人退休金專戶核發金額」</div>
+            <div class="field-desc">可登入 <a href="https://edesk.bli.gov.tw/me/#/na/login" target="_blank" rel="noopener" class="apple-field-link">勞保局 e 化服務系統 ↗</a> 查詢個人退休金專戶累計核發金額</div>
           </div>
 
           <!-- 月提繳工資級距 -->
@@ -1768,8 +1794,101 @@
         </section>
 
       <!-- 區塊 5：進階功能 股票質押 -->
+      
+      <!-- 區塊 5：居住與房產策略（選填） -->
       <section class="apple-card">
-        <h2 class="card-title">⚡ 5. 進階功能：股票質押槓桿模擬</h2>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+          <div>
+            <h2 class="card-title">🏡 5. 居住與房產策略：房貸結清與資產活化（選填）</h2>
+            <p class="card-subtitle">自住房產常是國人最大的隱形財富。可模擬房貸繳清後釋放的投資動能，或將無貸房屋活化為穩定養老現金流。</p>
+          </div>
+          <span class="field-badge-note" id="badgeHouseStatus" style="background:#F4F5F7; color:var(--label-secondary);">未啟用</span>
+        </div>
+
+        <div class="fields-grid" style="margin-top:14px;">
+          <!-- 房產策略選擇器 -->
+          <div class="field-cell field-full">
+            <div class="field-header">
+              <span class="field-label">房產狀態與退休活化方案</span>
+            </div>
+            <div class="input-wrapper">
+              <select id="houseStrategy" class="apple-select" onchange="toggleHouseFields(); calculate();">
+                <option value="none" selected>無房產 / 租屋生活（不納入房產活化）</option>
+                <option value="mortgage_ending">自住有房：房貸即將繳清（模擬房貸歸零，釋放資金定期定額）</option>
+                <option value="reverse_mortgage">自住無貸：以房養老（申請公股銀行商業型逆向抵押年金）</option>
+                <option value="downsizing">退休換屋：售大換小套現（大宅換小坪數，淨差額注入股票池）</option>
+              </select>
+            </div>
+            <div class="field-desc">依個人名下不動產狀況選擇，精算對退休現金流的實質貢獻</div>
+          </div>
+
+          <!-- 子欄位 A: 房貸繳清年限與月付金 -->
+          <div class="field-cell" id="boxMortgageYears" style="display:none;">
+            <div class="field-header">
+              <span class="field-label">距離房貸全額繳清</span>
+            </div>
+            <div class="input-wrapper">
+              <input type="number" id="mortgageYearsLeft" class="apple-input" inputmode="numeric" value="5" min="1" max="30" step="1" oninput="calculate()">
+              <span class="input-unit">年</span>
+            </div>
+            <div class="field-desc">預估再繳幾年房貸即完全結清，擺脫負債</div>
+          </div>
+
+          <div class="field-cell" id="boxMortgagePay" style="display:none;">
+            <div class="field-header">
+              <span class="field-label">目前每月房貸本息支出</span>
+            </div>
+            <div class="input-wrapper">
+              <input type="number" id="mortgageMonthlyPay" class="apple-input" inputmode="numeric" value="25000" step="1000" oninput="calculate()">
+              <span class="input-unit">元</span>
+            </div>
+            <div class="field-desc">結清後至退休前，這筆預算可無縫轉入 0050 加速累積</div>
+          </div>
+
+          <!-- 子欄位 B: 以房養老月撥款 -->
+          <div class="field-cell field-full" id="boxReverseMortgage" style="display:none;">
+            <div class="field-header">
+              <span class="field-label">銀行以房養老預估每月撥款</span>
+            </div>
+            <div class="input-wrapper">
+              <input type="number" id="reverseMortgageMonthly" class="apple-input" inputmode="numeric" value="25000" step="1000" oninput="calculate()">
+              <span class="input-unit">元／月</span>
+            </div>
+            <div class="field-desc">由承辦公股行庫（土銀/合庫/台銀等）按月穩定撥付，本人仍保有終身居住權</div>
+          </div>
+
+          <!-- 子欄位 C: 售大換小套現 -->
+          <div class="field-cell field-full" id="boxDownsizing" style="display:none;">
+            <div class="field-header">
+              <span class="field-label">退休換屋預估淨套現金額</span>
+            </div>
+            <div class="input-wrapper">
+              <input type="number" id="downsizingCash" class="apple-input" inputmode="numeric" value="3000000" step="100000" oninput="calculate()">
+              <span class="input-unit">元</span>
+            </div>
+            <div class="field-desc">扣除新購電梯小宅與各項交易稅費後，淨結餘於退休時全數注入股票投資池</div>
+          </div>
+
+          <!-- 房產即時效益卡片 -->
+          <div class="field-cell field-full" id="boxHouseDashboard" style="display:none;">
+            <div class="pension-strategy-card" style="margin-top:0;">
+              <div class="pension-strategy-header">
+                <span class="pension-strategy-title">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                  房產活化對退休財務之實質效益
+                </span>
+                <span class="field-badge-note" id="badgeHouseImpact" style="background:#E0F7F8; color:#00C2C7;">資產倍增</span>
+              </div>
+              <div class="pension-desc-note" id="txtHouseInsight">
+                載入房產精算中...
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="apple-card">
+        <h2 class="card-title">⚡ 6. 進階功能：股票質押槓桿模擬</h2>
         <p class="card-subtitle">質押屬於負債槓桿工具。借入資金買入股票可放大提領額度，但同時產生硬性利息支出與追繳斷頭風險。</p>
 
         <div class="fields-grid">
@@ -2113,7 +2232,7 @@
     'birthYear','retireAge','targetToday','inflation','partTime','withdrawRate','withdrawalMode','lifeExpectancy',
     'claimAge','laborYearsNow','avgInsuredSalary',
     'pensionBalance','pensionWage','selfRate','pensionReturn','pensionMode',
-    'assetsNow','monthlyInvest','expectedReturn','fee','portfolioPreset','pledgeStrategy','pledgeRate','pledgeAmount'
+    'assetsNow','monthlyInvest','expectedReturn','fee','portfolioPreset','houseStrategy','mortgageYearsLeft','mortgageMonthlyPay','reverseMortgageMonthly','downsizingCash','pledgeStrategy','pledgeRate','pledgeAmount'
   ];
 
   inputIds.forEach(id => {
@@ -2275,6 +2394,43 @@
   }
 
   // 質押欄位顯示切換
+  
+  // 切換房產與居住策略欄位
+  function toggleHouseFields() {
+    const s = $('houseStrategy') ? $('houseStrategy').value : 'none';
+    const isMortgage = (s === 'mortgage_ending');
+    const isReverse = (s === 'reverse_mortgage');
+    const isDownsizing = (s === 'downsizing');
+    const isAny = (s !== 'none');
+
+    if ($('boxMortgageYears')) $('boxMortgageYears').style.display = isMortgage ? '' : 'none';
+    if ($('boxMortgagePay')) $('boxMortgagePay').style.display = isMortgage ? '' : 'none';
+    if ($('boxReverseMortgage')) $('boxReverseMortgage').style.display = isReverse ? '' : 'none';
+    if ($('boxDownsizing')) $('boxDownsizing').style.display = isDownsizing ? '' : 'none';
+    if ($('boxHouseDashboard')) $('boxHouseDashboard').style.display = isAny ? '' : 'none';
+
+    const badge = $('badgeHouseStatus');
+    if (badge) {
+      if (isMortgage) {
+        badge.textContent = '房貸倒數';
+        badge.style.background = '#E0F7F8';
+        badge.style.color = '#00C2C7';
+      } else if (isReverse) {
+        badge.textContent = '以房養老';
+        badge.style.background = 'var(--system-green-tint)';
+        badge.style.color = 'var(--system-green-dark)';
+      } else if (isDownsizing) {
+        badge.textContent = '換屋套現';
+        badge.style.background = '#FEF3C7';
+        badge.style.color = '#D97706';
+      } else {
+        badge.textContent = '未啟用';
+        badge.style.background = '#F4F5F7';
+        badge.style.color = 'var(--label-secondary)';
+      }
+    }
+  }
+
   function togglePledgeFields() {
     const p = $('pledgeStrategy');
     const isPledge = p && p.value !== 'none';
@@ -2310,9 +2466,11 @@
     // 第二支柱：勞退新制
     const pensionMonthly = (p.pensionMode === 'monthly') ? p.projectedPensionMonthly : 0;
     const pensionLumpToStock = (p.pensionMode === 'lump') ? p.projectedPensionLump : 0;
+    const downsizingCashToStock = (p.houseStrategy === 'downsizing') ? (p.downsizingCash || 0) : 0;
+    const extraMortgageStock = (p.houseStrategy === 'mortgage_ending') ? (p.extraMortgageStock || 0) : 0;
 
-    // ── 第一層：資產水庫構建 ──
-    const netStockEquity = p.stockAssetsAtRetire + pensionLumpToStock;
+    // ── 第一層：資產水庫構建（自有股票 + 勞退一次領 + 房產套現 + 房貸釋放複利）──
+    const netStockEquity = p.stockAssetsAtRetire + pensionLumpToStock + downsizingCashToStock + extraMortgageStock;
 
     // ── 第二層：質押槓桿獨立增額 ──
     let actualPledgeLoan = 0;
@@ -2345,19 +2503,20 @@
 
     // ── 第三層：4% 賣股提領 / 平滑享老 PV 精算 與收支結算 ──
     const monthlySWRIncome = (totalPortfolioValue * p.swrRate) / 12;
+    const monthlyReverseMortgage = (p.houseStrategy === 'reverse_mortgage') ? (p.reverseMortgageMonthly || 0) : 0;
 
     // 退休當下月現金流
-    const totalMonthlyInflow = monthlySWRIncome + laborAtRetire + pensionMonthly + nominalPartTime;
+    const totalMonthlyInflow = monthlySWRIncome + laborAtRetire + pensionMonthly + nominalPartTime + monthlyReverseMortgage;
     const totalMonthlyOutflow = nominalExpense + monthlyPledgeInterest;
     const netMonthlyCashflow = totalMonthlyInflow - totalMonthlyOutflow;
 
     // 勞保啟動後月現金流（用於雙階段對照）
-    const totalInflowEndgame = monthlySWRIncome + laborFullMonthly + pensionMonthly + nominalPartTime;
+    const totalInflowEndgame = monthlySWRIncome + laborFullMonthly + pensionMonthly + nominalPartTime + monthlyReverseMortgage;
     const netCashflowEndgame = totalInflowEndgame - totalMonthlyOutflow;
 
     // 退休當下每個月自備股票需要支應的純生活淨額 (PMT)
     const netMonthlyNeedFromEquity = Math.max(0,
-      nominalExpense + monthlyPledgeInterest - laborAtRetire - pensionMonthly - nominalPartTime);
+      nominalExpense + monthlyPledgeInterest - laborAtRetire - pensionMonthly - nominalPartTime - monthlyReverseMortgage);
 
     // 實質實算年報酬率（扣除通膨）
     const rNet = p.netReturnRate || 0.077;
@@ -2445,6 +2604,9 @@
       statutoryAge, ageDiff,
       pensionMonthly: Math.round(pensionMonthly),
       pensionLumpToStock: Math.round(pensionLumpToStock),
+      downsizingCashToStock: Math.round(downsizingCashToStock),
+      extraMortgageStock: Math.round(extraMortgageStock),
+      monthlyReverseMortgage: Math.round(monthlyReverseMortgage),
       netStockEquity: Math.round(netStockEquity),
       totalPortfolioValue: Math.round(totalPortfolioValue),
       actualPledgeLoan: Math.round(actualPledgeLoan),
@@ -2521,6 +2683,22 @@
     updateNetReturnTag();
     const projectedStockAssets = fv(n('assetsNow'), n('monthlyInvest'), netReturn, monthsToRetire);
 
+    
+    // 房產策略控制
+    const houseStrategy = $('houseStrategy') ? $('houseStrategy').value : 'none';
+    const mortgageYearsLeft = n('mortgageYearsLeft');
+    const mortgageMonthlyPay = n('mortgageMonthlyPay');
+    const reverseMortgageMonthly = n('reverseMortgageMonthly');
+    const downsizingCash = n('downsizingCash');
+    toggleHouseFields();
+
+    let extraMortgageStock = 0;
+    const yearsToRetire = Math.max(0, retire - age);
+    if (houseStrategy === 'mortgage_ending' && mortgageYearsLeft < yearsToRetire) {
+      const freeYears = yearsToRetire - mortgageYearsLeft;
+      extraMortgageStock = fv(0, mortgageMonthlyPay, netReturn, freeYears * 12);
+    }
+
     // 質押控制
     const pledgeStrategy = $('pledgeStrategy') ? $('pledgeStrategy').value : 'none';
     const enablePledge = pledgeStrategy !== 'none';
@@ -2541,6 +2719,10 @@
       projectedPensionLump: projectedPensionLump,
       projectedPensionMonthly: projectedPensionMonthly,
       stockAssetsAtRetire: projectedStockAssets,
+      houseStrategy: houseStrategy,
+      extraMortgageStock: extraMortgageStock,
+      reverseMortgageMonthly: reverseMortgageMonthly,
+      downsizingCash: downsizingCash,
       enablePledge: enablePledge,
       pledgeStrategy: pledgeStrategy,
       pledgeAmount: enablePledge ? n('pledgeAmount') : 0,
@@ -2595,6 +2777,28 @@
       
       if ($('txtPledgeWarning')) {
         $('txtPledgeWarning').innerHTML = 'ⓘ 若股市從高點下跌 <strong style="color:var(--system-red);">' + R.marginCallDrop + '%</strong>，維持率跌破 130% 時，將面臨券商追繳斷頭風險。';
+      }
+    }
+
+    
+    // ── 渲染：房產活化動態卡片 ──
+    if ($('txtHouseInsight') && houseStrategy !== 'none') {
+      const badgeImpact = $('badgeHouseImpact');
+      if (houseStrategy === 'mortgage_ending') {
+        if (mortgageYearsLeft < yearsToRetire) {
+          if (badgeImpact) { badgeImpact.textContent = '釋放複利 +' + fmtMoney(extraMortgageStock); badgeImpact.style.background = '#E0F7F8'; badgeImpact.style.color = '#00C2C7'; }
+          $('txtHouseInsight').innerHTML = '💡 <strong>房貸結清複利效應：</strong>距離房貸繳清尚有 <strong>' + mortgageYearsLeft + ' 年</strong>。繳清至退休的 <strong>' + (yearsToRetire - mortgageYearsLeft) + ' 年</strong>間，若將每月釋出的 <strong>' + fmtMoney(mortgageMonthlyPay) + '</strong> 房貸預算轉入定期定額，退休時股票資產將額外累積 <strong style="color:var(--accent);">+' + fmtMoney(extraMortgageStock) + '</strong>！且退休後零負債，生活開銷更輕鬆。';
+        } else {
+          if (badgeImpact) { badgeImpact.textContent = '房貸持續至退休後'; badgeImpact.style.background = '#FEF3C7'; badgeImpact.style.color = '#D97706'; }
+          $('txtHouseInsight').innerHTML = '💡 <strong>跨退休房貸提醒：</strong>距離房貸全額繳清尚需 <strong>' + mortgageYearsLeft + ' 年</strong>，退休後前 <strong>' + (mortgageYearsLeft - yearsToRetire) + ' 年</strong>仍需每月攤還 <strong>' + fmtMoney(mortgageMonthlyPay) + '</strong>。請確保目前設定之退休生活費已涵蓋該房貸支出。';
+        }
+      } else if (houseStrategy === 'reverse_mortgage') {
+        if (badgeImpact) { badgeImpact.textContent = '每月現金流入 +' + fmtMoney(reverseMortgageMonthly); badgeImpact.style.background = 'var(--system-green-tint)'; badgeImpact.style.color = 'var(--system-green-dark)'; }
+        $('txtHouseInsight').innerHTML = '💡 <strong>以房養老逆向年金：</strong>自住房屋轉化為終身穩定現金流，每月由公股銀行穩定撥款 <strong style="color:var(--system-green-dark);">+' + fmtMoney(reverseMortgageMonthly) + '／月</strong>。您不僅享有原屋終生居住權，更能直接抵扣生活費，大幅減少股票提領壓力！';
+      } else if (houseStrategy === 'downsizing') {
+        const extraMonthlySWR = Math.round((downsizingCash * (n('withdrawRate') / 100)) / 12);
+        if (badgeImpact) { badgeImpact.textContent = '一次注入 +' + fmtMoney(downsizingCash); badgeImpact.style.background = '#E0F7F8'; badgeImpact.style.color = '#00C2C7'; }
+        $('txtHouseInsight').innerHTML = '💡 <strong>退休換屋降維套現：</strong>售大換小淨套現 <strong>' + fmtMoney(downsizingCash) + '</strong> 於退休當年度一次注入股票資產池。依 4% 提領法則計算，每月可永久多提領 <strong style="color:var(--accent);">+' + fmtMoney(extraMonthlySWR) + '／月</strong>，顯著降低自備款門檻！';
       }
     }
 
@@ -2852,6 +3056,7 @@
           '<div class="cashflow-phase-title"><span class="phase-badge bridge">過渡期</span><span>' + retire + '～' + claim + ' 歲（共 ' + R.bridgeYears + ' 年）</span></div>' +
           '<div class="cashflow-row"><span class="cashflow-row-name">生活費需求</span><span class="cashflow-row-val">' + fmtMoney(R.nominalExpense) + '／月</span></div>' +
           pledgeRow +
+          houseRow +
           '<div class="cashflow-row"><span class="cashflow-row-name">4% 賣股提領</span><span class="cashflow-row-val" style="color:var(--accent); font-weight:700;">+' + fmtMoney(R.monthlySWRIncome) + '／月</span></div>' +
           '<div class="cashflow-row"><span class="cashflow-row-name">第一支柱：勞保年金</span><span class="cashflow-row-val" style="color:var(--label-tertiary);">$0（尚未起領）</span></div>' +
           pensionRowP1 +
@@ -2864,6 +3069,7 @@
           '<div class="cashflow-phase-title"><span class="phase-badge life">終身期</span><span>' + claim + ' 歲起（勞保啟動）</span></div>' +
           '<div class="cashflow-row"><span class="cashflow-row-name">生活費需求</span><span class="cashflow-row-val">' + fmtMoney(R.nominalExpense) + '／月</span></div>' +
           pledgeRow +
+          houseRow +
           '<div class="cashflow-row"><span class="cashflow-row-name">4% 賣股提領</span><span class="cashflow-row-val" style="color:var(--accent); font-weight:700;">+' + fmtMoney(R.monthlySWRIncome) + '／月</span></div>' +
           '<div class="cashflow-row"><span class="cashflow-row-name">第一支柱：勞保年金</span><span class="cashflow-row-val" style="color:var(--system-green-dark); font-weight:700;">+' + fmtMoney(R.laborFullMonthly) + '／月</span></div>' +
           pensionRowP2 +
@@ -2894,6 +3100,7 @@
           '<div class="cashflow-phase-title"><span class="phase-badge life">終身階段</span><span>' + retire + ' 歲起（同步起領）</span></div>' +
           '<div class="cashflow-row"><span class="cashflow-row-name">生活費需求</span><span class="cashflow-row-val">' + fmtMoney(R.nominalExpense) + '／月</span></div>' +
           pledgeRow +
+          houseRow +
           '<div class="cashflow-row"><span class="cashflow-row-name">4% 賣股提領</span><span class="cashflow-row-val" style="color:var(--accent); font-weight:700;">+' + fmtMoney(R.monthlySWRIncome) + '／月</span></div>' +
           '<div class="cashflow-row"><span class="cashflow-row-name">第一支柱：勞保年金 ' + laborNote + '</span><span class="cashflow-row-val" style="color:var(--system-green-dark); font-weight:700;">+' + fmtMoney(R.laborAtRetire) + '／月</span></div>' +
           pensionRowSingle +
