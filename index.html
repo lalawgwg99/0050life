@@ -2146,9 +2146,7 @@
           <span class="brand-tag">FIRE 財務自由精算沙盤</span>
         </div>
         <h1 class="header-title">退休領航系統</h1>
-        <p class="header-desc">
-          以實質購買力為基準，整合勞保年金、勞退新制與指數化資產，精算各階段現金流、通膨折算與長壽提領防線。
-        </p>
+        <p class="header-desc">整合勞保、勞退與 ETF 投資，扣除通膨，精算人生各階段現金流與退休缺口。</p>
       </div>
       <div class="header-actions">
         <a href="blog/" class="btn-action-outline" title="閱讀退職精算研究專欄與指南">
@@ -2281,12 +2279,8 @@
               <span class="field-badge-note" id="tagModeDesc">4% 永續留本</span>
             </div>
             <div class="apple-segmented-control" id="segWithdrawalMode" style="margin-bottom:12px;">
-              <button type="button" class="seg-btn active" id="btnModePerpetual" onclick="setWithdrawalMode('perpetual')">
-                <span class="seg-main">4% 永續傳承</span><span class="seg-sub hide-mobile">（本金不減）</span>
-              </button>
-              <button type="button" class="seg-btn" id="btnModeDeplete" onclick="setWithdrawalMode('deplete')">
-                <span class="seg-main">計畫平滑提領</span><span class="seg-sub hide-mobile">（終點歸零）</span>
-              </button>
+              <button type="button" class="seg-btn active" id="btnModePerpetual" onclick="setWithdrawalMode('perpetual')">4% 永續留本</button>
+              <button type="button" class="seg-btn" id="btnModeDeplete" onclick="setWithdrawalMode('deplete')">逐年花到歸零</button>
             </div>
             
             <!-- 提領模型哲學動態解說卡片 -->
@@ -2496,12 +2490,8 @@
             <!-- Apple Segmented Control -->
             <input type="hidden" id="pensionMode" value="lump">
             <div class="apple-segmented-control" id="segPensionMode" style="margin-bottom:12px;">
-              <button type="button" class="seg-btn active" id="btnPensionLump" onclick="setPensionMode('lump')">
-                <span class="seg-main">一次全額請領</span><span class="seg-sub hide-mobile">（自建水庫）</span>
-              </button>
-              <button type="button" class="seg-btn" id="btnPensionMonthly" onclick="setPensionMode('monthly')">
-                <span class="seg-main">按月領取年金</span><span class="seg-sub hide-mobile">（保證至餘命）</span>
-              </button>
+              <button type="button" class="seg-btn active" id="btnPensionLump" onclick="setPensionMode('lump')">一次全額領</button>
+              <button type="button" class="seg-btn" id="btnPensionMonthly" onclick="setPensionMode('monthly')">按月領年金</button>
             </div>
 
             <!-- 雙方案深度試算對比卡片 -->
@@ -3037,8 +3027,8 @@
 
       <!-- 市場敏感度測試 -->
       <div class="apple-card">
-        <h3 class="card-title" style="font-size: 14.5px; margin-bottom: 2px;">大盤報酬敏感度壓力測試</h3>
-        <p class="card-subtitle" style="margin-bottom: 10px;">長線行情不如預期或多頭增長時之預估對比：</p>
+        <h3 class="card-title" style="font-size: 15px; margin-bottom: 4px;">股市好壞情境試算</h3>
+        <p class="card-subtitle" style="margin-bottom: 10px;">若大盤長期大漲、持平或遭遇股災時的資產對比：</p>
         <table class="matrix-table">
           <thead>
             <tr>
@@ -3124,7 +3114,7 @@
       if (btnDepl) btnDepl.classList.add('active');
       if (boxSwr) boxSwr.style.display = 'none';
       if (boxLife) boxLife.style.display = 'flex';
-      if (tagMode) tagMode.textContent = '計畫提領（本金逐步歸零）';
+      if (tagMode) tagMode.textContent = '逐年花到歸零';
       if ($('txtWithdrawalTheory')) {
         $('txtWithdrawalTheory').style.borderLeftColor = 'var(--system-orange)';
         $('txtWithdrawalTheory').style.backgroundColor = 'var(--system-orange-tint)';
