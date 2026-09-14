@@ -1231,6 +1231,87 @@
       color: var(--label-primary);
     }
 
+  
+    /* 勞退請領策略決策卡 (Richart / Apple Native Style) */
+    .pension-strategy-card {
+      background: #F9FAFB;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      border-radius: 16px;
+      padding: 16px;
+      margin-top: 14px;
+    }
+    .pension-strategy-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .pension-strategy-title {
+      font-size: 12.5px;
+      font-weight: 700;
+      color: var(--label-primary);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .pension-stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .pension-stat-cell {
+      background: #FFFFFF;
+      border: 2px solid transparent;
+      border-radius: 12px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+    }
+    .pension-stat-cell.active-lump {
+      border-color: var(--accent);
+      background: rgba(0, 194, 199, 0.02);
+    }
+    .pension-stat-cell.active-monthly {
+      border-color: var(--system-green);
+      background: rgba(16, 185, 129, 0.02);
+    }
+    .pension-stat-label {
+      font-size: 11px;
+      color: var(--label-secondary);
+      font-weight: 700;
+    }
+    .pension-stat-val {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      font-variant-numeric: tabular-nums;
+    }
+    .pension-stat-sub {
+      font-size: 11px;
+      color: var(--label-secondary);
+      line-height: 1.4;
+    }
+    .pension-desc-note {
+      font-size: 11.5px;
+      color: var(--label-secondary);
+      line-height: 1.5;
+      background: #FFFFFF;
+      border-left: 3px solid var(--accent);
+      padding: 10px 14px;
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+    @media (max-width: 480px) {
+      .pension-stat-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
   </style>
 </head>
 <body>
@@ -1514,18 +1595,57 @@
             <div class="field-desc">勞動基金歷年長期保本投資收益率約 3%～4%</div>
           </div>
 
-          <!-- 請領方式 -->
+          <!-- 請領方式 (Apple Segmented Control + 雙模式深度決策卡) -->
           <div class="field-cell field-full">
             <div class="field-header">
-              <span class="field-label">退職時請領方式</span>
+              <span class="field-label">退職時請領方式與調度策略</span>
+              <span class="field-badge-note" id="tagPensionModeDesc">一次領 預估 $0</span>
             </div>
-            <div class="input-wrapper">
-              <select id="pensionMode" class="apple-select">
-                <option value="lump" selected>一次全額請領（優先充當過渡期生活費水庫，差額併入股票資產）</option>
-                <option value="monthly">按月請領（由勞保局依平均餘命現值因子按月發放）</option>
-              </select>
+
+            <!-- Apple Segmented Control -->
+            <input type="hidden" id="pensionMode" value="lump">
+            <div class="apple-segmented-control" id="segPensionMode" style="margin-bottom:12px;">
+              <button type="button" class="seg-btn active" id="btnPensionLump" onclick="setPensionMode('lump')">
+                一次全額請領（自建投資水庫）
+              </button>
+              <button type="button" class="seg-btn" id="btnPensionMonthly" onclick="setPensionMode('monthly')">
+                按月請領（年金保證至餘命）
+              </button>
             </div>
-            <div class="field-desc">滿 60 歲且年資滿 15 年可自選一次領或按月領；一次領可直接抵沖 60～65 歲過渡期生活費</div>
+
+            <!-- 雙方案深度試算對比卡片 -->
+            <div class="pension-strategy-card" id="pensionStrategyCard">
+              <div class="pension-strategy-header">
+                <span class="pension-strategy-title">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                  勞退專戶兩大方案效益精算對照
+                </span>
+                <span class="field-badge-note" style="background:#E0F7F8; color:#00C2C7;" id="badgePensionSuggest">自律投資人首選一次領</span>
+              </div>
+
+              <div class="pension-stat-grid">
+                <div class="pension-stat-cell active-lump" id="cellPensionLump" onclick="setPensionMode('lump')">
+                  <span class="pension-stat-label">方案 A：一次全額領取</span>
+                  <span class="pension-stat-val" id="statPensionLumpVal" style="color:var(--accent);">$0</span>
+                  <span class="pension-stat-sub" id="statPensionLumpSub">
+                    併入股票池 4% 提領可增月收 <strong>+$0</strong>，本金持續抗通膨成長
+                  </span>
+                </div>
+
+                <div class="pension-stat-cell" id="cellPensionMonthly" onclick="setPensionMode('monthly')">
+                  <span class="pension-stat-label">方案 B：按月請領年金</span>
+                  <span class="pension-stat-val" id="statPensionMonthlyVal" style="color:var(--system-green-dark);">$0／月</span>
+                  <span class="pension-stat-sub" id="statPensionMonthlySub">
+                    依現值因子精算發放至平均餘命（約 84 歲），本利全數歸零
+                  </span>
+                </div>
+              </div>
+
+              <!-- 動態決策指引文案 -->
+              <div class="pension-desc-note" id="txtPensionInsight">
+                載入精算分析中...
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -1841,6 +1961,34 @@
 <script>
   const $ = id => document.getElementById(id);
   // 切換提領模式（永續 vs 平滑享老）
+  
+  // 切換勞退請領模式（一次領 vs 月領）
+  function setPensionMode(mode) {
+    const hidden = $('pensionMode');
+    if (!hidden) return;
+    hidden.value = mode;
+
+    const btnLump = $('btnPensionLump');
+    const btnMonthly = $('btnPensionMonthly');
+    const cellLump = $('cellPensionLump');
+    const cellMonthly = $('cellPensionMonthly');
+
+    if (mode === 'monthly') {
+      if (btnLump) btnLump.classList.remove('active');
+      if (btnMonthly) btnMonthly.classList.add('active');
+      if (cellLump) cellLump.className = 'pension-stat-cell';
+      if (cellMonthly) cellMonthly.className = 'pension-stat-cell active-monthly';
+    } else {
+      if (btnLump) btnLump.classList.add('active');
+      if (btnMonthly) btnMonthly.classList.remove('active');
+      if (cellLump) cellLump.className = 'pension-stat-cell active-lump';
+      if (cellMonthly) cellMonthly.className = 'pension-stat-cell';
+    }
+
+    saveLocalState();
+    calculate(false);
+  }
+
   function setWithdrawalMode(mode) {
     const hidden = $('withdrawalMode');
     if (!hidden) return;
@@ -2342,6 +2490,31 @@
     const pensionFactor = getLaborPensionFactor(retire);
     const pensionMode = $('pensionMode').value;
     const projectedPensionMonthly = projectedPensionLump / pensionFactor;
+    
+    // ── 渲染：勞退雙方案即時對照卡片 ──
+    const swrBenefit = Math.round((projectedPensionLump * (n('withdrawRate') / 100)) / 12);
+    const bridgeMonthsCovered = Math.floor(projectedPensionLump / Math.max(1, (n('targetToday') * Math.pow(1 + n('inflation')/100, Math.max(0, retire - age)))));
+    
+    if ($('tagPensionModeDesc')) {
+      $('tagPensionModeDesc').textContent = (pensionMode === 'monthly')
+        ? '月領 預估 ' + fmtMoney(projectedPensionMonthly) + '／月'
+        : '一次領 預估 ' + fmtMoney(projectedPensionLump);
+    }
+    if ($('statPensionLumpVal')) $('statPensionLumpVal').textContent = fmtMoney(projectedPensionLump);
+    if ($('statPensionLumpSub')) {
+      $('statPensionLumpSub').innerHTML = '併入股票池 4% 提領每月增收 <strong style="color:var(--accent);">+' + fmtMoney(swrBenefit) + '／月</strong>，本金持續抗通膨成長';
+    }
+    if ($('statPensionMonthlyVal')) $('statPensionMonthlyVal').textContent = fmtMoney(projectedPensionMonthly) + '／月';
+    if ($('statPensionMonthlySub')) {
+      $('statPensionMonthlySub').innerHTML = '依 ' + retire + ' 歲現值因子 ' + pensionFactor.toFixed(1) + ' 精算定期發放至約 84 歲平均餘命，到期歸零';
+    }
+    if ($('txtPensionInsight')) {
+      if (pensionMode === 'lump') {
+        $('txtPensionInsight').innerHTML = '💡 <strong>一次全額領策略分析：</strong>專戶累積總額達 <strong>' + fmtMoney(projectedPensionLump) + '</strong>。併入大盤 ETF 享有 7%~8% 長期實質複利；亦可充當退休過渡期約 <strong>' + bridgeMonthsCovered + ' 個月（' + (bridgeMonthsCovered/12).toFixed(1) + ' 年）</strong>無風險生活費水庫，免於股災賣股。';
+      } else {
+        $('txtPensionInsight').innerHTML = '💡 <strong>按月請領策略分析：</strong>每月由勞保局專戶穩定發放 <strong>' + fmtMoney(projectedPensionMonthly) + '</strong>，完全不受股市回撤影響。但因<strong>無通膨調整機制</strong>且平均餘命後本金歸零，長期實質購買力會逐年遞減。';
+      }
+    }
 
     // 第三支柱：自有投資
     const netReturn = (n('expectedReturn') - n('fee')) / 100;
@@ -2796,7 +2969,7 @@
     $('pensionWage').value = 45800;
     $('selfRate').value = 6;
     $('pensionReturn').value = 3.0;
-    $('pensionMode').value = 'lump';
+    setPensionMode('lump');
     $('assetsNow').value = 500000;
     $('monthlyInvest').value = 10000;
     $('expectedReturn').value = 8.0;
