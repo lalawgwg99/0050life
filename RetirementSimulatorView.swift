@@ -1,5 +1,11 @@
 import SwiftUI
 
+enum WithdrawalMode: String, CaseIterable, Identifiable {
+    case perpetual = "4% 永續傳承"
+    case deplete = "平滑享老 (花光)"
+    var id: String { rawValue }
+}
+
 struct RetirementSimulatorView: View {
     // MARK: - Generic Default Data (新使用者預設值)
     @State private var currentAge: Double = 35.0
@@ -8,6 +14,10 @@ struct RetirementSimulatorView: View {
     @State private var inflation: Double = 2.0
     @State private var partTime: Int = 0
     @State private var withdrawRate: Double = 4.0
+    
+    // 提領哲學與壽命規劃 (怪老子模型)
+    @State private var withdrawalMode: WithdrawalMode = .perpetual
+    @State private var lifeExpectancy: Double = 85.0
     
     // 勞保
     @State private var claimAge: Int = 65
@@ -98,9 +108,53 @@ struct RetirementSimulatorView: View {
         max(0, targetNominal - laborAtRetire - projectedPensionMonthly - partTimeNominal)
     }
     
+    // 實質實算報酬率 (扣除通膨)
+    private var realReturnRate: Double {
+        let netReturn = (expectedReturn - fee) / 100.0
+        let infl = inflation / 100.0
+        return infl > -0.5 ? ((1.0 + netReturn) / (1.0 + infl) - 1.0) : netReturn
+    }
+    
+    // 所需本金 (雙模式切換：4% 永續 vs 平滑享老 PV 模型)
     private var requiredAssets: Double {
-        let wr = withdrawRate / 100.0
-        return wr > 0 ? (netMonthlyNeedFromEquity * 12.0 / wr) : 0
+        if withdrawalMode == .deplete {
+            let planningYears = max(1.0, lifeExpectancy - Double(retireAge))
+            let totalMonths = planningYears * 12.0
+            let rm = realReturnRate / 12.0
+            if rm > 1e-5 {
+                return netMonthlyNeedFromEquity * (1.0 - pow(1.0 + rm, -totalMonths)) / rm
+            } else {
+                return netMonthlyNeedFromEquity * totalMonths
+            }
+        } else {
+            let wr = withdrawRate / 100.0
+            return wr > 0 ? (netMonthlyNeedFromEquity * 12.0 / wr) : 0
+        }
+    }
+    
+    // 怪老子 NPER 反推資產支援壽命
+    private var longevityAssessment: (age: Int, sustainableYears: Double, isPerpetual: Bool) {
+        if netMonthlyNeedFromEquity <= 0 {
+            return (100, 999.0, true)
+        }
+        if netStockEquity <= 0 {
+            return (retireAge, 0.0, false)
+        }
+        let rm = realReturnRate / 12.0
+        let monthlyYield = netStockEquity * rm
+        if monthlyYield >= netMonthlyNeedFromEquity {
+            return (100, 999.0, true)
+        }
+        let ratio = (netStockEquity * rm) / netMonthlyNeedFromEquity
+        var years: Double = 0
+        if ratio < 1.0 && rm > 1e-5 {
+            let nperMonths = -log(1.0 - ratio) / log(1.0 + rm)
+            years = nperMonths / 12.0
+        } else {
+            years = (netStockEquity / netMonthlyNeedFromEquity) / 12.0
+        }
+        let depleteAge = min(100, Int(round(Double(retireAge) + years)))
+        return (depleteAge, years, false)
     }
     
     private var shortfall: Double {
@@ -128,10 +182,10 @@ struct RetirementSimulatorView: View {
             Form {
                 // 頂部儀表板 (現在 -> 未來 -> 結果)
                 Section {
-                    VStack(spacing: 20) {
+                    VStack(spacing: 16) {
                         // 缺口 Hero
                         VStack(spacing: 8) {
-                            Text("退休資金缺口")
+                            Text(withdrawalMode == .perpetual ? "退休資金缺口 (4% 永續)" : "退休資金缺口 (平滑享老)")
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                                 .foregroundStyle(.secondary)
@@ -150,7 +204,7 @@ struct RetirementSimulatorView: View {
                                     .foregroundStyle(.secondary)
                             }
                         }
-                        .padding(.vertical, 10)
+                        .padding(.vertical, 6)
                         
                         // 現在、未來、目標 (Triad)
                         HStack(spacing: 12) {
@@ -175,14 +229,48 @@ struct RetirementSimulatorView: View {
                             .font(.caption2)
                             .foregroundStyle(.secondary)
                         }
+                        
+                        // 怪老子資產支援壽命卡片
+                        HStack(alignment: .center) {
+                            VStack(alignment: .leading, spacing: 3) {
+                                HStack(spacing: 5) {
+                                    Image(systemName: "hourglass")
+                                        .font(.caption2)
+                                        .foregroundStyle(.blue)
+                                    Text("現有資產支援壽命")
+                                        .font(.caption2)
+                                        .fontWeight(.semibold)
+                                        .foregroundStyle(.secondary)
+                                }
+                                if longevityAssessment.isPerpetual {
+                                    Text("永續無虞（99+ 歲）")
+                                        .font(.system(.subheadline, design: .rounded).weight(.bold))
+                                        .foregroundStyle(.green)
+                                } else {
+                                    Text("至 \(longevityAssessment.age) 歲 (支撐 \(String(format: "%.1f", longevityAssessment.sustainableYears)) 年)")
+                                        .font(.system(.subheadline, design: .rounded).weight(.bold))
+                                        .foregroundStyle(longevityAssessment.age >= 80 ? .blue : .orange)
+                                }
+                            }
+                            Spacer()
+                            Text(longevityAssessment.isPerpetual ? "永續留本" : (longevityAssessment.age >= 85 ? "充裕享老" : (longevityAssessment.age >= 80 ? "達台灣均壽" : "建議強化")))
+                                .font(.caption2.weight(.semibold))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 3)
+                                .background(Color(UIColor.tertiarySystemFill))
+                                .clipShape(Capsule())
+                        }
+                        .padding(10)
+                        .background(Color(UIColor.secondarySystemGroupedBackground))
+                        .cornerRadius(10)
                     }
-                    .padding(.vertical, 8)
+                    .padding(.vertical, 4)
                 }
                 
                 // 設定區域
                 Section(
-                    header: Text("1. 生活目標與提領"),
-                    footer: Text("生活費請填寫「現在」的物價感覺，系統會自動幫您計算通膨後的實際所需金額。")
+                    header: Text("1. 生活目標與提領哲學"),
+                    footer: Text("生活費請填寫「現在」的物價感覺。可自由選擇「4% 永續留本」或「平滑花光至特定壽命（免留遺產）」。")
                 ) {
                     HStack {
                         Text("目前年齡")
@@ -202,15 +290,47 @@ struct RetirementSimulatorView: View {
                     }
                     
                     HStack {
+                        Text("微型兼職月收入")
+                        Spacer()
+                        TextField("無填 0", value: $partTime, format: .number)
+                            .keyboardType(.numberPad)
+                            .multilineTextAlignment(.trailing)
+                    }
+                    
+                    HStack {
                         Text("長期年通膨率 (%)")
                         Spacer()
                         TextField("建議 2.0", value: $inflation, format: .number)
                             .keyboardType(.decimalPad)
                             .multilineTextAlignment(.trailing)
                             .frame(width: 80)
-                        Button(action: { showHelp("通膨率與提領", "通膨率一般建議抓 2%~2.5%。\n另外系統預設您的資產提領率為 4%（著名的 4% 法則），確保退休後資金不會枯竭。") }) {
+                        Button(action: { showHelp("通膨率與提領", "通膨率一般建議抓 2%~2.5%。\n系統會以實質購買力精密折現。") }) {
                             Image(systemName: "info.circle").foregroundColor(.blue)
                         }
+                    }
+                    
+                    // 提領模型切換
+                    Picker("提領規劃模式", selection: $withdrawalMode) {
+                        ForEach(WithdrawalMode.allCases) { mode in
+                            Text(mode.rawValue).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    
+                    if withdrawalMode == .perpetual {
+                        HStack {
+                            Text("年化安全提領率 (%)")
+                            Spacer()
+                            TextField("建議 4.0", value: $withdrawRate, format: .number)
+                                .keyboardType(.decimalPad)
+                                .multilineTextAlignment(.trailing)
+                                .frame(width: 80)
+                            Button(action: { showHelp("4% 永續法則", "每年只提領股票收益與再平衡，本金不減並留存給下一代。") }) {
+                                Image(systemName: "info.circle").foregroundColor(.blue)
+                            }
+                        }
+                    } else {
+                        Stepper("預期規劃享老壽命：\(Int(lifeExpectancy)) 歲", value: $lifeExpectancy, in: Double(retireAge + 1)...100, step: 1)
                     }
                 }
                 
@@ -238,7 +358,7 @@ struct RetirementSimulatorView: View {
                             Image(systemName: "info.circle").foregroundColor(.blue)
                         }
                     }
-                    Toggle("退職時勞退一次領出", isOn: $isPensionLumpSum)
+                    Toggle("退職時勞退一次領出（注入股票池）", isOn: $isPensionLumpSum)
                 }
                 
                 Section(
