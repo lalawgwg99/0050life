@@ -1935,7 +1935,136 @@
       .progress-fill { background: #333 !important; }
       .progress-track { background: #eee !important; border: 1px solid #ccc !important; }
     }
-  </style>
+  
+
+    /* Header Action Buttons Fix */
+    .header-actions {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      flex-shrink: 0 !important;
+    }
+    .btn-action-outline {
+      width: auto !important;
+      min-width: 36px !important;
+      height: 36px !important;
+      border-radius: 100px !important;
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 6px !important;
+      padding: 0 14px !important;
+      box-sizing: border-box !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      line-height: 1 !important;
+    }
+    .btn-action-text {
+      display: inline !important;
+      white-space: nowrap !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+    }
+    @media (max-width: 480px) {
+      .btn-action-text {
+        display: none !important;
+      }
+      .btn-action-outline {
+        width: 36px !important;
+        height: 36px !important;
+        padding: 0 !important;
+        border-radius: 50% !important;
+      }
+    }
+    
+
+    /* Multi-Asset Mixer Layout & Alignment Fix */
+    .mixer-row {
+      display: grid !important;
+      grid-template-columns: minmax(130px, 1.3fr) minmax(110px, 1fr) 92px 32px !important;
+      gap: 10px !important;
+      align-items: center !important;
+      padding: 8px 12px !important;
+      background: #FFFFFF !important;
+      border: 1px solid #E2E8F0 !important;
+      border-radius: 12px !important;
+    }
+    .mixer-input-code {
+      width: 100% !important;
+      height: 38px !important;
+      font-size: 13px !important;
+      font-weight: 600 !important;
+      padding: 0 24px 0 10px !important;
+      border-radius: 8px !important;
+      background-color: #F8FAFC !important;
+      border: 1.5px solid #CBD5E1 !important;
+      box-sizing: border-box !important;
+      white-space: nowrap !important;
+      text-overflow: ellipsis !important;
+    }
+    .mixer-input-weight {
+      width: 100% !important;
+      height: 38px !important;
+      font-size: 14px !important;
+      font-weight: 700 !important;
+      text-align: right !important;
+      padding: 0 28px 0 8px !important; /* 確保右側預留 28px，絕不與 % 單位重疊 */
+      border-radius: 8px !important;
+      background-color: #F8FAFC !important;
+      border: 1.5px solid #CBD5E1 !important;
+      box-sizing: border-box !important;
+      -moz-appearance: textfield !important;
+    }
+    .mixer-input-weight::-webkit-outer-spin-button,
+    .mixer-input-weight::-webkit-inner-spin-button {
+      -webkit-appearance: none !important;
+      margin: 0 !important;
+    }
+    .mixer-row .input-wrapper {
+      position: relative !important;
+      display: flex !important;
+      align-items: center !important;
+      width: 100% !important;
+    }
+    .mixer-row .input-wrapper .input-unit {
+      position: absolute !important;
+      right: 10px !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+      font-size: 12.5px !important;
+      font-weight: 700 !important;
+      color: var(--label-secondary) !important;
+      pointer-events: none !important;
+    }
+    .field-badge-note {
+      white-space: nowrap !important;
+      flex-shrink: 0 !important;
+    }
+    @media (max-width: 640px) {
+      .mixer-row {
+        grid-template-columns: 115px 1fr 82px 28px !important;
+        gap: 6px !important;
+        padding: 6px 8px !important;
+      }
+      .mixer-input-code {
+        font-size: 12px !important;
+        padding: 0 16px 0 6px !important;
+      }
+      .mixer-input-weight {
+        font-size: 13px !important;
+        padding: 0 24px 0 6px !important;
+      }
+      .mixer-name {
+        font-size: 12px !important;
+      }
+      .mixer-sub {
+        font-size: 10.5px !important;
+      }
+    }
+    
+</style>
 </head>
 <body>
 <div class="container">
@@ -2522,12 +2651,12 @@
       
       <!-- 區塊 5：居住與房產策略（選填） -->
       <section class="apple-card">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-          <div>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
+          <div style="flex:1; min-width:0;">
             <h2 class="card-title">🏡 5. 居住與房產策略：房貸結清與資產活化（選填）</h2>
             <p class="card-subtitle">自住房產常是國人最大的隱形財富。可模擬房貸繳清後釋放的投資動能，或將無貸房屋活化為穩定養老現金流。</p>
           </div>
-          <span class="field-badge-note" id="badgeHouseStatus" style="background:#F4F5F7; color:var(--label-secondary);">未啟用</span>
+          <span class="field-badge-note" id="badgeHouseStatus" style="background:#F1F5F9; color:var(--label-secondary); white-space:nowrap; flex-shrink:0;">未啟用</span>
         </div>
 
         <div class="fields-grid" style="margin-top:14px;">
