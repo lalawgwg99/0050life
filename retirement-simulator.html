@@ -181,7 +181,7 @@
       box-shadow: 0 1.5px 4px rgba(0,0,0,0.08), 0 0.5px 1px rgba(0,0,0,0.04);
     }
 
-    /* Longevity Assessment Card (怪老子精算評級) */
+    /* Longevity Assessment Card (精算評級) */
     .longevity-card {
       background-color: #F5F5F7;
       border-radius: 20px;
@@ -1338,7 +1338,7 @@
             </div>
             <div class="apple-segmented-control" id="segWithdrawalMode">
               <button type="button" class="seg-btn active" id="btnModePerpetual" onclick="setWithdrawalMode('perpetual')">4% 永續傳承（本金不減）</button>
-              <button type="button" class="seg-btn" id="btnModeDeplete" onclick="setWithdrawalMode('deplete')">平滑享老（壽命終點歸零）</button>
+              <button type="button" class="seg-btn" id="btnModeDeplete" onclick="setWithdrawalMode('deplete')">計畫提領（壽命終點歸零）</button>
             </div>
             <input type="hidden" id="withdrawalMode" value="perpetual">
           </div>
@@ -1355,7 +1355,7 @@
             <div class="field-desc">國際 FIRE 基準：每年僅花股票收益，本金跨世代永續留存</div>
           </div>
 
-          <!-- 子欄位 B：平滑享老模式預期壽命 (怪老子模型) -->
+          <!-- 子欄位 B：平滑享老模式預期壽命 (模型) -->
           <div class="field-cell" id="boxLifeExpectancy" style="display:none;">
             <div class="field-header">
               <span class="field-label">預期規劃享老壽命</span>
@@ -1365,7 +1365,7 @@
               <input type="number" id="lifeExpectancy" class="apple-input" inputmode="numeric" value="85" step="1">
               <span class="input-unit">歲</span>
             </div>
-            <div class="field-desc">精算年金 PV 公式：資產隨年限平滑提領至該年齡歸零，自備款顯著降低</div>
+            <div class="field-desc">設定資產預計支應的年限，本金將隨時間逐步提領至歸零，可大幅降低退休門檻</div>
             <div class="quick-chips">
               <button class="chip-btn" onclick="setQuickVal('lifeExpectancy', 80)">80 歲</button>
               <button class="chip-btn" onclick="setQuickVal('lifeExpectancy', 85)">85 歲（國人均壽）</button>
@@ -1749,11 +1749,11 @@
           <span>100% 目標達成</span>
         </div>
 
-        <!-- 資產支援壽命（怪老子精算評級） -->
+        <!-- 資產支援壽命（精算評級） -->
         <div class="longevity-card" id="boxLongevityCard">
           <div class="longevity-header">
             <div class="longevity-title-wrap">
-              <span class="longevity-title">現有資產支援壽命（平滑消耗反推）</span>
+              <span class="longevity-title">現有資產支援壽命（依提領率預估）</span>
             </div>
             <span class="longevity-status-pill" id="pillLongevityStatus">計算中</span>
           </div>
@@ -1841,7 +1841,7 @@
       if (btnDepl) btnDepl.classList.add('active');
       if (boxSwr) boxSwr.style.display = 'none';
       if (boxLife) boxLife.style.display = 'flex';
-      if (tagMode) tagMode.textContent = '平滑享老（怪老子PV模型）';
+      if (tagMode) tagMode.textContent = '計畫提領（本金逐步歸零）';
     } else {
       if (btnPerp) btnPerp.classList.add('active');
       if (btnDepl) btnDepl.classList.remove('active');
@@ -2207,7 +2207,7 @@
     let requiredNetEquity = 0;
     const planningYears = Math.max(1, (p.lifeExpectancy || 85) - p.retireAge);
     if (p.withdrawalMode === 'deplete') {
-      // 【平滑享老模式（怪老子 PV 消耗年金模型）】
+      // 【平滑享老模式（ PV 消耗年金模型）】
       // 假設資產在 p.lifeExpectancy 歲時剛好花光
       const totalMonths = planningYears * 12;
       if (rRealMonthly > 0.00001) {
@@ -2222,7 +2222,7 @@
     }
 
     // ─────────────────────────────────────────
-    // 2. 資產支援壽命（怪老子 NPER 財務反推模型）
+    // 2. 資產支援壽命（ NPER 財務反推模型）
     // ─────────────────────────────────────────
     // 以目前擁有的退休淨值 netStockEquity，每個月實質提領 netMonthlyNeedFromEquity，可以撐到幾歲？
     let sustainableYears = 999;
@@ -2246,7 +2246,7 @@
         depleteAge = 100;
         isPerpetualSustainable = true;
       } else {
-        // 本金將隨時間耗盡，使用怪老子 NPER 精算反推
+        // 本金將隨時間耗盡，使用 NPER 精算反推
         const ratio = (netStockEquity * rRealMonthly) / netMonthlyNeedFromEquity;
         if (ratio < 1 && rRealMonthly > 0.00001) {
           const nperMonths = -Math.log(1 - ratio) / Math.log(1 + rRealMonthly);
@@ -2298,7 +2298,7 @@
       assetShortfall: Math.round(assetShortfall),
       readinessRate: Number((readinessRate * 100).toFixed(1)),
       hasBridgePeriod, bridgeYears,
-      // 怪老子精算指標
+      // 精算指標
       depleteAge,
       sustainableYears: Number(sustainableYears.toFixed(1)),
       isPerpetualSustainable,
@@ -2472,7 +2472,7 @@
     $('txtProgressLabel').textContent = '達成率 ' + fmtPct(readiness);
     $('progressBar').style.backgroundColor = readiness >= 1 ? 'var(--system-green)' : (readiness >= 0.7 ? 'var(--system-orange)' : 'var(--system-red)');
 
-    // ── 渲染：怪老子資產壽命安全期評級 ──
+    // ── 渲染：資產壽命安全期評級 ──
     if ($('valLongevityAge')) {
       const pill = $('pillLongevityStatus');
       const ageEl = $('valLongevityAge');
