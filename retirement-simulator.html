@@ -1584,21 +1584,22 @@
             <div class="field-desc">適度質押可避免在股災時賣股，或於低點放大槓桿</div>
           </div>
 
-          <div class="field-cell" id="boxPledgeLTV" style="display:none;">
+          <div class="field-cell" id="boxPledgeAmount" style="display:none;">
             <div class="field-header">
-              <span class="field-label">預計借款成數 (LTV)</span>
+              <span class="field-label">自訂借款金額</span>
+              <span class="field-badge-note" id="badgePledgeLTV" style="background:#E0F7F8; color:#00C2C7;">LTV 0%</span>
             </div>
             <div class="input-wrapper">
-              <select id="pledgeLTV" class="apple-select" onchange="calculate()">
-                <option value="10">10%（極度安全，維持率 1000%）</option>
-                <option value="20" selected>20%（高安全，維持率 500%）</option>
-                <option value="30">30%（中等，維持率 333%）</option>
-                <option value="40">40%（積極，維持率 250%）</option>
-                <option value="50">50%（危險，維持率 200%）</option>
-                <option value="60">60%（法規上限，維持率 166%）</option>
-              </select>
+              <input type="number" id="pledgeAmount" class="apple-input" inputmode="numeric" value="1000000" step="100000" oninput="calculate()">
+              <span class="input-unit">元</span>
             </div>
-            <div class="field-desc">以退休時股票總市值計算借貸比例</div>
+            <div class="field-desc">直接設定欲借款的絕對金額，系統會依退休總資產自動換算風險</div>
+            <div class="quick-chips">
+              <button class="chip-btn" onclick="setQuickPledgeLTV(0.2)">借 2 成</button>
+              <button class="chip-btn" onclick="setQuickPledgeLTV(0.3)">借 3 成</button>
+              <button class="chip-btn" onclick="setQuickPledgeLTV(0.4)">借 4 成</button>
+              <button class="chip-btn" onclick="setQuickPledgeLTV(0.5)">借 5 成</button>
+            </div>
           </div>
 
           <div class="field-cell" id="boxPledgeRate" style="display:none;">
@@ -2089,8 +2090,10 @@
     let maintenanceMargin = 0;
     let marginCallDrop = 0;
 
-    if (p.enablePledge && p.pledgeLTV > 0) {
-      actualPledgeLoan = netStockEquity * (p.pledgeLTV / 100);
+    if (p.enablePledge && p.pledgeAmount > 0) {
+      // 確保借款不超過法規上限 60%
+      const maxLegalLoan = netStockEquity * 0.6;
+      actualPledgeLoan = Math.min(p.pledgeAmount, maxLegalLoan);
       monthlyPledgeInterest = (actualPledgeLoan * (p.pledgeInterestRate / 100)) / 12;
       
       if (p.pledgeStrategy === 'leverage') {
@@ -2106,6 +2109,8 @@
         marginCallDrop = (1 - (130 / maintenanceMargin)) * 100;
         if (marginCallDrop < 0) marginCallDrop = 0;
       }
+    }
+    const actualLTV = actualPledgeLoan > 0 ? (actualPledgeLoan / netStockEquity * 100) : 0;
     }
 
     // ── 第三層：4% 賣股提領 / 平滑享老 PV 精算 與收支結算 ──
@@ -2214,6 +2219,7 @@
       totalPortfolioValue: Math.round(totalPortfolioValue),
       actualPledgeLoan: Math.round(actualPledgeLoan),
       monthlyPledgeInterest: Math.round(monthlyPledgeInterest),
+      actualLTV: actualPledgeLoan > 0 ? (actualPledgeLoan / baseStockAssets * 100) : 0,
       maintenanceMargin: Math.round(maintenanceMargin),
       marginCallDrop: Number(marginCallDrop.toFixed(1)),
       monthlySWRIncome: Math.round(monthlySWRIncome),
