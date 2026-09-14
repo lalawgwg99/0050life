@@ -3499,6 +3499,7 @@
     let annualPledgeInterest = 0;
     let monthlyPledgeInterest = 0;
     let grossPortfolioValue = netStockEquity;
+    let totalPortfolioValue = netStockEquity;
     let leverageMultiple = 1.0;
     let maintenanceMargin = 999;
     let marginCallDrop = 100;
@@ -3514,11 +3515,13 @@
       if (p.pledgeStrategy === 'leverage') {
         // 槓桿擴張：借出資金再度買入股票，總曝險市值擴張
         grossPortfolioValue = netStockEquity + actualPledgeLoan;
+        totalPortfolioValue = grossPortfolioValue;
         leverageMultiple = netStockEquity > 0 ? Number((grossPortfolioValue / netStockEquity).toFixed(2)) : 1.0;
         pledgedCollateralValue = netStockEquity;
       } else if (p.pledgeStrategy === 'cashflow') {
         // 備用金：借出資金變現留作生活費，不投入股市
         grossPortfolioValue = netStockEquity;
+        totalPortfolioValue = netStockEquity;
         leverageMultiple = 1.0;
         pledgedCollateralValue = netStockEquity;
       }
