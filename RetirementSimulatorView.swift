@@ -29,7 +29,10 @@ struct RetirementSimulatorView: View {
     @State private var assetsNow: Int = 500_000
     @State private var monthlyInvest: Int = 10_000
     @State private var expectedReturn: Double = 8.0
-    @State private var fee: Double = 0.3
+        @State private var fee: Double = 0.3
+    
+    @State private var simReport: RetirementSimulation.SimulationReport?
+    @State private var mcResult: MonteCarloResult?
     
     var body: some View {
         NavigationStack {
@@ -49,14 +52,23 @@ struct RetirementSimulatorView: View {
                     InvestmentStep(assetsNow: $assetsNow, monthlyInvest: $monthlyInvest, expectedReturn: $expectedReturn, fee: $fee)
                         .tag(2)
                         
-                    DashboardStep(input: generateInput())
+                    DashboardStep(simReport: simReport, mcResult: mcResult)
                         .tag(3)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .animation(.easeInOut, value: currentStep)
                 
                 // 底部按鈕
-                BottomNavigation(currentStep: $currentStep)
+                BottomNavigation(currentStep: $currentStep, onNext: {
+                    if currentStep == 2 || currentStep == 3 {
+                        let param = generateInput()
+                        simReport = RetirementSimulation.run(input: param)
+                        mcResult = MonteCarloSimulation.run(input: param, iterations: 1000, volatility: 0.15)
+                    }
+                    if currentStep < 3 {
+                        withAnimation { currentStep += 1 }
+                    }
+                })
             }
             .navigationTitle(navTitle)
             .navigationBarTitleDisplayMode(.inline)
@@ -116,6 +128,7 @@ struct ProgressHeader: View {
 
 struct BottomNavigation: View {
     @Binding var currentStep: Int
+    var onNext: () -> Void
     var body: some View {
         VStack {
             Divider()
@@ -135,7 +148,7 @@ struct BottomNavigation: View {
                 }
                 
                 Button(action: {
-                    withAnimation { currentStep += 1 }
+                    onNext()
                 }) {
                     Text(currentStep == 3 ? "重新試算" : (currentStep == 2 ? "開始精算" : "下一步"))
                         .font(.headline)
@@ -241,10 +254,8 @@ struct InvestmentStep: View {
 
 // MARK: - 儀表板 (Dashboard)
 struct DashboardStep: View {
-    let input: RetirementSimulation.InputParameters
-    
-    @State private var mcResult: MonteCarloResult?
-    @State private var simReport: RetirementSimulation.SimulationReport?
+    let simReport: RetirementSimulation.SimulationReport?
+    let mcResult: MonteCarloResult?
     
     var body: some View {
         ScrollView {
@@ -321,23 +332,9 @@ struct DashboardStep: View {
             }
             .padding(.bottom, 30)
         }
-        .onAppear {
-            runCalculations()
-        }
+
     }
     
-    private func runCalculations() {
-        // 在背景執行以免卡頓 UI
-        DispatchQueue.global(qos: .userInitiated).async {
-            let report = RetirementSimulation.run(input: input)
-            let mc = MonteCarloSimulation.run(input: input, iterations: 1000, volatility: 0.15)
-            
-            DispatchQueue.main.async {
-                self.simReport = report
-                self.mcResult = mc
-            }
-        }
-    }
 }
 
 struct ScenarioCard: View {
