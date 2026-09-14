@@ -2064,7 +2064,49 @@
       }
     }
     
-</style>
+
+    /* Apple Pro Section Card Headers */
+    .card-header-group {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .card-header-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+    }
+    .card-header-text {
+      flex: 1;
+      min-width: 0;
+    }
+    .card-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+      text-transform: uppercase;
+    }
+    .card-title {
+      font-size: 18px !important;
+      font-weight: 750 !important;
+      color: #0F172A !important;
+      letter-spacing: -0.3px !important;
+      margin: 0 0 4px 0 !important;
+    }
+    .card-subtitle {
+      color: #64748B !important;
+      font-size: 13.5px !important;
+      line-height: 1.55 !important;
+      margin: 0 !important;
+    }
+    </style>
 </head>
 <body>
 <div class="container">
@@ -2115,8 +2157,16 @@
     <main id="mainContent">
       <!-- 區塊 1：生活目標與提領設定 -->
       <section class="apple-card">
-        <h2 class="card-title">🎯 1. 生活目標與提領設定</h2>
-        <p class="card-subtitle">生活費請填寫今日物價感受，系統會自動按長期通膨折算退休當年的實際名目開銷。</p>
+        <div class="card-header-group">
+          <div class="card-header-icon" style="background: rgba(2, 132, 199, 0.10); color: #0284C7;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+          </div>
+          <div class="card-header-text">
+            <div class="card-eyebrow" style="color: #0284C7;">基礎設定・提領哲學</div>
+            <h2 class="card-title">生活目標與提領模型</h2>
+            <p class="card-subtitle">以今日物價感受估算實質開銷，系統自動按通膨折算退休名目金額，並確立 4% 永續或平滑耗盡模型。</p>
+          </div>
+        </div>
 
         <div class="fields-grid">
           <!-- 出生年次 -->
@@ -2268,8 +2318,16 @@
 
       <!-- 區塊 2：第一支柱 勞保老年年金 -->
       <section class="apple-card">
-        <h2 class="card-title">🏛️ 2. 第一支柱：勞保老年年金</h2>
-        <p class="card-subtitle">按月終身發放。可選擇於法定年齡滿額領取，或提前（減額）/延後（增額）請領。</p>
+        <div class="card-header-group">
+          <div class="card-header-icon" style="background: rgba(99, 102, 241, 0.10); color: #6366F1;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 21h18"/><path d="M3 10h18"/><path d="M5 6l7-3 7 3"/><path d="M4 10v11"/><path d="M20 10v11"/><path d="M8 14v4"/><path d="M12 14v4"/><path d="M16 14v4"/></svg>
+          </div>
+          <div class="card-header-text">
+            <div class="card-eyebrow" style="color: #6366F1;">第一支柱・社會保險</div>
+            <h2 class="card-title">勞保老年年金</h2>
+            <p class="card-subtitle">按月終身發放之法定年金。支援法定年齡滿額領取、提前減額或延後增額，並精算請領黃金平衡點。</p>
+          </div>
+        </div>
 
         <!-- 隱藏同步欄位 -->
         <input type="hidden" id="birthROC" value="80">
@@ -2340,8 +2398,16 @@
 
       <!-- 區塊 3：第二支柱 勞退新制個人專戶 -->
       <section class="apple-card">
-        <h2 class="card-title">💼 3. 第二支柱：勞退新制個人專戶</h2>
-        <p class="card-subtitle">雇主依法每月提繳 6% 至個人獨立專戶，亦可自願提繳 0%～6%，專戶本利歸個人所有。</p>
+        <div class="card-header-group">
+          <div class="card-header-icon" style="background: rgba(139, 92, 246, 0.10); color: #8B5CF6;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </div>
+          <div class="card-header-text">
+            <div class="card-eyebrow" style="color: #8B5CF6;">第二支柱・雇主提繳</div>
+            <h2 class="card-title">勞退新制個人專戶</h2>
+            <p class="card-subtitle">獨立個人累積專戶。支援雇主 6% 提繳與自提累積試算，對照「一次全額領注資大盤」與「按月領年金」之效益。</p>
+          </div>
+        </div>
 
         <div class="fields-grid">
           <!-- 目前專戶累積金額 -->
@@ -2449,7 +2515,13 @@
 
       <!-- 區塊 4：第三支柱 自有投資組合 -->
       <section class="apple-card">
-        <h2 class="card-title">📈 4. 第三支柱：自有投資組合（ETF / 基金 / 股票）</h2>
+        <div class="card-header-group">
+          <div class="card-header-icon" style="background: rgba(2, 132, 199, 0.10); color: #0284C7;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+          </div>
+          <div class="card-header-text">
+            <div class="card-eyebrow" style="color: #0284C7;">第三支柱・核心財富</div>
+            <h2 class="card-title">自有投資組合（股票與 ETF）</h2>
         <p class="card-subtitle">
           完全自主掌控的終身資產引擎。可選用經典配置模板，亦可完全自訂預期回報。<br>
           <a href="blog/dividend-vs-total-return.html" target="_blank" rel="noopener" class="apple-field-link" style="display:inline-flex; align-items:center; gap:4px; margin-top:4px;">
@@ -2457,6 +2529,8 @@
             迷思破解：高股息配息 vs 市值型大盤，我該選哪一個？ ↗
           </a>
         </p>
+          </div>
+        </div>
 
         <div class="fields-grid">
           <!-- 新版：資產配置視覺化選擇器 -->
@@ -2651,12 +2725,18 @@
       
       <!-- 區塊 5：居住與房產策略（選填） -->
       <section class="apple-card">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
-          <div style="flex:1; min-width:0;">
-            <h2 class="card-title">🏡 5. 居住與房產策略：房貸結清與資產活化（選填）</h2>
-            <p class="card-subtitle">自住房產常是國人最大的隱形財富。可模擬房貸繳清後釋放的投資動能，或將無貸房屋活化為穩定養老現金流。</p>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:16px; margin-bottom: 14px;">
+          <div class="card-header-group" style="margin-bottom: 0; flex: 1; min-width: 0;">
+            <div class="card-header-icon" style="background: rgba(16, 185, 129, 0.10); color: #10B981;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <div class="card-header-text">
+              <div class="card-eyebrow" style="color: #10B981;">房產策略・選填</div>
+              <h2 class="card-title">自住房產與資產活化</h2>
+              <p class="card-subtitle">自住房產常是隱形活水。可模擬房貸清償後釋放之投資動能，或以房養老逆向年金、降維換屋大筆注資。</p>
+            </div>
           </div>
-          <span class="field-badge-note" id="badgeHouseStatus" style="background:#F1F5F9; color:var(--label-secondary); white-space:nowrap; flex-shrink:0;">未啟用</span>
+          <span class="field-badge-note" id="badgeHouseStatus" style="background:#F1F5F9; color:var(--label-secondary); white-space:nowrap; flex-shrink:0; margin-top: 4px;">未啟用</span>
         </div>
 
         <div class="fields-grid" style="margin-top:14px;">
@@ -2742,8 +2822,16 @@
       </section>
 
       <section class="apple-card">
-        <h2 class="card-title">⚡ 6. 進階功能：股票質押槓桿模擬</h2>
-        <p class="card-subtitle">質押屬於負債槓桿工具。借入資金買入股票可放大提領額度，但同時產生硬性利息支出與追繳斷頭風險。</p>
+        <div class="card-header-group">
+          <div class="card-header-icon" style="background: rgba(245, 158, 11, 0.10); color: #F59E0B;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <div class="card-header-text">
+            <div class="card-eyebrow" style="color: #D97706;">進階策略・槓桿防呆</div>
+            <h2 class="card-title">股票質押再投入模擬</h2>
+            <p class="card-subtitle">質押借款擴張資產收益。即時監控擔保維持率、大跌追繳臨界線與每月硬性利息支出，守護現金流底線。</p>
+          </div>
+        </div>
 
         <div class="fields-grid">
           <div class="field-cell field-full">
