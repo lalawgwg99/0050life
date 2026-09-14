@@ -1546,7 +1546,13 @@
       
       /* Water fall specific print styles */
       .waterfall-container { flex-direction: column !important; }
-      .waterfall-phase { width: 100% !important; border: 1px solid #aaa !important; margin-bottom: 10px; }
+      .waterfall-phase {
+      background: #F9FAFB !important;
+      border: none !important;
+      box-shadow: none !important;
+      border-radius: 20px !important;
+      padding: 24px !important;
+    }
     }
     
   
@@ -1644,8 +1650,8 @@
     
     /* 3. iOS Inputs */
     .apple-input, .apple-select {
-      background: rgba(0, 122, 255, 0.03) !important;
-      border: 1px solid rgba(0, 122, 255, 0.1) !important;
+      background: #F2F2F7 !important;
+      border: none !important;
       border-radius: 12px !important;
       font-size: 17px !important;
       font-weight: 600 !important;
@@ -1686,7 +1692,7 @@
     /* 5. The Hero Dashboard (Ultra-Clean Apple Style) */
     .hero-summary {
       background: linear-gradient(135deg, #FFFFFF 0%, #F5F9FF 100%) !important;
-      border: 1px solid rgba(0, 122, 255, 0.05) !important;
+      border: none !important;
       box-shadow: var(--shadow-hero) !important;
       color: var(--label-primary) !important;
       border-radius: 24px !important;
@@ -1730,10 +1736,11 @@
     
     /* 7. Beautiful Waterfall Chart */
     .waterfall-phase {
-      background: #FFFFFF !important;
-      border: 1px solid #E5E5EA !important;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.03) !important;
+      background: #F9FAFB !important;
+      border: none !important;
+      box-shadow: none !important;
       border-radius: 20px !important;
+      padding: 24px !important;
     }
     .cashflow-row-val {
       font-family: ui-rounded, -apple-system, "SF Pro Rounded", sans-serif !important;
@@ -3868,7 +3875,13 @@ window.addEventListener('error', function(e) {
     const styleWaterfall = `
       <style>
         .waterfall-container { display: flex; gap: 16px; margin-top: 16px; }
-        .waterfall-phase { flex: 1; background: #F9FAFB; border-radius: 16px; padding: 18px; border: 1px solid rgba(0,0,0,0.03); display: flex; flex-direction: column; }
+        .waterfall-phase {
+      background: #F9FAFB !important;
+      border: none !important;
+      box-shadow: none !important;
+      border-radius: 20px !important;
+      padding: 24px !important;
+    }
         .phase-header { font-size: 13.5px; font-weight: 700; color: var(--label-primary); display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
         .phase-timeline { font-size: 11px; color: var(--label-secondary); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px dashed var(--separator); }
         .wf-badge { font-size: 10.5px; padding: 3px 8px; border-radius: 6px; font-weight: 650; }
@@ -3973,8 +3986,8 @@ window.addEventListener('error', function(e) {
     
     /* 3. iOS Inputs */
     .apple-input, .apple-select {
-      background: rgba(0, 122, 255, 0.03) !important;
-      border: 1px solid rgba(0, 122, 255, 0.1) !important;
+      background: #F2F2F7 !important;
+      border: none !important;
       border-radius: 12px !important;
       font-size: 17px !important;
       font-weight: 600 !important;
@@ -4015,7 +4028,7 @@ window.addEventListener('error', function(e) {
     /* 5. The Hero Dashboard (Ultra-Clean Apple Style) */
     .hero-summary {
       background: linear-gradient(135deg, #FFFFFF 0%, #F5F9FF 100%) !important;
-      border: 1px solid rgba(0, 122, 255, 0.05) !important;
+      border: none !important;
       box-shadow: var(--shadow-hero) !important;
       color: var(--label-primary) !important;
       border-radius: 24px !important;
@@ -4059,10 +4072,11 @@ window.addEventListener('error', function(e) {
     
     /* 7. Beautiful Waterfall Chart */
     .waterfall-phase {
-      background: #FFFFFF !important;
-      border: 1px solid #E5E5EA !important;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.03) !important;
+      background: #F9FAFB !important;
+      border: none !important;
+      box-shadow: none !important;
       border-radius: 20px !important;
+      padding: 24px !important;
     }
     .cashflow-row-val {
       font-family: ui-rounded, -apple-system, "SF Pro Rounded", sans-serif !important;
