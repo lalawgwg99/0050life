@@ -2795,6 +2795,11 @@ window.addEventListener('error', function(e) {
     });
   }
   if ($('retireAge')) {
+    $('retireAge').addEventListener('blur', () => { calculate(false); saveStateToLocal(); });
+    $('claimAge').addEventListener('blur', () => { calculate(false); saveStateToLocal(); });
+  }
+  
+  if ($('retireAge')) {
     $('retireAge').addEventListener('input', () => {
       syncFromBirthYear(false);
       calculate(false);
@@ -3097,31 +3102,41 @@ window.addEventListener('error', function(e) {
     const age = n('currentAge') || 44;
     
     // ── 全面防呆邊界檢核 ──
+    let retire = n('retireAge');
     // 1. 退休年齡不得早於目前實歲
-    if (n('retireAge') < age) {
-      $('retireAge').value = age;
-      $('retireAge').style.transition = 'background-color 0.3s';
-      $('retireAge').style.backgroundColor = '#FFE5E5';
-      setTimeout(() => $('retireAge').style.backgroundColor = '', 600);
+    if (retire < age) {
+      if (document.activeElement !== $('retireAge')) {
+        $('retireAge').value = age;
+        $('retireAge').style.transition = 'background-color 0.3s';
+        $('retireAge').style.backgroundColor = '#FFE5E5';
+        setTimeout(() => $('retireAge').style.backgroundColor = '', 600);
+      }
+      retire = age;
     }
     
     // 2. 勞保起領年齡法規限制：60 ～ 70 歲，且不得早於退休退保年齡
     let claim = n('claimAge');
     if (claim < 60) {
-      $('claimAge').value = 60;
+      if (document.activeElement !== $('claimAge')) {
+        $('claimAge').value = 60;
+      }
       claim = 60;
     } else if (claim > 70) {
-      $('claimAge').value = 70;
+      if (document.activeElement !== $('claimAge')) {
+        $('claimAge').value = 70;
+      }
       claim = 70;
     }
-    if (claim < n('retireAge')) {
-      $('claimAge').value = $('retireAge').value;
-      $('claimAge').style.transition = 'background-color 0.3s';
-      $('claimAge').style.backgroundColor = '#FFE5E5';
-      setTimeout(() => $('claimAge').style.backgroundColor = '', 600);
+    if (claim < retire) {
+      if (document.activeElement !== $('claimAge')) {
+        $('claimAge').value = retire;
+        $('claimAge').style.transition = 'background-color 0.3s';
+        $('claimAge').style.backgroundColor = '#FFE5E5';
+        setTimeout(() => $('claimAge').style.backgroundColor = '', 600);
+      }
+      claim = retire;
     }
-    const retire = n('retireAge');
-    claim = n('claimAge');
+    
     const birthROC = n('birthROC');
     const monthsToRetire = Math.round(Math.max(0, retire - age) * 12);
     const swr = n('withdrawRate') / 100;
@@ -3417,13 +3432,21 @@ window.addEventListener('error', function(e) {
       const descEl = $('valLongevityDesc');
       const barScale = $('barLongevityScale');
 
-      if (R.isPerpetualSustainable || R.depleteAge >= 100) {
-        pill.textContent = '永續無虞';
+      if (R.isPerpetualSustainable) {
+        pill.textContent = '絕對永續';
         pill.style.background = 'var(--system-green-tint)';
         pill.style.color = 'var(--system-green-dark)';
         ageEl.textContent = '永續無虞（99+ 歲）';
         ageEl.style.color = 'var(--system-green-dark)';
-        descEl.textContent = '股票實質投資收益已大於生活費缺口，本金終身不減且持續增值';
+        descEl.textContent = '股票實質投資收益已完全覆蓋提領缺口，本金終身不減且持續增值';
+        if (barScale) barScale.style.width = '100%';
+      } else if (R.depleteAge >= 100) {
+        pill.textContent = '實務永續';
+        pill.style.background = 'var(--system-green-tint)';
+        pill.style.color = 'var(--system-green-dark)';
+        ageEl.textContent = '至 ' + R.depleteAge + ' 歲';
+        ageEl.style.color = 'var(--system-green-dark)';
+        descEl.textContent = '雖未達絕對永續（本金微幅緩降），但可平滑支撐至 100 歲以上，實務上已完全無虞';
         if (barScale) barScale.style.width = '100%';
       } else if (R.depleteAge >= (lifeExpectancy || 85)) {
         pill.textContent = '超越規劃目標';
