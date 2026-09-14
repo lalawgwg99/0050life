@@ -2106,6 +2106,30 @@
       line-height: 1.55 !important;
       margin: 0 !important;
     }
+    
+    /* Mobile Responsive Alignment Fixes */
+    .hide-mobile {
+      display: inline;
+    }
+    @media (max-width: 600px) {
+      .hide-mobile {
+        display: none !important;
+      }
+      .apple-segmented-control .seg-btn {
+        padding: 8px 6px !important;
+        font-size: 13px !important;
+        white-space: nowrap !important;
+      }
+      .mobile-nav-segmented {
+        background: rgba(248, 250, 252, 0.94) !important;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06) !important;
+        top: max(6px, env(safe-area-inset-top)) !important;
+      }
+      .mixer-title-row {
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+      }
+    }
     </style>
 </head>
 <body>
@@ -2258,8 +2282,12 @@
               <span class="field-badge-note" id="tagModeDesc">4% 永續留本</span>
             </div>
             <div class="apple-segmented-control" id="segWithdrawalMode" style="margin-bottom:12px;">
-              <button type="button" class="seg-btn active" id="btnModePerpetual" onclick="setWithdrawalMode('perpetual')">4% 永續傳承（本金不減）</button>
-              <button type="button" class="seg-btn" id="btnModeDeplete" onclick="setWithdrawalMode('deplete')">計畫提領（壽命終點歸零）</button>
+              <button type="button" class="seg-btn active" id="btnModePerpetual" onclick="setWithdrawalMode('perpetual')">
+                <span class="seg-main">4% 永續傳承</span><span class="seg-sub hide-mobile">（本金不減）</span>
+              </button>
+              <button type="button" class="seg-btn" id="btnModeDeplete" onclick="setWithdrawalMode('deplete')">
+                <span class="seg-main">計畫平滑提領</span><span class="seg-sub hide-mobile">（終點歸零）</span>
+              </button>
             </div>
             
             <!-- 提領模型哲學動態解說卡片 -->
@@ -2470,10 +2498,10 @@
             <input type="hidden" id="pensionMode" value="lump">
             <div class="apple-segmented-control" id="segPensionMode" style="margin-bottom:12px;">
               <button type="button" class="seg-btn active" id="btnPensionLump" onclick="setPensionMode('lump')">
-                一次全額請領（自建投資水庫）
+                <span class="seg-main">一次全額請領</span><span class="seg-sub hide-mobile">（自建水庫）</span>
               </button>
               <button type="button" class="seg-btn" id="btnPensionMonthly" onclick="setPensionMode('monthly')">
-                按月請領（年金保證至餘命）
+                <span class="seg-main">按月領取年金</span><span class="seg-sub hide-mobile">（保證至餘命）</span>
               </button>
             </div>
 
@@ -2825,13 +2853,56 @@
           </div>
         </div>
 
-        <!-- 質押動態風險儀表板 -->
-        <div class="pledge-dashboard" id="boxPledgeDashboard" style="display:none;">
-          <div class="pledge-dash-grid">
-            <div class="pledge-dash-item">
-              <div class="pledge-dash-label">實際借款金額</div>
-              <div class="pledge-dash-val" id="valPledgeAmount">--</div>
+        <!-- 質押動態風險與資產負債儀表板 -->
+        <div class="pledge-dashboard" id="boxPledgeDashboard" style="display:none; margin-top:16px;">
+          <div style="font-size:13.5px; font-weight:750; color:var(--label-primary); margin-bottom:12px; display:flex; justify-content:space-between; align-items:center;">
+            <span>槓桿風險與實質金流監控</span>
+            <span class="field-badge-note" id="badgePledgeStatus" style="background:#E0F7F8; color:#00C2C7;">安全監控中</span>
+          </div>
+
+          <div class="pledge-dash-grid" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:10px;">
+            <div class="pledge-dash-item" style="background:#FFFFFF; border:1px solid #E2E8F0; padding:12px; border-radius:12px;">
+              <div class="pledge-dash-label" style="font-size:11.5px; color:#64748B;">股票曝險倍數</div>
+              <div class="pledge-dash-val" id="valPledgeExposure" style="font-size:17px; font-weight:800; color:#0F172A;">1.00×</div>
+              <div style="font-size:10.5px; color:#94A3B8; margin-top:2px;" id="subPledgeExposure">總市值 $0</div>
             </div>
+
+            <div class="pledge-dash-item" style="background:#FFFFFF; border:1px solid #E2E8F0; padding:12px; border-radius:12px;">
+              <div class="pledge-dash-label" style="font-size:11.5px; color:#64748B;">4% 基準提領額 (淨資產)</div>
+              <div class="pledge-dash-val" id="valPledgeBaseWithdraw" style="font-size:17px; font-weight:800; color:#0284C7;">$0 / 年</div>
+              <div style="font-size:10.5px; color:#94A3B8; margin-top:2px;" id="subPledgeBaseWithdraw">每月 $0</div>
+            </div>
+
+            <div class="pledge-dash-item" style="background:#FFFFFF; border:1px solid #E2E8F0; padding:12px; border-radius:12px;">
+              <div class="pledge-dash-label" style="font-size:11.5px; color:#64748B;">質押借款年利息</div>
+              <div class="pledge-dash-val" id="valPledgeAnnualInterest" style="font-size:17px; font-weight:800; color:#EF4444;">-$0 / 年</div>
+              <div style="font-size:10.5px; color:#94A3B8; margin-top:2px;" id="subPledgeMonthlyInterest">每月 -$0</div>
+            </div>
+
+            <div class="pledge-dash-item" style="background:#FFFFFF; border:1px solid #E2E8F0; padding:12px; border-radius:12px;">
+              <div class="pledge-dash-label" style="font-size:11.5px; color:#64748B;">扣息後實質生活費</div>
+              <div class="pledge-dash-val" id="valPledgeDisposable" style="font-size:17px; font-weight:800; color:#10B981;">$0 / 年</div>
+              <div style="font-size:10.5px; color:#94A3B8; margin-top:2px;" id="subPledgeDisposable">每月 $0</div>
+            </div>
+
+            <div class="pledge-dash-item" style="background:#FFFFFF; border:1px solid #E2E8F0; padding:12px; border-radius:12px;">
+              <div class="pledge-dash-label" style="font-size:11.5px; color:#64748B;">實拿生活費金流負擔率</div>
+              <div class="pledge-dash-val" id="valPledgeBurdenRate" style="font-size:17px; font-weight:800; color:#D97706;">0.00%</div>
+              <div style="font-size:10.5px; color:#94A3B8; margin-top:2px;">(提領+利息)/淨資產</div>
+            </div>
+
+            <div class="pledge-dash-item" style="background:#FFFFFF; border:1px solid #E2E8F0; padding:12px; border-radius:12px;">
+              <div class="pledge-dash-label" style="font-size:11.5px; color:#64748B;">擔保維持率 (距斷頭)</div>
+              <div class="pledge-dash-val" id="valPledgeMarginSafe" style="font-size:17px; font-weight:800; color:#047857;">--%</div>
+              <div style="font-size:10.5px; color:#94A3B8; margin-top:2px;" id="subPledgeDrop">承受大盤下跌 --%</div>
+            </div>
+          </div>
+
+          <!-- 風險提示條 (嚴格遵守規範) -->
+          <div style="margin-top:12px; padding:12px 14px; background:#FEF3C7; border:1px solid #FCD34D; border-radius:10px; font-size:12px; color:#92400E; line-height:1.5;">
+            ⚠️ <strong>風險說明</strong>：4% 提領率係基於歷史數據之假設模型，未保證未來市場報酬。質押屬槓桿融資，遇連續空頭時將面臨維持率不足之追繳或強制平倉風險，請務必保留 1～2 年緊急生活預備金。
+          </div>
+        </div>
             <div class="pledge-dash-item">
               <div class="pledge-dash-label">每月利息負擔</div>
               <div class="pledge-dash-val" id="valPledgeInterest" style="color:var(--system-red);">--</div>
@@ -3450,36 +3521,44 @@
     const netStockEquity = p.stockAssetsAtRetire + pensionLumpAtRetire + downsizingCashToStock + extraMortgageStock;
     const netStockEquityEndgame = p.stockAssetsAtRetire + pensionLumpToStock + downsizingCashToStock + extraMortgageStock;
 
-    // ── 第二層：質押槓桿獨立增額 ──
+    // ── 第二層：質押槓桿獨立增額與風控精算 ──
     let actualPledgeLoan = 0;
+    let annualPledgeInterest = 0;
     let monthlyPledgeInterest = 0;
-    let totalPortfolioValue = netStockEquity;
-    let maintenanceMargin = 0;
-    let marginCallDrop = 0;
+    let grossPortfolioValue = netStockEquity;
+    let leverageMultiple = 1.0;
+    let maintenanceMargin = 999;
+    let marginCallDrop = 100;
+    let pledgedCollateralValue = netStockEquity; // 擔保品以設質之股票現值為準
 
     if (p.enablePledge && p.pledgeAmount > 0) {
       // 確保借款不超過法規上限 60%
       const maxLegalLoan = netStockEquity * 0.6;
       actualPledgeLoan = Math.min(p.pledgeAmount, maxLegalLoan);
-      monthlyPledgeInterest = (actualPledgeLoan * (p.pledgeInterestRate / 100)) / 12;
+      annualPledgeInterest = actualPledgeLoan * (p.pledgeInterestRate / 100);
+      monthlyPledgeInterest = annualPledgeInterest / 12;
       
       if (p.pledgeStrategy === 'leverage') {
-        // 槓桿擴張：借出資金再度買入股票
-        totalPortfolioValue = netStockEquity + actualPledgeLoan;
+        // 槓桿擴張：借出資金再度買入股票，總曝險市值擴張
+        grossPortfolioValue = netStockEquity + actualPledgeLoan;
+        leverageMultiple = netStockEquity > 0 ? Number((grossPortfolioValue / netStockEquity).toFixed(2)) : 1.0;
+        pledgedCollateralValue = netStockEquity;
       } else if (p.pledgeStrategy === 'cashflow') {
         // 備用金：借出資金變現留作生活費，不投入股市
-        totalPortfolioValue = netStockEquity;
+        grossPortfolioValue = netStockEquity;
+        leverageMultiple = 1.0;
+        pledgedCollateralValue = netStockEquity;
       }
       
       if (actualPledgeLoan > 0) {
-        maintenanceMargin = (totalPortfolioValue / actualPledgeLoan) * 100;
-        marginCallDrop = (1 - (130 / maintenanceMargin)) * 100;
-        if (marginCallDrop < 0) marginCallDrop = 0;
+        maintenanceMargin = Math.round((pledgedCollateralValue / actualPledgeLoan) * 100);
+        marginCallDrop = Number(Math.max(0, (1 - (1.30 * actualPledgeLoan) / pledgedCollateralValue) * 100).toFixed(1));
       }
     }
     const actualLTV = actualPledgeLoan > 0 ? (actualPledgeLoan / netStockEquity * 100) : 0;
 
-    // ── 第三層：動態賣股提領（4% 永續 SWR vs 計畫攤提 PMT） 與收支結算 ──
+    // ── 第三層：4% 基準提領（嚴格以「淨資產 netStockEquity」為基底，嚴禁以借款總市值灌水！）──
+    let annualBaseWithdrawal = 0;
     let monthlySWRIncome = 0;
     let stockWithdrawalLabel = '';
     const planningYears = Math.max(1, (p.lifeExpectancy || 85) - p.retireAge);
@@ -3491,19 +3570,30 @@
     const rRealMonthly = rReal / 12;
 
     if (p.withdrawalMode === 'deplete') {
-      // 計畫提領（Die with Zero / 年金現值攤銷 PMT 模型）：本金在預期壽命內平滑耗盡
+      // 計畫提領（以自有淨值計算平滑耗盡，絕不可拿借來的 actualPledgeLoan 當作本金）
       const totalMonths = planningYears * 12;
       if (rRealMonthly > 0.00001) {
-        monthlySWRIncome = (totalPortfolioValue * rRealMonthly) / (1 - Math.pow(1 + rRealMonthly, -totalMonths));
+        monthlySWRIncome = (netStockEquity * rRealMonthly) / (1 - Math.pow(1 + rRealMonthly, -totalMonths));
       } else {
-        monthlySWRIncome = totalPortfolioValue / Math.max(1, totalMonths);
+        monthlySWRIncome = netStockEquity / Math.max(1, totalMonths);
       }
+      annualBaseWithdrawal = monthlySWRIncome * 12;
       stockWithdrawalLabel = '計畫平滑提領（至 ' + (p.lifeExpectancy || 85) + ' 歲）';
     } else {
-      // 4% 永續模式：每年僅提領 SWR，本金跨世代留存
-      monthlySWRIncome = (totalPortfolioValue * p.swrRate) / 12;
-      stockWithdrawalLabel = (p.swrRate * 100).toFixed(1) + '% 永續提領';
+      // 4% 永續模式：嚴格以「淨資產 netStockEquity」計算基準提領額
+      annualBaseWithdrawal = netStockEquity * p.swrRate;
+      monthlySWRIncome = annualBaseWithdrawal / 12;
+      stockWithdrawalLabel = (p.swrRate * 100).toFixed(1) + '% 基準提領';
     }
+
+    // 扣除質押利息後的實質可支配生活費
+    const monthlyDisposableLiving = Math.max(0, monthlySWRIncome - monthlyPledgeInterest);
+    const annualDisposableLiving = monthlyDisposableLiving * 12;
+
+    // 實拿生活費之現金流負擔率 (Effective Cashflow Rate) = (基準提領 + 年利息) / 淨資產
+    const effectiveCashflowRate = netStockEquity > 0 
+      ? Number(((annualBaseWithdrawal + annualPledgeInterest) / netStockEquity * 100).toFixed(2)) 
+      : 0;
 
     const monthlyReverseMortgage = (p.houseStrategy === 'reverse_mortgage') ? (p.reverseMortgageMonthly || 0) : 0;
 
