@@ -1459,9 +1459,22 @@
               <span class="field-label">退休資產規劃哲學（提領模型）</span>
               <span class="field-badge-note" id="tagModeDesc">4% 永續留本</span>
             </div>
-            <div class="apple-segmented-control" id="segWithdrawalMode">
+            <div class="apple-segmented-control" id="segWithdrawalMode" style="margin-bottom:12px;">
               <button type="button" class="seg-btn active" id="btnModePerpetual" onclick="setWithdrawalMode('perpetual')">4% 永續傳承（本金不減）</button>
               <button type="button" class="seg-btn" id="btnModeDeplete" onclick="setWithdrawalMode('deplete')">計畫提領（壽命終點歸零）</button>
+            </div>
+            
+            <!-- 提領模型哲學動態解說卡片 -->
+            <div class="pension-strategy-card" id="withdrawalStrategyCard" style="margin-top:0; margin-bottom:14px;">
+              <div class="pension-strategy-header" style="margin-bottom:8px;">
+                <span class="pension-strategy-title">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><path d="M2 12h4l2-9 5 18 3-9h6"/></svg>
+                  <span>提領理論與財務運作邏輯</span>
+                </span>
+              </div>
+              <div class="pension-desc-note" id="txtWithdrawalTheory" style="margin-top:0; font-size:12.5px;">
+                載入中...
+              </div>
             </div>
             <input type="hidden" id="withdrawalMode" value="perpetual">
           </div>
@@ -3054,6 +3067,10 @@
     // 兼職列（若有）
     const partTimeRow = R.nominalPartTime > 0
       ? '<div class="cashflow-row"><span class="cashflow-row-name">微型兼職收入</span><span class="cashflow-row-val" style="color:var(--system-green-dark);">+' + fmtMoney(R.nominalPartTime) + '／月</span></div>'
+      : '';
+
+    const houseRow = R.monthlyReverseMortgage > 0
+      ? '<div class="cashflow-row"><span class="cashflow-row-name">房產：以房養老</span><span class="cashflow-row-val" style="color:var(--system-green-dark); font-weight:700;">+' + fmtMoney(R.monthlyReverseMortgage) + '／月</span></div>'
       : '';
 
     if (R.hasBridgePeriod) {
