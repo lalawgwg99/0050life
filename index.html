@@ -4036,6 +4036,34 @@ class LongevityModel {
       const annualInterest = R.monthlyPledgeInterest * 12;
       const effectiveBurden = R.netStockEquity > 0 ? ((annualLiving + annualInterest) / R.netStockEquity * 100) : 0;
       
+      
+      // Populate the 6 Pledge Dashboard Boxes
+      if ($('valPledgeExposure')) {
+        let lev = R.netStockEquity > 0 ? (R.totalPortfolioValue / R.netStockEquity) : 1;
+        $('valPledgeExposure').textContent = lev.toFixed(2) + '×';
+      }
+      if ($('subPledgeExposure')) $('subPledgeExposure').textContent = '總市值 $' + fmtMoney(R.totalPortfolioValue);
+      
+      if ($('valPledgeBaseWithdraw')) $('valPledgeBaseWithdraw').textContent = '$' + fmtMoney(R.monthlySWRIncome * 12) + ' / 年';
+      
+      if ($('valPledgeAnnualInterest')) $('valPledgeAnnualInterest').textContent = '-$' + fmtMoney(R.monthlyPledgeInterest * 12) + ' / 年';
+      
+      const annualDisposable = (R.monthlySWRIncome * 12) - (R.monthlyPledgeInterest * 12);
+      if ($('valPledgeDisposable')) $('valPledgeDisposable').textContent = '$' + fmtMoney(annualDisposable) + ' / 年';
+      if ($('subPledgeDisposable')) $('subPledgeDisposable').textContent = '每月 $' + fmtMoney(annualDisposable / 12);
+      
+      if ($('valPledgeBurdenRate')) $('valPledgeBurdenRate').textContent = effectiveBurden.toFixed(2) + '%';
+      
+      if ($('valPledgeMarginSafe')) {
+        $('valPledgeMarginSafe').textContent = R.maintenanceMargin === 999 ? '--%' : R.maintenanceMargin + '%';
+        const dropEl = $('valPledgeMarginSafe').nextElementSibling;
+        if (dropEl && R.maintenanceMargin !== 999) {
+            dropEl.textContent = '承受大盤下跌 ' + R.marginCallDrop + '%';
+        } else if (dropEl) {
+            dropEl.textContent = '承受大盤下跌 --%';
+        }
+      }
+
       const warnBox = $('boxPledgeSWRWarning');
       if (warnBox) {
         if (pledgeStrategy === 'leverage' && R.actualPledgeLoan > 0) {
