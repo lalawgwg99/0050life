@@ -2114,7 +2114,7 @@
   function togglePledgeFields() {
     const p = $('pledgeStrategy');
     const isPledge = p && p.value !== 'none';
-    if ($('boxPledgeLTV')) $('boxPledgeLTV').style.display = isPledge ? '' : 'none';
+    if ($('boxPledgeAmount')) $('boxPledgeAmount').style.display = isPledge ? '' : 'none';
     if ($('boxPledgeRate')) $('boxPledgeRate').style.display = isPledge ? '' : 'none';
     if ($('boxPledgeDashboard')) $('boxPledgeDashboard').style.display = isPledge ? '' : 'none';
   }
@@ -2748,6 +2748,15 @@
     }
   }
   // 初始化預設值
+  
+  // 設定快速借款成數
+  function setQuickPledgeLTV(ratio) {
+    if (window._lastBaseStockAssets) {
+       $('pledgeAmount').value = Math.round(window._lastBaseStockAssets * ratio);
+       calculate();
+    }
+  }
+
   function applyPreset() {
     clearLocalState();
     $('birthYear').value = 80;
