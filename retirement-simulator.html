@@ -144,19 +144,18 @@
     .apple-segmented-control {
       display: flex;
       background-color: var(--fill-secondary);
-      padding: 3px;
-      border-radius: 9px;
-      gap: 3px;
-      border: 1px solid var(--separator-hairline);
+      padding: 4px;
+      border-radius: 999px; /* Richart 膠囊狀 */
+      gap: 4px;
     }
     .seg-btn {
       flex: 1;
       border: none;
       background: transparent;
-      padding: 7px 12px;
-      border-radius: 7px;
-      font-size: 13px;
-      font-weight: 600;
+      padding: 8px 12px;
+      border-radius: 999px; /* Richart 膠囊狀 */
+      font-size: 13.5px;
+      font-weight: 650;
       color: var(--label-secondary);
       cursor: pointer;
       transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
@@ -177,11 +176,11 @@
 
     /* Longevity Assessment Card (怪老子精算評級) */
     .longevity-card {
-      background-color: var(--card-subtle);
-      border-radius: 12px;
-      padding: 13px 15px;
-      margin: 14px 0 16px;
-      border: 1px solid var(--separator-hairline);
+      background-color: #F5F5F7;
+      border-radius: 20px;
+      padding: 24px 20px;
+      margin: 24px 0 16px;
+      border: none;
     }
     .longevity-header {
       display: flex;
@@ -195,9 +194,9 @@
       gap: 6px;
     }
     .longevity-title {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 650;
-      color: var(--label-primary);
+      color: #86868b;
     }
     .longevity-status-pill {
       font-size: 11px;
@@ -209,23 +208,24 @@
     }
     .longevity-main-row {
       display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      margin-bottom: 8px;
-      gap: 8px;
+      flex-direction: column;
+      align-items: flex-start;
+      margin: 12px 0 16px;
+      gap: 6px;
     }
     .longevity-age {
-      font-size: 20px;
+      font-size: clamp(28px, 6vw, 34px);
       font-weight: 750;
       letter-spacing: -0.02em;
-      color: var(--accent);
+      color: var(--system-green-dark);
       font-variant-numeric: tabular-nums;
     }
     .longevity-desc {
-      font-size: 11.5px;
-      color: var(--label-secondary);
-      text-align: right;
-      flex: 1;
+      font-size: 13.5px;
+      color: #86868b;
+      text-align: left;
+      line-height: 1.45;
+      flex: none;
     }
     .longevity-scale-track {
       position: relative;
@@ -250,6 +250,7 @@
       color: var(--label-tertiary);
       font-weight: 500;
       transform: translateX(-50%);
+      white-space: nowrap;
     }
     .longevity-mark:first-of-type {
       transform: none;
@@ -315,7 +316,7 @@
     .apple-input:focus, .apple-select:focus {
       border-color: var(--accent);
       background-color: #fff;
-      box-shadow: 0 0 0 3px var(--accent-tint);
+      box-shadow: 0 0 0 4px var(--accent-tint);
     }
     .apple-input[readonly] {
       background-color: #f0f0f3;
@@ -345,23 +346,17 @@
 
     /* Summary Card with Apple Pro Glass / Ambient Gradient */
     .hero-summary {
-      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-      border: 1px solid rgba(2, 132, 199, 0.18);
-      border-radius: 16px;
-      padding: 22px 20px;
-      margin-bottom: 18px;
+      background: #ffffff;
+      border: none;
+      border-radius: 28px;
+      padding: 32px 28px;
+      margin-bottom: 24px;
       box-shadow: var(--shadow-hero);
       position: relative;
       overflow: hidden;
     }
     .hero-summary::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background: var(--accent-gradient);
+      display: none;
     }
     .hero-top {
       display: flex;
@@ -374,18 +369,18 @@
     .hero-pill {
       display: inline-flex;
       align-items: center;
-      padding: 3px 9px;
-      border-radius: 980px;
+      padding: 4px 10px;
+      border-radius: 999px;
       font-size: 11.5px;
-      font-weight: 600;
+      font-weight: 700;
     }
     .hero-metric {
-      font-size: clamp(30px, 3.8vw, 40px);
-      font-weight: 700;
-      letter-spacing: -0.03em;
-      margin: 8px 0 3px;
+      font-size: clamp(40px, 4.5vw, 52px);
+      font-weight: 750;
+      letter-spacing: -0.035em;
+      margin: 8px 0 6px;
       font-variant-numeric: tabular-nums;
-      color: var(--label-primary);
+      color: #111827;
     }
     .hero-subtitle {
       font-size: 12.5px;
@@ -420,37 +415,36 @@
     .triad-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin: 16px 0;
+      gap: 12px;
+      margin: 20px 0;
     }
     .triad-cell {
-      background-color: #ffffff;
-      border: 1px solid var(--separator);
-      border-radius: 12px;
-      padding: 12px 10px;
-      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
+      background-color: #F5F5F7;
+      border: none;
+      border-radius: 16px;
+      padding: 16px;
     }
     .triad-label {
-      font-size: 11px;
-      color: var(--label-tertiary);
-      margin-bottom: 4px;
-      font-weight: 500;
+      font-size: 12px;
+      color: #86868b;
+      margin-bottom: 6px;
+      font-weight: 600;
     }
     .triad-value {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--label-primary);
+      font-size: 18px;
+      font-weight: 750;
+      color: #1d1d1f;
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
     }
 
     /* Native Progress Bar */
     .native-bar-track {
-      height: 6px;
-      background-color: var(--separator-hairline);
-      border-radius: 99px;
+      height: 8px;
+      background: var(--fill-secondary);
+      border-radius: 4px;
       overflow: hidden;
-      margin-top: 10px;
+      margin-bottom: 8px;
     }
     .native-bar-fill {
       height: 100%;
@@ -481,11 +475,11 @@
       margin-bottom: 10px;
     }
     .cashflow-phase-card {
-      background-color: var(--card-subtle);
-      border-radius: 10px;
-      padding: 12px 14px;
-      margin-bottom: 10px;
-      border: 1px solid var(--separator-hairline);
+      background-color: #F9FAFB;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      border: 1px solid rgba(0,0,0,0.03);
     }
     .cashflow-phase-title {
       font-size: 12.5px;
@@ -601,16 +595,20 @@
       flex-wrap: wrap;
     }
     .chip-btn {
+      background: #FFFFFF;
       border: 1px solid var(--separator);
-      background-color: var(--card-bg);
+      border-radius: 999px;
+      padding: 6px 14px;
+      font-size: 13px;
+      font-weight: 600;
       color: var(--label-secondary);
-      border-radius: 980px;
-      font-size: 11px;
-      font-weight: 500;
-      padding: 3px 9px;
       cursor: pointer;
-      transition: all 0.12s ease;
-      font-variant-numeric: tabular-nums;
+      transition: all 0.2s;
+    }
+    .chip-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-tint);
     }
     .chip-btn:hover, .chip-btn:active {
       border-color: var(--accent);
@@ -787,18 +785,30 @@
 
       /* 三欄數字指標卡片自適應 */
       .triad-grid {
-        grid-template-columns: repeat(3, 1fr) !important;
-        gap: 5px !important;
-      }
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin: 20px 0;
+    }
       .triad-cell {
-        padding: 8px 6px !important;
-      }
+      background-color: #F5F5F7;
+      border: none;
+      border-radius: 16px;
+      padding: 16px;
+    }
       .triad-label {
-        font-size: 10px !important;
-      }
+      font-size: 12px;
+      color: #86868b;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
       .triad-value {
-        font-size: 13px !important;
-      }
+      font-size: 18px;
+      font-weight: 750;
+      color: #1d1d1f;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
 
       /* 敏感度表格防跑版 */
       .matrix-table {
@@ -841,28 +851,31 @@
 
     /* Breakeven Timeline Capsule */
     .breakeven-card {
-      background: var(--card-subtle);
-      border: 1px solid var(--separator-hairline);
-      border-radius: 10px;
-      padding: 12px 14px;
+      background: #F9FAFB;
+      border: 1px solid rgba(0,0,0,0.03);
+      border-radius: 16px;
+      padding: 16px;
       margin-top: 14px;
     }
     .breakeven-header {
-      font-size: 12px;
-      font-weight: 650;
-      color: var(--label-primary);
+      font-size: 12.5px;
+      font-weight: 700;
+      color: #111827;
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
     }
     .breakeven-badge {
-      font-size: 11px;
-      padding: 2px 7px;
-      border-radius: 5px;
-      font-weight: 600;
-      background: var(--accent-tint);
-      color: var(--accent);
+      font-size: 11.5px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 650;
+      background: #E0F2FE;
+      color: #0284C7;
+      white-space: nowrap;
+      flex-shrink: 0;
     }
     .breakeven-track {
       height: 8px;
@@ -883,8 +896,17 @@
     .breakeven-labels {
       display: flex;
       justify-content: space-between;
-      font-size: 10.5px;
-      color: var(--label-tertiary);
+      gap: 12px;
+      font-size: 11px;
+      color: #86868b;
+      margin-top: 6px;
+    }
+    .breakeven-labels span {
+      flex: 1;
+      line-height: 1.4;
+    }
+    .breakeven-labels span:last-child {
+      text-align: right;
     }
 
     /* SORR Meter Badge */
@@ -953,14 +975,121 @@
         padding: 16px !important;
       }
       .hero-summary {
-        background: #f8f8fa !important;
-        border: 1px solid #e5e5ea !important;
-      }
+      background: #ffffff;
+      border: none;
+      border-radius: 28px;
+      padding: 32px 28px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-hero);
+      position: relative;
+      overflow: hidden;
+    }
       .privacy-footer {
         display: block !important;
         margin-top: 20px !important;
       }
     }
+  
+    /* Investment Dashboard */
+    .invest-dashboard {
+      background: #F9FAFB;
+      border: 1px solid rgba(0,0,0,0.03);
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    .invest-dash-title {
+      font-size: 13px;
+      font-weight: 650;
+      color: var(--label-secondary);
+      margin-bottom: 4px;
+    }
+    .invest-dash-main {
+      font-size: 28px;
+      font-weight: 750;
+      color: var(--label-primary);
+      margin-bottom: 16px;
+      font-variant-numeric: tabular-nums;
+    }
+    .invest-bar-container {
+      display: flex;
+      height: 12px;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      gap: 2px;
+    }
+    .invest-bar-principal { background: #0284c7; }
+    .invest-bar-return { background: #38bdf8; }
+    .invest-bar-pension { background: var(--system-green); }
+    
+    .invest-legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .legend-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .legend-color {
+      width: 10px;
+      height: 10px;
+      border-radius: 3px;
+      margin-top: 4px;
+    }
+    .legend-label {
+      font-size: 11.5px;
+      color: var(--label-secondary);
+      margin-bottom: 2px;
+    }
+    .legend-value {
+      font-size: 14px;
+      font-weight: 650;
+      color: var(--label-primary);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Pledge Dashboard */
+    .pledge-dashboard {
+      background: #ffffff;
+      border: 1px solid rgba(0,0,0,0.05);
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+    }
+    .pledge-dash-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .pledge-dash-item {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .pledge-dash-label {
+      font-size: 12px;
+      color: var(--label-secondary);
+      font-weight: 600;
+    }
+    .pledge-dash-val {
+      font-size: 18px;
+      font-weight: 750;
+      font-variant-numeric: tabular-nums;
+    }
+    .pledge-dash-footer {
+      font-size: 11.5px;
+      color: var(--label-tertiary);
+      background: #F9FAFB;
+      padding: 10px 12px;
+      border-radius: 8px;
+      line-height: 1.4;
+    }
+    
   </style>
 </head>
 <body>
@@ -1348,7 +1477,43 @@
             <div class="field-desc">ETF 經理費、保管費與手續費等長期成本損耗</div>
           </div>
         </div>
-      </section>
+      
+        <!-- 股票總資產動態明細 -->
+        <div class="invest-dashboard" id="boxStockDashboard">
+          <div class="invest-dash-title">退休時股票總資產預估明細</div>
+          <div class="invest-dash-main" id="valStockTotal">--</div>
+          
+          <div class="invest-bar-container">
+            <div class="invest-bar-principal" id="barStockPrincipal" style="width: 50%;"></div>
+            <div class="invest-bar-return" id="barStockReturn" style="width: 30%;"></div>
+            <div class="invest-bar-pension" id="barStockPension" style="width: 20%;"></div>
+          </div>
+          
+          <div class="invest-legend">
+            <div class="legend-item">
+              <div class="legend-color" style="background: #0284c7;"></div>
+              <div>
+                <div class="legend-label">自行投入本金</div>
+                <div class="legend-value" id="valStockPrincipal">--</div>
+              </div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-color" style="background: #38bdf8;"></div>
+              <div>
+                <div class="legend-label">投資複利利得</div>
+                <div class="legend-value" id="valStockReturn">--</div>
+              </div>
+            </div>
+            <div class="legend-item" id="legendPension" style="display:none;">
+              <div class="legend-color" style="background: var(--system-green);"></div>
+              <div>
+                <div class="legend-label">勞退一次領挹注</div>
+                <div class="legend-value" id="valStockPension">--</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </section>
 
       <!-- 區塊 5：進階功能 股票質押 -->
       <section class="apple-card">
@@ -1358,26 +1523,33 @@
         <div class="fields-grid">
           <div class="field-cell field-full">
             <div class="field-header">
-              <span class="field-label">質押功能模擬</span>
+              <span class="field-label">質押策略選擇</span>
             </div>
             <div class="input-wrapper">
-              <select id="pledgeStrategy" class="apple-select" onchange="togglePledgeFields(); calculate(false)">
-                <option value="none" selected>不啟用股票質押</option>
-                <option value="pledge">啟用質押借款模擬（手動設定借款金額）</option>
+              <select id="pledgeStrategy" class="apple-select" onchange="calculate()">
+                <option value="none" selected>不使用質押（預設安全模式）</option>
+                <option value="leverage">質押再投入：借款買股，擴張資產放大收益</option>
+                <option value="cashflow">質押當備用金：借款不買股，變現作生活費留存</option>
               </select>
             </div>
+            <div class="field-desc">適度質押可避免在股災時賣股，或於低點放大槓桿</div>
           </div>
 
-          <div class="field-cell" id="boxPledgeAmount" style="display:none;">
+          <div class="field-cell" id="boxPledgeLTV" style="display:none;">
             <div class="field-header">
-              <span class="field-label">質押借款金額</span>
-              <span class="field-badge-note" id="tagPledgeMax">上限 $0</span>
+              <span class="field-label">預計借款成數 (LTV)</span>
             </div>
             <div class="input-wrapper">
-              <input type="number" id="pledgeAmount" class="apple-input" inputmode="numeric" value="0" step="100000">
-              <span class="input-unit">元</span>
+              <select id="pledgeLTV" class="apple-select" onchange="calculate()">
+                <option value="10">10%（極度安全，維持率 1000%）</option>
+                <option value="20" selected>20%（高安全，維持率 500%）</option>
+                <option value="30">30%（中等，維持率 333%）</option>
+                <option value="40">40%（積極，維持率 250%）</option>
+                <option value="50">50%（危險，維持率 200%）</option>
+                <option value="60">60%（法規上限，維持率 166%）</option>
+              </select>
             </div>
-            <div class="field-desc">系統自動限制不超過淨資產的 40%（安全維持率 250%）</div>
+            <div class="field-desc">以退休時股票總市值計算借貸比例</div>
           </div>
 
           <div class="field-cell" id="boxPledgeRate" style="display:none;">
@@ -1385,18 +1557,37 @@
               <span class="field-label">質押借款年利率</span>
             </div>
             <div class="input-wrapper">
-              <input type="number" id="pledgeRate" class="apple-input" inputmode="decimal" value="2.5" step="0.1">
+              <input type="number" id="pledgeRate" class="apple-input" inputmode="decimal" value="2.5" step="0.1" oninput="calculate()">
               <span class="input-unit">%</span>
             </div>
             <div class="field-desc">券商牌告質押年息約 2.3%～3.0%</div>
           </div>
         </div>
 
-        <div id="pledgeWarningBox" class="system-callout warning" style="display:none; margin-top:12px;">
-          <strong>高風險警示</strong>：質押借款存在利率波動與追繳斷頭風險。退休期間若遭遇市場回撤 30%～40%，極易引發強制平倉。
-          <span id="pledgeRiskDetail"></span>
-        </div>
-      </section>
+        <!-- 質押動態風險儀表板 -->
+        <div class="pledge-dashboard" id="boxPledgeDashboard" style="display:none;">
+          <div class="pledge-dash-grid">
+            <div class="pledge-dash-item">
+              <div class="pledge-dash-label">實際借款金額</div>
+              <div class="pledge-dash-val" id="valPledgeAmount">--</div>
+            </div>
+            <div class="pledge-dash-item">
+              <div class="pledge-dash-label">每月利息負擔</div>
+              <div class="pledge-dash-val" id="valPledgeInterest" style="color:var(--system-red);">--</div>
+            </div>
+            <div class="pledge-dash-item">
+              <div class="pledge-dash-label">擔保維持率</div>
+              <div class="pledge-dash-val" id="valPledgeMargin" style="color:var(--system-green-dark);">--</div>
+            </div>
+            <div class="pledge-dash-item">
+              <div class="pledge-dash-label">斷頭承受跌幅</div>
+              <div class="pledge-dash-val" id="valPledgeDrop" style="color:var(--accent);">--</div>
+            </div>
+          </div>
+          <div class="pledge-dash-footer" id="txtPledgeWarning">
+            ⓘ 當股票市值下跌 X%，維持率低於 130% 時，將面臨券商追繳斷頭風險。
+          </div>
+        </div></section>
     </main>
 
     <!-- 右側：結果精算面板 -->
@@ -1411,22 +1602,22 @@
           <div class="hero-metric" id="valShortfall">$0</div>
           <div class="hero-subtitle" id="valShortfallReal">折合今日幣值 $0（退休當年名目金額）</div>
           <div>
-            <span id="bannerDeltaShortfall" class="delta-banner neutral">標準基準對照</span>
+            
           </div>
         </div>
 
         <!-- 3 個關鍵指標 -->
         <div class="triad-grid">
           <div class="triad-cell">
-            <div class="triad-label">【現在】目前已備</div>
+            <div class="triad-label">現有資產</div>
             <div class="triad-value" id="valCurrent">$0</div>
           </div>
           <div class="triad-cell">
-            <div class="triad-label">【未來】預估累積</div>
+            <div class="triad-label">退休時預估</div>
             <div class="triad-value" id="valProjected">$0</div>
           </div>
           <div class="triad-cell">
-            <div class="triad-label">【結果】目標所需</div>
+            <div class="triad-label">安全退休目標</div>
             <div class="triad-value" id="valRequired">$0</div>
           </div>
         </div>
@@ -1455,8 +1646,8 @@
           </div>
           <div class="longevity-scale-track">
             <div class="longevity-scale-fill" id="barLongevityScale" style="width: 0%;"></div>
-            <div class="longevity-mark" style="left: 0%;">退休</div>
-            <div class="longevity-mark" style="left: 55%;">均壽 80</div>
+            <div class="longevity-mark" style="left: 0%;">退休</div>&nbsp;&nbsp;
+            <div class="longevity-mark" style="left: 55%;">均壽 80</div>&nbsp;&nbsp;
             <div class="longevity-mark" style="right: 0%;">100+ 永續</div>
           </div>
         </div>
@@ -1804,10 +1995,11 @@
 
   // 質押欄位顯示切換
   function togglePledgeFields() {
-    const on = $('pledgeStrategy') && $('pledgeStrategy').value === 'pledge';
-    if ($('boxPledgeAmount')) $('boxPledgeAmount').style.display = on ? 'flex' : 'none';
-    if ($('boxPledgeRate')) $('boxPledgeRate').style.display = on ? 'flex' : 'none';
-    if ($('pledgeWarningBox')) $('pledgeWarningBox').style.display = on ? 'block' : 'none';
+    const p = $('pledgeStrategy');
+    const isPledge = p && p.value !== 'none';
+    if ($('boxPledgeLTV')) $('boxPledgeLTV').style.display = isPledge ? '' : 'none';
+    if ($('boxPledgeRate')) $('boxPledgeRate').style.display = isPledge ? '' : 'none';
+    if ($('boxPledgeDashboard')) $('boxPledgeDashboard').style.display = isPledge ? '' : 'none';
   }
 
   /**
@@ -1845,11 +2037,26 @@
     let actualPledgeLoan = 0;
     let monthlyPledgeInterest = 0;
     let totalPortfolioValue = netStockEquity;
-    if (p.enablePledge && p.pledgeAmount > 0) {
-      const maxSafeLoan = netStockEquity * 0.4;
-      actualPledgeLoan = Math.min(p.pledgeAmount, maxSafeLoan);
+    let maintenanceMargin = 0;
+    let marginCallDrop = 0;
+
+    if (p.enablePledge && p.pledgeLTV > 0) {
+      actualPledgeLoan = netStockEquity * (p.pledgeLTV / 100);
       monthlyPledgeInterest = (actualPledgeLoan * (p.pledgeInterestRate / 100)) / 12;
-      totalPortfolioValue = netStockEquity + actualPledgeLoan;
+      
+      if (p.pledgeStrategy === 'leverage') {
+        // 槓桿擴張：借出資金再度買入股票
+        totalPortfolioValue = netStockEquity + actualPledgeLoan;
+      } else if (p.pledgeStrategy === 'cashflow') {
+        // 備用金：借出資金變現留作生活費，不投入股市
+        totalPortfolioValue = netStockEquity;
+      }
+      
+      if (actualPledgeLoan > 0) {
+        maintenanceMargin = (totalPortfolioValue / actualPledgeLoan) * 100;
+        marginCallDrop = (1 - (130 / maintenanceMargin)) * 100;
+        if (marginCallDrop < 0) marginCallDrop = 0;
+      }
     }
 
     // ── 第三層：4% 賣股提領 / 平滑享老 PV 精算 與收支結算 ──
@@ -1958,7 +2165,8 @@
       totalPortfolioValue: Math.round(totalPortfolioValue),
       actualPledgeLoan: Math.round(actualPledgeLoan),
       monthlyPledgeInterest: Math.round(monthlyPledgeInterest),
-      maintenanceRatio: Math.round(maintenanceRatio),
+      maintenanceMargin: Math.round(maintenanceMargin),
+      marginCallDrop: Number(marginCallDrop.toFixed(1)),
       monthlySWRIncome: Math.round(monthlySWRIncome),
       totalMonthlyInflow: Math.round(totalMonthlyInflow),
       totalMonthlyOutflow: Math.round(totalMonthlyOutflow),
@@ -1977,7 +2185,7 @@
     };
   }
 
-  let baselineShortfall = null;
+  
 
   function calculate(isSettingBaseline = false) {
     const age = n('currentAge');
@@ -2004,7 +2212,8 @@
     const projectedStockAssets = fv(n('assetsNow'), n('monthlyInvest'), netReturn, monthsToRetire);
 
     // 質押控制
-    const enablePledge = $('pledgeStrategy') && $('pledgeStrategy').value === 'pledge';
+    const pledgeStrategy = $('pledgeStrategy') ? $('pledgeStrategy').value : 'none';
+    const enablePledge = pledgeStrategy !== 'none';
     togglePledgeFields();
 
     // 模式切換與參數
@@ -2023,13 +2232,58 @@
       projectedPensionMonthly: projectedPensionMonthly,
       stockAssetsAtRetire: projectedStockAssets,
       enablePledge: enablePledge,
-      pledgeAmount: enablePledge ? n('pledgeAmount') : 0,
+      pledgeStrategy: pledgeStrategy,
+      pledgeLTV: enablePledge ? n('pledgeLTV') : 0,
       pledgeInterestRate: enablePledge ? n('pledgeRate') : 0,
       swrRate: n('withdrawRate') / 100,
       withdrawalMode: withdrawalMode,
       lifeExpectancy: lifeExpectancy,
       netReturnRate: netReturn
     });
+
+    // ── 渲染：股票總資產明細 (Third Pillar Dashboard) ──
+    const totalPrincipal = n('assetsNow') + (n('monthlyInvest') * monthsToRetire);
+    const compoundedReturn = projectedStockAssets - totalPrincipal;
+    const isLumpSum = (pensionMode === 'lump');
+    
+    const stockTotalVal = projectedStockAssets + (isLumpSum ? projectedPensionLump : 0);
+    
+    if ($('valStockTotal')) $('valStockTotal').textContent = fmtMoney(stockTotalVal);
+    if ($('valStockPrincipal')) $('valStockPrincipal').textContent = fmtMoney(totalPrincipal);
+    if ($('valStockReturn')) $('valStockReturn').textContent = fmtMoney(compoundedReturn);
+    
+    let wP = (totalPrincipal / stockTotalVal) * 100;
+    let wR = (compoundedReturn / stockTotalVal) * 100;
+    let wL = isLumpSum ? ((projectedPensionLump / stockTotalVal) * 100) : 0;
+    
+    if ($('barStockPrincipal')) $('barStockPrincipal').style.width = wP + '%';
+    if ($('barStockReturn')) $('barStockReturn').style.width = wR + '%';
+    if ($('barStockPension')) $('barStockPension').style.width = wL + '%';
+    
+    if ($('legendPension')) $('legendPension').style.display = isLumpSum ? 'flex' : 'none';
+    if (isLumpSum && $('valStockPension')) $('valStockPension').textContent = fmtMoney(projectedPensionLump);
+
+    // ── 渲染：質押動態儀表板 (Fifth Pillar Dashboard) ──
+    if (enablePledge) {
+      if ($('valPledgeAmount')) $('valPledgeAmount').textContent = fmtMoney(R.actualPledgeLoan);
+      if ($('valPledgeInterest')) $('valPledgeInterest').textContent = fmtMoney(R.monthlyPledgeInterest) + ' / 月';
+      
+      const marginEl = $('valPledgeMargin');
+      if (marginEl) {
+        marginEl.textContent = R.maintenanceMargin + '%';
+        marginEl.style.color = R.maintenanceMargin < 200 ? 'var(--system-red)' : 'var(--system-green-dark)';
+      }
+      
+      const dropEl = $('valPledgeDrop');
+      if (dropEl) {
+        dropEl.textContent = R.marginCallDrop + '%';
+        dropEl.style.color = R.marginCallDrop < 30 ? 'var(--system-red)' : 'var(--accent)';
+      }
+      
+      if ($('txtPledgeWarning')) {
+        $('txtPledgeWarning').innerHTML = 'ⓘ 若股市從高點下跌 <strong style="color:var(--system-red);">' + R.marginCallDrop + '%</strong>，維持率跌破 130% 時，將面臨券商追繳斷頭風險。';
+      }
+    }
 
     // ── 顧問增強運算 1：勞保請領黃金交叉點（76歲平衡點）──
     // 基準：60 歲早領（打 8 折） vs 65 歲足額（100%）
@@ -2075,7 +2329,7 @@
     const readiness = R.readinessRate / 100;
     const swr = n('withdrawRate') / 100;
 
-    if (isSettingBaseline || baselineShortfall === null) baselineShortfall = shortfall;
+    
 
     // ════════════════════════════
     // 渲染：核心指標
@@ -2153,8 +2407,16 @@
     if ($('mobileBarShortfall')) $('mobileBarShortfall').textContent = fmtMoney(shortfall);
     if ($('mobileBarReadiness')) {
       $('mobileBarReadiness').textContent = '達成率 ' + fmtPct(readiness);
-      $('mobileBarReadiness').style.background = shortfall <= 0 ? 'var(--system-green-tint)' : 'var(--system-orange-tint)';
-      $('mobileBarReadiness').style.color = shortfall <= 0 ? 'var(--system-green-dark)' : '#b45309';
+      if (shortfall <= 0) {
+        $('mobileBarReadiness').style.background = 'var(--system-green-tint)';
+        $('mobileBarReadiness').style.color = 'var(--system-green-dark)';
+      } else if (withdrawalMode === 'perpetual' && R.depleteAge >= (lifeExpectancy || 85)) {
+        $('mobileBarReadiness').style.background = 'var(--system-blue-tint)';
+        $('mobileBarReadiness').style.color = 'var(--accent)';
+      } else {
+        $('mobileBarReadiness').style.background = 'var(--system-orange-tint)';
+        $('mobileBarReadiness').style.color = '#b45309';
+      }
     }
 
     // 狀態徽章
@@ -2162,24 +2424,14 @@
       $('badgeStatus').textContent = '目標已達標';
       $('badgeStatus').style.background = 'var(--system-green-tint)';
       $('badgeStatus').style.color = 'var(--system-green-dark)';
+    } else if (withdrawalMode === 'perpetual' && R.depleteAge >= (lifeExpectancy || 85)) {
+      $('badgeStatus').textContent = '足敷餘生 (未達永續)';
+      $('badgeStatus').style.background = 'var(--system-blue-tint)';
+      $('badgeStatus').style.color = 'var(--accent)';
     } else {
       $('badgeStatus').textContent = '尚有自備缺口';
       $('badgeStatus').style.background = 'var(--system-orange-tint)';
       $('badgeStatus').style.color = '#b45309';
-    }
-
-    // 差異對比
-    const deltaDiff = shortfall - baselineShortfall;
-    const deltaBox = $('bannerDeltaShortfall');
-    if (Math.abs(deltaDiff) < 1000) {
-      deltaBox.className = 'delta-banner neutral';
-      deltaBox.textContent = '此為標準基準對照線';
-    } else if (deltaDiff < 0) {
-      deltaBox.className = 'delta-banner good';
-      deltaBox.textContent = '缺口較基準減少 ' + fmtMoney(Math.abs(deltaDiff));
-    } else {
-      deltaBox.className = 'delta-banner bad';
-      deltaBox.textContent = '缺口較基準增加 ' + fmtMoney(deltaDiff);
     }
 
     // ════════════════════════════
@@ -2188,18 +2440,20 @@
 
     if (shortfall <= 0) {
       $('resultNotice').className = 'system-callout success';
+      $('resultNotice').style.backgroundColor = '';
       $('resultNoticeText').innerHTML = '<strong>資產準備充足</strong>：退休淨資產 <strong style="color:var(--system-green-dark);">' + fmtMoney(R.netStockEquity) + '</strong> 高於目標所需 <strong>' + fmtMoney(R.requiredNetEquity) + '</strong>，各期現金流安全無虞。';
+    } else if (withdrawalMode === 'perpetual' && R.depleteAge >= (lifeExpectancy || 85)) {
+      $('resultNotice').className = 'system-callout info';
+      $('resultNotice').style.backgroundColor = '';
+      $('resultNoticeText').innerHTML = '<strong>足敷餘生，但未達永續高標</strong>：您目前的資產可平滑支撐至 ' + R.depleteAge + ' 歲，足以安享晚年；但若要達成「本金完全不減的 4% 永續高標」，尚有缺口 ' + fmtMoney(shortfall) + '。';
     } else {
       $('resultNotice').className = 'system-callout warning';
+      $('resultNotice').style.backgroundColor = '';
       $('resultNoticeText').innerHTML = '<strong>尚有自備缺口 ' + fmtMoney(shortfall) + '</strong>：可提高每月定額、延後退休或調整起領策略。';
     }
 
     // 過渡 / 質押提示
-    if (enablePledge && R.actualPledgeLoan > 0) {
-      $('bridgeNotice').className = 'system-callout warning';
-      $('bridgeNoticeText').innerHTML = '<strong>質押槓桿模擬</strong>：借入 <strong>' + fmtMoney(R.actualPledgeLoan) + '</strong>，股票池擴大為 <strong style="color:var(--accent);">' + fmtMoney(R.totalPortfolioValue) + '</strong>。每月利息 <strong style="color:var(--system-red);">' + fmtMoney(R.monthlyPledgeInterest) + '</strong>，維持率 ' + R.maintenanceRatio + '%。';
-      if ($('pledgeRiskDetail')) $('pledgeRiskDetail').innerHTML = '<br>借款 ' + fmtMoney(R.actualPledgeLoan) + '，月息 ' + fmtMoney(R.monthlyPledgeInterest) + '，維持率 ' + R.maintenanceRatio + '%。';
-    } else if (R.hasBridgePeriod) {
+    if (R.hasBridgePeriod) {
       const earlyPenalty = Math.min(20, (statutoryAge - retire) * 4);
       $('bridgeNotice').className = 'system-callout info';
       $('bridgeNoticeText').innerHTML = '<strong>過渡空窗期（共 ' + R.bridgeYears + ' 年）</strong>：' + retire + '～' + claim + ' 歲勞保尚未起領，生活費由 4% 賣股支應。<br><span style="color:var(--label-secondary); font-size:11.5px;">ⓘ 實務提點：離職待退期間，依法將收到國民年金繳費單（每月約 $1,186）及全民健保第六類自付額，請留意此段固定現金流支出。</span>';
@@ -2233,8 +2487,8 @@
           '<div class="breakeven-bar-normal" style="width:45%;" title="' + breakevenAge + '歲後足額領累計更多"></div>' +
         '</div>' +
         '<div class="breakeven-labels">' +
-          '<span>60 歲早領先拿 60 個月給付</span>' +
-          '<span>' + breakevenAge + ' 歲前早領總額多 ｜ 之後足額領超越</span>' +
+          '<span style="text-align:left;">前段優勢：60歲起早領先存</span>' +
+          '<span style="text-align:right;">後段優勢：' + breakevenAge + '歲起足額領超越</span>' +
         '</div>' +
         '<div style="font-size:11px; color:var(--label-tertiary); margin-top:6px; line-height:1.4;">' +
           'ⓘ 勞保享有法定通膨調整（累計 CPI 達 5% 同步調升給付），能有效抗衡長線物價侵蝕。' +
