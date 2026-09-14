@@ -1948,7 +1948,7 @@
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
                   <span>多標的自選混搭配置（支援 1～5 檔標的）</span>
                 </div>
-                <button type="button" class="btn-action-outline" onclick="rebalanceMixerWeights()" style="padding:4px 10px; font-size:11.5px; border-radius:100px; color:var(--label-secondary);">
+                <button type="button" class="btn-action-outline" onclick="rebalanceMixerWeights()" style="width:auto; height:auto; white-space:nowrap; flex-shrink:0; padding:4px 10px; font-size:11.5px; border-radius:100px; color:var(--label-secondary);">
                   等比例平衡
                 </button>
               </div>
@@ -1957,7 +1957,7 @@
               <div class="mixer-rows-wrap" id="etfMixerRows"></div>
 
               <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-                <button type="button" class="btn-action-outline" id="btnAddMixerRow" onclick="addMixerRow()" style="padding:6px 14px; font-size:12.5px; border-radius:100px; display:inline-flex; align-items:center; gap:6px; color:var(--accent); border-color:var(--accent);">
+                <button type="button" class="btn-action-outline" id="btnAddMixerRow" onclick="addMixerRow()" style="width:auto; height:auto; white-space:nowrap; flex-shrink:0; padding:6px 14px; font-size:12.5px; border-radius:100px; display:inline-flex; align-items:center; gap:6px; color:var(--accent); border-color:var(--accent);">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                   <span>新增標的 (最多 5 檔)</span>
                 </button>
@@ -2466,12 +2466,14 @@
   function saveLocalState() { saveStateToLocal(); }
   function saveStateToLocal() {
     try {
-      const saveLocalState = saveStateToLocal;
       const state = {};
       inputIds.forEach(id => {
         const el = $(id);
         if (el) state[id] = el.value;
       });
+      if (typeof mixerAssets !== 'undefined' && Array.isArray(mixerAssets)) {
+        state._mixerAssets = mixerAssets;
+      }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     } catch (e) {}
   }
@@ -2486,6 +2488,9 @@
           $(id).value = state[id];
         }
       });
+      if (state._mixerAssets && Array.isArray(state._mixerAssets) && state._mixerAssets.length > 0) {
+        mixerAssets = state._mixerAssets;
+      }
       return true;
     } catch (e) {
       return false;
@@ -2873,8 +2878,32 @@
     }
     const actualLTV = actualPledgeLoan > 0 ? (actualPledgeLoan / netStockEquity * 100) : 0;
 
-    // ── 第三層：4% 賣股提領 / 平滑享老 PV 精算 與收支結算 ──
-    const monthlySWRIncome = (totalPortfolioValue * p.swrRate) / 12;
+    // ── 第三層：動態賣股提領（4% 永續 SWR vs 計畫攤提 PMT） 與收支結算 ──
+    let monthlySWRIncome = 0;
+    let stockWithdrawalLabel = '';
+    const planningYears = Math.max(1, (p.lifeExpectancy || 85) - p.retireAge);
+    
+    // 實質實算年報酬率（扣除通膨）
+    const rNet = p.netReturnRate || 0.077;
+    const rInfl = (p.inflationRate || 2.0) / 100;
+    const rReal = (rInfl > -0.5) ? ((1 + rNet) / (1 + rInfl) - 1) : rNet;
+    const rRealMonthly = rReal / 12;
+
+    if (p.withdrawalMode === 'deplete') {
+      // 計畫提領（Die with Zero / 年金現值攤銷 PMT 模型）：本金在預期壽命內平滑耗盡
+      const totalMonths = planningYears * 12;
+      if (rRealMonthly > 0.00001) {
+        monthlySWRIncome = (totalPortfolioValue * rRealMonthly) / (1 - Math.pow(1 + rRealMonthly, -totalMonths));
+      } else {
+        monthlySWRIncome = totalPortfolioValue / Math.max(1, totalMonths);
+      }
+      stockWithdrawalLabel = '計畫平滑提領（至 ' + (p.lifeExpectancy || 85) + ' 歲）';
+    } else {
+      // 4% 永續模式：每年僅提領 SWR，本金跨世代留存
+      monthlySWRIncome = (totalPortfolioValue * p.swrRate) / 12;
+      stockWithdrawalLabel = (p.swrRate * 100).toFixed(1) + '% 永續提領';
+    }
+
     const monthlyReverseMortgage = (p.houseStrategy === 'reverse_mortgage') ? (p.reverseMortgageMonthly || 0) : 0;
 
     // 退休當下月現金流
@@ -2889,12 +2918,6 @@
     // 退休當下每個月自備股票需要支應的純生活淨額 (PMT)
     const netMonthlyNeedFromEquity = Math.max(0,
       nominalExpense + monthlyPledgeInterest - laborAtRetire - pensionMonthly - nominalPartTime - monthlyReverseMortgage);
-
-    // 實質實算年報酬率（扣除通膨）
-    const rNet = p.netReturnRate || 0.077;
-    const rInfl = (p.inflationRate || 2.0) / 100;
-    const rReal = (rInfl > -0.5) ? ((1 + rNet) / (1 + rInfl) - 1) : rNet;
-    const rRealMonthly = rReal / 12;
 
     // ─────────────────────────────────────────
     // 1. 目標所需淨值本金 (requiredNetEquity)
@@ -2987,6 +3010,7 @@
       maintenanceMargin: Math.round(maintenanceMargin),
       marginCallDrop: Number(marginCallDrop.toFixed(1)),
       monthlySWRIncome: Math.round(monthlySWRIncome),
+      stockWithdrawalLabel: stockWithdrawalLabel,
       totalMonthlyInflow: Math.round(totalMonthlyInflow),
       totalMonthlyOutflow: Math.round(totalMonthlyOutflow),
       netMonthlyCashflow: Math.round(netMonthlyCashflow),
@@ -3538,7 +3562,7 @@
           '<div class="cashflow-row"><span class="cashflow-row-name">生活費需求</span><span class="cashflow-row-val">' + fmtMoney(R.nominalExpense) + '／月</span></div>' +
           pledgeRow +
           houseRow +
-          '<div class="cashflow-row"><span class="cashflow-row-name">4% 賣股提領</span><span class="cashflow-row-val" style="color:var(--accent); font-weight:700;">+' + fmtMoney(R.monthlySWRIncome) + '／月</span></div>' +
+          '<div class="cashflow-row"><span class="cashflow-row-name">' + R.stockWithdrawalLabel + '</span><span class="cashflow-row-val" style="color:var(--accent); font-weight:700;">+' + fmtMoney(R.monthlySWRIncome) + '／月</span></div>' +
           '<div class="cashflow-row"><span class="cashflow-row-name">第一支柱：勞保年金</span><span class="cashflow-row-val" style="color:var(--label-tertiary);">$0（尚未起領）</span></div>' +
           pensionRowP1 +
           partTimeRow +
@@ -3551,7 +3575,7 @@
           '<div class="cashflow-row"><span class="cashflow-row-name">生活費需求</span><span class="cashflow-row-val">' + fmtMoney(R.nominalExpense) + '／月</span></div>' +
           pledgeRow +
           houseRow +
-          '<div class="cashflow-row"><span class="cashflow-row-name">4% 賣股提領</span><span class="cashflow-row-val" style="color:var(--accent); font-weight:700;">+' + fmtMoney(R.monthlySWRIncome) + '／月</span></div>' +
+          '<div class="cashflow-row"><span class="cashflow-row-name">' + R.stockWithdrawalLabel + '</span><span class="cashflow-row-val" style="color:var(--accent); font-weight:700;">+' + fmtMoney(R.monthlySWRIncome) + '／月</span></div>' +
           '<div class="cashflow-row"><span class="cashflow-row-name">第一支柱：勞保年金</span><span class="cashflow-row-val" style="color:var(--system-green-dark); font-weight:700;">+' + fmtMoney(R.laborFullMonthly) + '／月</span></div>' +
           pensionRowP2 +
           partTimeRow +
@@ -3582,7 +3606,7 @@
           '<div class="cashflow-row"><span class="cashflow-row-name">生活費需求</span><span class="cashflow-row-val">' + fmtMoney(R.nominalExpense) + '／月</span></div>' +
           pledgeRow +
           houseRow +
-          '<div class="cashflow-row"><span class="cashflow-row-name">4% 賣股提領</span><span class="cashflow-row-val" style="color:var(--accent); font-weight:700;">+' + fmtMoney(R.monthlySWRIncome) + '／月</span></div>' +
+          '<div class="cashflow-row"><span class="cashflow-row-name">' + R.stockWithdrawalLabel + '</span><span class="cashflow-row-val" style="color:var(--accent); font-weight:700;">+' + fmtMoney(R.monthlySWRIncome) + '／月</span></div>' +
           '<div class="cashflow-row"><span class="cashflow-row-name">第一支柱：勞保年金 ' + laborNote + '</span><span class="cashflow-row-val" style="color:var(--system-green-dark); font-weight:700;">+' + fmtMoney(R.laborAtRetire) + '／月</span></div>' +
           pensionRowSingle +
           partTimeRow +
