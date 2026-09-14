@@ -15,7 +15,7 @@ struct RetirementSimulatorView: View {
     @State private var partTime: Int = 0
     @State private var withdrawRate: Double = 4.0
     
-    // 提領哲學與壽命規劃 (怪老子模型)
+    // 提領哲學與壽命規劃 (年金精算模型)
     @State private var withdrawalMode: WithdrawalMode = .perpetual
     @State private var lifeExpectancy: Double = 85.0
     
@@ -132,7 +132,7 @@ struct RetirementSimulatorView: View {
         }
     }
     
-    // 怪老子 NPER 反推資產支援壽命
+    // 精算 NPER 反推資產支援壽命
     private var longevityAssessment: (age: Int, sustainableYears: Double, isPerpetual: Bool) {
         if netMonthlyNeedFromEquity <= 0 {
             return (100, 999.0, true)
@@ -230,7 +230,7 @@ struct RetirementSimulatorView: View {
                             .foregroundStyle(.secondary)
                         }
                         
-                        // 怪老子資產支援壽命卡片
+                        // 資產支援壽命卡片
                         HStack(alignment: .center) {
                             VStack(alignment: .leading, spacing: 3) {
                                 HStack(spacing: 5) {
