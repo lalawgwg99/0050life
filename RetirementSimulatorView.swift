@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum WithdrawalMode: String, CaseIterable, Identifiable {
-    case perpetual = "4% 永續傳承"
+    case perpetual = "4% 安全提領"
     case deplete = "平滑享老 (花光)"
     var id: String { rawValue }
 }
@@ -45,24 +45,22 @@ struct RetirementSimulatorView: View {
     }
     
     private var inflationFactor: Double {
-        pow(1 + inflation / 100.0, yearsToRetire)
+        let inflationRate = inflation / 100.0
+        return pow(1.0 + inflationRate, yearsToRetire)
     }
     
     private var targetNominal: Double {
-        Double(targetToday) * inflationFactor
+        RetirementCalculation.inflatedValue(
+            todayValue: Double(targetToday),
+            inflation: inflation / 100.0,
+            years: yearsToRetire
+        )
     }
     
     private var partTimeNominal: Double {
         Double(partTime) * inflationFactor
     }
     
-    // 複利公式
-    private func futureValue(pv: Double, pmt: Double, rate: Double, months: Int) -> Double {
-        if months <= 0 { return pv }
-        let r = pow(1 + rate, 1.0/12.0) - 1
-        if abs(r) < 1e-10 { return pv + pmt * Double(months) }
-        return pv * pow(1 + r, Double(months)) + pmt * (pow(1 + r, Double(months)) - 1) / r
-    }
     
     private var statutoryAge: Int { 65 }
     
@@ -75,14 +73,29 @@ struct RetirementSimulatorView: View {
     
     private var projectedStockAssets: Double {
         let months = Int(yearsToRetire * 12)
-        let netReturn = (expectedReturn - fee) / 100.0
-        return futureValue(pv: Double(assetsNow), pmt: Double(monthlyInvest), rate: netReturn, months: months)
+        let grossReturn = expectedReturn / 100.0
+        let annualFee = fee / 100.0
+        let netReturn = RetirementCalculation.netAnnualReturn(grossReturn: grossReturn, annualFee: annualFee)
+        
+        return RetirementCalculation.futureValue(
+            pv: Double(assetsNow),
+            pmt: Double(monthlyInvest),
+            annualRate: netReturn,
+            months: months,
+            contributionAtBeginning: false
+        )
     }
     
     private var projectedPensionLump: Double {
         let months = Int(yearsToRetire * 12)
         let pensionMonthlyPmt = Double(pensionWage) * (0.06 + Double(selfRate) / 100.0)
-        return futureValue(pv: Double(pensionBalance), pmt: pensionMonthlyPmt, rate: pensionReturn / 100.0, months: months)
+        return RetirementCalculation.futureValue(
+            pv: Double(pensionBalance),
+            pmt: pensionMonthlyPmt,
+            annualRate: pensionReturn / 100.0,
+            months: months,
+            contributionAtBeginning: false
+        )
     }
     
     private var projectedPensionMonthly: Double {
@@ -108,22 +121,41 @@ struct RetirementSimulatorView: View {
         max(0, targetNominal - laborAtRetire - projectedPensionMonthly - partTimeNominal)
     }
     
-    // 實質實算報酬率 (扣除通膨)
-    private var realReturnRate: Double {
-        let netReturn = (expectedReturn - fee) / 100.0
-        let infl = inflation / 100.0
-        return infl > -0.5 ? ((1.0 + netReturn) / (1.0 + infl) - 1.0) : netReturn
+    private var netAnnualReturn: Double {
+        RetirementCalculation.netAnnualReturn(
+            grossReturn: expectedReturn / 100.0,
+            annualFee: fee / 100.0
+        )
     }
     
-    // 所需本金 (雙模式切換：4% 永續 vs 平滑享老 PV 模型)
+    private var realReturnRate: Double {
+        RetirementCalculation.realReturn(
+            nominalReturn: netAnnualReturn,
+            inflation: inflation / 100.0
+        )
+    }
+    
+    // 所需本金 (雙模式切換：4% 安全提領 vs 平滑享老 PV 模型)
     private var requiredAssets: Double {
-        if withdrawalMode == .deplete {
-            let planningYears = max(1.0, lifeExpectancy - Double(retireAge))
-            let totalMonths = planningYears * 12.0
-            let rm = realReturnRate / 12.0
-            if rm > 1e-5 {
-                return netMonthlyNeedFromEquity * (1.0 - pow(1.0 + rm, -totalMonths)) / rm
-            } else {
+        let monthlyNeed = netMonthlyNeedFromEquity
+        guard monthlyNeed > 0 else { return 0 }
+        
+        switch withdrawalMode {
+        case .deplete:
+            let years = max(1.0, lifeExpectancy - Double(retireAge))
+            let months = Int(years * 12.0)
+            return RetirementCalculation.presentValueOfAnnuity(
+                payment: monthlyNeed,
+                annualRate: realReturnRate,
+                months: months
+            )
+        case .perpetual:
+            return RetirementCalculation.requiredAssetsByWithdrawalRate(
+                monthlyNeed: monthlyNeed,
+                withdrawalRate: withdrawRate / 100.0
+            )
+        }
+    } else {
                 return netMonthlyNeedFromEquity * totalMonths
             }
         } else {
@@ -134,9 +166,38 @@ struct RetirementSimulatorView: View {
     
     // 精算 NPER 反推資產支援壽命
     private var longevityAssessment: (age: Int, sustainableYears: Double, isPerpetual: Bool) {
-        if netMonthlyNeedFromEquity <= 0 {
-            return (100, 999.0, true)
+        let monthlyNeed = netMonthlyNeedFromEquity
+        let assets = netStockEquity
+        
+        if monthlyNeed <= 0 {
+            return (age: 100, sustainableYears: 999.0, isPerpetual: true)
         }
+        if assets <= 0 {
+            return (age: retireAge, sustainableYears: 0.0, isPerpetual: false)
+        }
+        
+        let annualRealReturn = realReturnRate
+        let monthlyRate = RetirementCalculation.monthlyRate(annualRealReturn)
+        
+        if monthlyRate > 0 && assets * monthlyRate >= monthlyNeed {
+            return (age: 100, sustainableYears: 999.0, isPerpetual: true)
+        }
+        
+        let months = RetirementCalculation.depletionMonths(
+            assets: assets,
+            monthlyWithdrawal: monthlyNeed,
+            annualRealReturn: annualRealReturn
+        )
+        
+        if months.isInfinite {
+            return (age: 100, sustainableYears: 999.0, isPerpetual: true)
+        }
+        
+        let years = months / 12.0
+        let depletionAge = min(100, Int(round(Double(retireAge) + years)))
+        
+        return (age: depletionAge, sustainableYears: years, isPerpetual: false)
+    }
         if netStockEquity <= 0 {
             return (retireAge, 0.0, false)
         }
@@ -185,7 +246,7 @@ struct RetirementSimulatorView: View {
                     VStack(spacing: 16) {
                         // 缺口 Hero
                         VStack(spacing: 8) {
-                            Text(withdrawalMode == .perpetual ? "退休資金缺口 (4% 永續)" : "退休資金缺口 (平滑享老)")
+                            Text(withdrawalMode == .perpetual ? "退休資金缺口 (4% 安全提領)" : "退休資金缺口 (平滑享老)")
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                                 .foregroundStyle(.secondary)
@@ -325,7 +386,7 @@ struct RetirementSimulatorView: View {
                                 .keyboardType(.decimalPad)
                                 .multilineTextAlignment(.trailing)
                                 .frame(width: 80)
-                            Button(action: { showHelp("4% 永續法則", "每年只提領股票收益與再平衡，本金不減並留存給下一代。") }) {
+                            Button(action: { showHelp("4% 安全提領法則", "以4%作為退休初始提領率估算。\n實際退休結果仍會受到市場波動、報酬順序、通膨與退休年限影響。") }) {
                                 Image(systemName: "info.circle").foregroundColor(.blue)
                             }
                         }

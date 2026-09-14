@@ -1048,7 +1048,13 @@
       gap: 2px;
     }
     .invest-bar-principal { background: #0284c7; }
-    .invest-bar-return { background: #38bdf8; }
+    .invest-bar-
+    const cashflowArray = CashflowModel.generateRealCashflow(
+      p.retireAge, 100, netStockEquity, nominalExpense, rReal,
+      laborFullMonthly, p.claimAge, pensionMonthly, p.retireAge, nominalPartTime
+    );
+
+    return { background: #38bdf8; }
     .invest-bar-pension { background: var(--system-green); }
     
     .invest-legend {
@@ -3068,6 +3074,116 @@
 
 <script>
   const $ = id => document.getElementById(id);
+
+// --- 1. 勞保模組 (Labor Insurance Model) ---
+class LaborInsuranceModel {
+  static getNormalAge(birthROC) {
+    if (birthROC <= 46) return 60;
+    if (birthROC === 47) return 61;
+    if (birthROC === 48) return 62;
+    if (birthROC === 49) return 63;
+    if (birthROC === 50) return 64;
+    return 65;
+  }
+
+  static calculate(salary, years, claimAge, birthROC) {
+    const normalAge = this.getNormalAge(birthROC);
+    const minClaimAge = normalAge - 5;
+    const maxClaimAge = normalAge + 5;
+    if (years < 15) {
+      return { isEligible: false, monthly: 0, lumpSum: salary * years, normalAge, minClaimAge, maxClaimAge, earlyLateRatio: 1.0, disclaimer: "勞保金額為試算值，實際金額以勞保局核定為準。" };
+    }
+    const baseMonthly = Math.max(salary * years * 0.00775 + 3000, salary * years * 0.0155);
+    const diffYears = Math.max(-5, Math.min(5, claimAge - normalAge));
+    const earlyLateRatio = 1 + (diffYears * 0.04);
+    return { isEligible: true, monthly: baseMonthly * earlyLateRatio, lumpSum: 0, normalAge, minClaimAge, maxClaimAge, earlyLateRatio, baseMonthly, disclaimer: "勞保金額為試算值，實際金額以勞保局核定為準。" };
+  }
+}
+
+// --- 2. 勞退模組 (Labor Pension Model) ---
+class LaborPensionModel {
+  static calculateAccumulation(currentBalance, currentWage, employerRate, selfRate, returnRate, wageGrowthRate, yearsToRetire) {
+    let balance = currentBalance;
+    let wage = currentWage;
+    const totalRate = employerRate + selfRate;
+    for (let i = 0; i < yearsToRetire; i++) {
+      if (i > 0) wage = wage * (1 + wageGrowthRate);
+      balance = (balance + wage * totalRate * 12) * (1 + returnRate);
+    }
+    return { finalBalance: balance, finalWage: wage };
+  }
+  static calculateMonthlyPayout(principal, age) {
+    const years = Math.max(1, 84 - age);
+    const r = 0.009871 / 12; 
+    if (r === 0) return principal / (years * 12);
+    return (principal * r) / (1 - Math.pow(1 + r, -years * 12));
+  }
+}
+
+
+class CashflowModel {
+  static generateRealCashflow(startAge, targetLife, initialStock, initialExpense, realReturnRate, laborMonthly, laborStartAge, pensionMonthly, pensionStartAge, partTimeMonthly) {
+    const arr = [];
+    let currentStock = initialStock;
+    // 使用實質模型，生活費保持恆定，股票回報使用實質報酬率
+    const annualExpense = initialExpense * 12;
+    const annualPartTime = partTimeMonthly * 12;
+    
+    for (let age = startAge; age <= targetLife; age++) {
+      let incomeLabor = (age >= laborStartAge) ? laborMonthly * 12 : 0;
+      let incomePension = (age >= pensionStartAge) ? pensionMonthly * 12 : 0;
+      let incomePartTime = annualPartTime; // 簡化為每年固定
+      
+      let totalFixedIncome = incomeLabor + incomePension + incomePartTime;
+      let shortfall = annualExpense - totalFixedIncome;
+      
+      let withdraw = 0;
+      if (shortfall > 0) {
+        withdraw = shortfall;
+      }
+      
+      // 若提領超過本金，本金歸零
+      if (withdraw > currentStock) {
+        withdraw = currentStock;
+      }
+      
+      currentStock -= withdraw;
+      
+      // 股票實質回報
+      let investmentReturn = currentStock * realReturnRate;
+      currentStock += investmentReturn;
+      
+      arr.push({
+        age,
+        expense: annualExpense,
+        fixedIncome: totalFixedIncome,
+        labor: incomeLabor,
+        pension: incomePension,
+        withdraw,
+        stockBalance: Math.max(0, currentStock),
+        isDepleted: currentStock <= 0
+      });
+      
+      if (currentStock <= 0) break; // 耗盡後可停止或繼續紀錄，為減少資料量可break
+    }
+    return arr;
+  }
+}
+
+// --- 3. 壽命計算模組 (Longevity & NPER Model) ---
+class LongevityModel {
+  static calculateMonths(pv, pmt, annualRealReturn) {
+    if (pmt <= 0) return 999 * 12;
+    if (pv <= 0) return 0;
+    const r = annualRealReturn / 12;
+    if (r > 0 && pv * r >= pmt) return 999 * 12;
+    if (Math.abs(r) < 1e-10) return pv / pmt;
+    const ratio = (pv * r) / pmt;
+    if (1 - ratio <= 0) return 999 * 12;
+    return -Math.log(1 - ratio) / Math.log(1 + r);
+  }
+}
+
   // 切換提領模式（永續 vs 平滑享老）
   
   // 切換勞退請領模式（一次領 vs 月領）
@@ -3344,65 +3460,22 @@
   }
 
   function updateNetReturnTag() {
-    const net = (n('expectedReturn') - n('fee')).toFixed(2);
+    const net = (((1 + n('expectedReturn')/100) / (1 + n('fee')/100) - 1) * 100).toFixed(2);
     if ($('tagNetReturn')) $('tagNetReturn').textContent = `實質淨年化 ${net}%`;
   }
 
-  // 勞保老年年金計算（含 15 年法定門檻與合法區間防呆）
-  function calcLaborPension(salary, years, claimAge, birthROC) {
-    const normalAge = getNormalAge(birthROC);
-    // 年資未滿 15 年者，依法不得請領月年金（僅能請領老年一次金）
-    if (years < 15) {
-      return {
-        isEligible: false,
-        monthly: 0,
-        lumpSum: salary * years, // 老年一次金：每滿 1 年給付 1 個月投保薪資
-        normalAge: normalAge,
-        minClaimAge: normalAge - 5,
-        maxClaimAge: normalAge + 5
-      };
-    }
+  
 
-    const base = Math.max(salary * years * 0.00775 + 3000, salary * years * 0.0155);
-    // 提前最多 5 年（扣 20%），展延最多 5 年（加 20%）
-    const diff = Math.max(-5, Math.min(5, claimAge - normalAge));
-    const monthly = base * (1 + diff * 0.04);
+  
 
-    return {
-      isEligible: true,
-      monthly: monthly,
-      lumpSum: 0,
-      normalAge: normalAge,
-      minClaimAge: normalAge - 5,
-      maxClaimAge: normalAge + 5
-    };
-  }
-
-  // 勞退新制官方現值因子精確對照 (依年齡 60~65 歲)
-  function getLaborPensionFactor(age) {
-    if (age >= 65) return 207.24;
-    if (age <= 60) return 242.88;
-    // 61~64 歲平滑線性內插
-    const factors = { 60: 242.88, 61: 235.80, 62: 228.69, 63: 221.56, 64: 214.41, 65: 207.24 };
-    return factors[Math.round(age)] || 207.24;
-  }
-
-  // 根據出生年次自動計算法定全額請領年齡
-  function getNormalAge(birthROC) {
-    if (birthROC <= 46) return 60;
-    if (birthROC === 47) return 61;
-    if (birthROC === 48) return 62;
-    if (birthROC === 49) return 63;
-    if (birthROC === 50) return 64;
-    return 65;
-  }
+  
 
   // 自動同步：出生年次 → 年齡、未來年資、法定年齡 + 輸入防呆
   function syncFromBirthYear(isFromBirthChange = false) {
     const birthYear = n('birthYear');
     const currentYear = new Date().getFullYear() - 1911;
     const age = Math.max(15, currentYear - birthYear);
-    const normalAge = getNormalAge(birthYear);
+    const normalAge = LaborInsuranceModel.getNormalAge(birthYear);
 
     // 只有在修改出生年次，且退休年齡小於年齡時，才自動補正退休年齡為目前年齡
     if (isFromBirthChange && n('retireAge') < age) {
@@ -3520,7 +3593,7 @@
     const nominalPartTime = p.partTimeToday * inflFactor;
 
     // 第一支柱：勞保老年年金
-    const statutoryAge = getNormalAge(p.birthROC);
+    const statutoryAge = LaborInsuranceModel.getNormalAge(p.birthROC);
     const ageDiff = Math.max(-5, Math.min(5, p.claimAge - statutoryAge));
     const baseLaborMonthly = Math.max(
       p.highestAvgSalary * p.laborYearsAtRetire * 0.00775 + 3000,
@@ -3698,14 +3771,9 @@
         depleteAge = 100;
         isPerpetualSustainable = true;
       } else {
-        // 本金將隨時間耗盡，使用 NPER 精算反推
-        const ratio = (netStockEquity * rRealMonthly) / netMonthlyNeedFromEquity;
-        if (ratio < 1 && rRealMonthly > 0.00001) {
-          const nperMonths = -Math.log(1 - ratio) / Math.log(1 + rRealMonthly);
-          sustainableYears = nperMonths / 12;
-        } else {
-          sustainableYears = (netStockEquity / netMonthlyNeedFromEquity) / 12;
-        }
+        // 本金將隨時間耗盡，使用 NPER 精算反推 (正確處理 r < 0)
+        const nMonths = LongevityModel.calculateMonths(netStockEquity, netMonthlyNeedFromEquity, rReal);
+        sustainableYears = nMonths / 12;
         depleteAge = Math.min(100, Math.round(p.retireAge + sustainableYears));
         isPerpetualSustainable = false;
       }
@@ -3760,7 +3828,8 @@
       depleteAge,
       sustainableYears: Number(sustainableYears.toFixed(1)),
       isPerpetualSustainable,
-      planningYears
+      planningYears,
+      cashflowArray
     };
   }
 
@@ -3811,15 +3880,19 @@
 
     // 第一支柱：勞保年金
     const totalLaborYears = n('laborYearsNow') + n('futureLaborYears');
-    const laborResult = calcLaborPension(n('avgInsuredSalary'), totalLaborYears, claim, birthROC);
+    const laborResult = LaborInsuranceModel.calculate(n('avgInsuredSalary'), totalLaborYears, claim, birthROC);
     const statutoryAge = laborResult.normalAge;
 
-    // 第二支柱：勞退新制
-    const monthlyEmployerContrib = n('pensionWage') * (0.06 + n('selfRate') / 100);
-    const projectedPensionLump = fv(n('pensionBalance'), monthlyEmployerContrib, n('pensionReturn') / 100, monthsToRetire);
-    const pensionFactor = getLaborPensionFactor(retire);
+    // 第二支柱：勞退新制 (動態薪資成長與 PV 反推)
+    const wageGrowthRate = 0.02; // 預設 2% 薪資成長率
+    const pensionResult = LaborPensionModel.calculateAccumulation(
+      n('pensionBalance'), n('pensionWage'), 0.06, n('selfRate') / 100,
+      n('pensionReturn') / 100, wageGrowthRate, monthsToRetire / 12
+    );
+    const projectedPensionLump = pensionResult.finalBalance;
     const pensionMode = $('pensionMode').value;
-    const projectedPensionMonthly = projectedPensionLump / pensionFactor;
+    const projectedPensionMonthly = LaborPensionModel.calculateMonthlyPayout(projectedPensionLump, retire);
+    const pensionFactor = projectedPensionLump > 0 ? (projectedPensionLump / projectedPensionMonthly) : 207; // 保留給 UI 顯示
     
     // ── 渲染：勞退雙方案即時對照卡片 ──
     const swrBenefit = Math.round((projectedPensionLump * (n('withdrawRate') / 100)) / 12);
@@ -3847,7 +3920,9 @@
     }
 
     // 第三支柱：自有投資
-    const netReturn = (n('expectedReturn') - n('fee')) / 100;
+    const grossReturn = n('expectedReturn') / 100;
+    const feeRate = n('fee') / 100;
+    const netReturn = (1 + grossReturn) / (1 + feeRate) - 1;
     updateNetReturnTag();
     const projectedStockAssets = fv(n('assetsNow'), n('monthlyInvest'), netReturn, monthsToRetire);
 
