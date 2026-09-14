@@ -1526,7 +1526,30 @@
       }
     }
 
-</style>
+
+    /* PDF Export Print Styles */
+    @media print {
+      body { background: #fff !important; color: #000 !important; }
+      .container { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+      header .header-row { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
+      .header-desc, .header-actions, .mobile-nav-segmented, .mobile-floating-bar, .inspector-sticky { display: none !important; }
+      .layout-grid { display: block !important; }
+      #asideContent { display: none !important; }
+      #mainContent { width: 100% !important; }
+      .hero-summary { box-shadow: none !important; border: 1px solid #ccc !important; page-break-inside: avoid; }
+      .triad-grid { display: flex !important; page-break-inside: avoid; }
+      .triad-cell { border: 1px solid #ccc !important; flex: 1; margin: 0 5px; }
+      .cashflow-box { page-break-inside: avoid; }
+      .system-callout { border: 1px solid #aaa !important; background: #fff !important; color: #000 !important; }
+      .cashflow-phase-card { border: 1px solid #aaa !important; background: #fff !important; break-inside: avoid; margin-bottom: 15px; }
+      .cashflow-row-name, .cashflow-row-val { color: #000 !important; }
+      
+      /* Water fall specific print styles */
+      .waterfall-container { flex-direction: column !important; }
+      .waterfall-phase { width: 100% !important; border: 1px solid #aaa !important; margin-bottom: 10px; }
+    }
+    
+  </style>
 </head>
 <body>
 
@@ -2786,14 +2809,22 @@
     const laborFullMonthly = laborEligible ? baseLaborMonthly * (1 + ageDiff * 0.04) : 0;
     const laborAtRetire = (p.claimAge <= p.retireAge) ? laborFullMonthly : 0;
 
-    // 第二支柱：勞退新制
+    // 第二支柱：勞退新制（鎖定期防呆）
+    const PENSION_ELIGIBLE_AGE = 60;
+    const isPensionLocked = p.retireAge < PENSION_ELIGIBLE_AGE;
     const pensionMonthly = (p.pensionMode === 'monthly') ? p.projectedPensionMonthly : 0;
     const pensionLumpToStock = (p.pensionMode === 'lump') ? p.projectedPensionLump : 0;
+    
+    // 退休當下勞退是否可用（提早退休則強制為 0）
+    const pensionMonthlyAtRetire = isPensionLocked ? 0 : pensionMonthly;
+    const pensionLumpAtRetire = isPensionLocked ? 0 : pensionLumpToStock;
+    
     const downsizingCashToStock = (p.houseStrategy === 'downsizing') ? (p.downsizingCash || 0) : 0;
     const extraMortgageStock = (p.houseStrategy === 'mortgage_ending') ? (p.extraMortgageStock || 0) : 0;
 
-    // ── 第一層：資產水庫構建（自有股票 + 勞退一次領 + 房產套現 + 房貸釋放複利）──
-    const netStockEquity = p.stockAssetsAtRetire + pensionLumpToStock + downsizingCashToStock + extraMortgageStock;
+    // ── 第一層：資產水庫構建（提早退休時勞退不注入股票池）──
+    const netStockEquity = p.stockAssetsAtRetire + pensionLumpAtRetire + downsizingCashToStock + extraMortgageStock;
+    const netStockEquityEndgame = p.stockAssetsAtRetire + pensionLumpToStock + downsizingCashToStock + extraMortgageStock;
 
     // ── 第二層：質押槓桿獨立增額 ──
     let actualPledgeLoan = 0;
@@ -2852,13 +2883,28 @@
 
     const monthlyReverseMortgage = (p.houseStrategy === 'reverse_mortgage') ? (p.reverseMortgageMonthly || 0) : 0;
 
-    // 退休當下月現金流
-    const totalMonthlyInflow = monthlySWRIncome + laborAtRetire + pensionMonthly + nominalPartTime + monthlyReverseMortgage;
+    // 終局階段的 SWR 提領（若一次領勞退於 60 歲解鎖，提領額會增加）
+    let monthlySWRIncomeEndgame = monthlySWRIncome;
+    if (isPensionLocked && p.pensionMode === 'lump') {
+      if (p.withdrawalMode === 'deplete') {
+        const totalMonths = planningYears * 12;
+        if (rRealMonthly > 0.00001) {
+          monthlySWRIncomeEndgame = (netStockEquityEndgame * rRealMonthly) / (1 - Math.pow(1 + rRealMonthly, -totalMonths));
+        } else {
+          monthlySWRIncomeEndgame = netStockEquityEndgame / Math.max(1, totalMonths);
+        }
+      } else {
+        monthlySWRIncomeEndgame = (netStockEquityEndgame * p.swrRate) / 12;
+      }
+    }
+
+    // 退休當下月現金流（過渡期）
+    const totalMonthlyInflow = monthlySWRIncome + laborAtRetire + pensionMonthlyAtRetire + nominalPartTime + monthlyReverseMortgage;
     const totalMonthlyOutflow = nominalExpense + monthlyPledgeInterest;
     const netMonthlyCashflow = totalMonthlyInflow - totalMonthlyOutflow;
 
-    // 勞保啟動後月現金流（用於雙階段對照）
-    const totalInflowEndgame = monthlySWRIncome + laborFullMonthly + pensionMonthly + nominalPartTime + monthlyReverseMortgage;
+    // 勞保與勞退皆啟動後月現金流（用於雙階段對照）
+    const totalInflowEndgame = monthlySWRIncomeEndgame + laborFullMonthly + pensionMonthly + nominalPartTime + monthlyReverseMortgage;
     const netCashflowEndgame = totalInflowEndgame - totalMonthlyOutflow;
 
     // 退休當下每個月自備股票需要支應的純生活淨額 (PMT)
@@ -2869,7 +2915,6 @@
     // 1. 目標所需淨值本金 (requiredNetEquity)
     // ─────────────────────────────────────────
     let requiredNetEquity = 0;
-    const planningYears = Math.max(1, (p.lifeExpectancy || 85) - p.retireAge);
     if (p.withdrawalMode === 'deplete') {
       // 【平滑享老模式（ PV 消耗年金模型）】
       // 假設資產在 p.lifeExpectancy 歲時剛好花光
@@ -2956,7 +3001,9 @@
       maintenanceMargin: Math.round(maintenanceMargin),
       marginCallDrop: Number(marginCallDrop.toFixed(1)),
       monthlySWRIncome: Math.round(monthlySWRIncome),
+      monthlySWRIncomeEndgame: Math.round(monthlySWRIncomeEndgame),
       stockWithdrawalLabel: stockWithdrawalLabel,
+      isPensionLocked: isPensionLocked,
       totalMonthlyInflow: Math.round(totalMonthlyInflow),
       totalMonthlyOutflow: Math.round(totalMonthlyOutflow),
       netMonthlyCashflow: Math.round(netMonthlyCashflow),
@@ -3461,105 +3508,94 @@
     }
 
     // ════════════════════════════
-    // 渲染：現金流拆解（含醒目色標）
+    // 渲染：雙階段現金流視覺化對比 (Dual-stage Waterfall UI)
     // ════════════════════════════
-
+    
     const container = $('cashflowContainer');
-    const pensionLabel = pensionMode === 'monthly'
-      ? '月領 <span style="color:var(--system-green-dark); font-weight:700;">+' + fmtMoney(R.pensionMonthly) + '</span>／月'
-      : '一次領 ' + fmtMoney(R.pensionLumpToStock) + ' 已注入股票池';
-
-    // 淨現金流格式化（正數綠色帶 +，負數紅色帶 -）
+    
     function fmtNet(val) {
       const abs = fmtMoney(Math.abs(val));
       if (val >= 0) return '<span style="color:var(--system-green-dark); font-weight:700;">+' + abs + '</span>';
       return '<span style="color:var(--system-red); font-weight:700;">-' + abs + '</span>';
     }
 
-    // 質押利息列（若有）
     const pledgeRow = R.monthlyPledgeInterest > 0
-      ? '<div class="cashflow-row"><span class="cashflow-row-name">質押借款利息</span><span class="cashflow-row-val" style="color:var(--system-red); font-weight:600;">-' + fmtMoney(R.monthlyPledgeInterest) + '／月</span></div>'
+      ? '<div class="cashflow-row"><span class="cashflow-row-name">質押借款利息</span><span class="cashflow-row-val" style="color:var(--system-red); font-weight:600;">-' + fmtMoney(R.monthlyPledgeInterest) + '</span></div>'
       : '';
-
-    // 兼職列（若有）
     const partTimeRow = R.nominalPartTime > 0
-      ? '<div class="cashflow-row"><span class="cashflow-row-name">微型兼職收入</span><span class="cashflow-row-val" style="color:var(--system-green-dark);">+' + fmtMoney(R.nominalPartTime) + '／月</span></div>'
+      ? '<div class="cashflow-row"><span class="cashflow-row-name">微型兼職收入</span><span class="cashflow-row-val" style="color:var(--system-green-dark);">+' + fmtMoney(R.nominalPartTime) + '</span></div>'
       : '';
-
     const houseRow = R.monthlyReverseMortgage > 0
-      ? '<div class="cashflow-row"><span class="cashflow-row-name">房產：以房養老</span><span class="cashflow-row-val" style="color:var(--system-green-dark); font-weight:700;">+' + fmtMoney(R.monthlyReverseMortgage) + '／月</span></div>'
+      ? '<div class="cashflow-row"><span class="cashflow-row-name">以房養老</span><span class="cashflow-row-val" style="color:var(--system-green-dark); font-weight:700;">+' + fmtMoney(R.monthlyReverseMortgage) + '</span></div>'
       : '';
+      
+    // HTML Generators
+    const expenseHTML = '<div class="cashflow-row"><span class="cashflow-row-name">生活費需求</span><span class="cashflow-row-val">' + fmtMoney(R.nominalExpense) + '</span></div>';
+    const laborZeroHTML = '<div class="cashflow-row"><span class="cashflow-row-name">勞保年金</span><span class="cashflow-row-val" style="color:var(--label-tertiary);">$0 (鎖定期)</span></div>';
+    const laborFullHTML = '<div class="cashflow-row"><span class="cashflow-row-name">勞保年金</span><span class="cashflow-row-val" style="color:var(--system-green-dark); font-weight:700;">+' + fmtMoney(R.laborFullMonthly) + '</span></div>';
+    const laborRetireHTML = '<div class="cashflow-row"><span class="cashflow-row-name">勞保年金</span><span class="cashflow-row-val" style="color:var(--system-green-dark); font-weight:700;">+' + fmtMoney(R.laborAtRetire) + '</span></div>';
+    
+    const swrPhase1HTML = '<div class="cashflow-row"><span class="cashflow-row-name">' + R.stockWithdrawalLabel + '</span><span class="cashflow-row-val" style="color:var(--accent); font-weight:700;">+' + fmtMoney(R.monthlySWRIncome) + '</span></div>';
+    const swrPhase2HTML = '<div class="cashflow-row"><span class="cashflow-row-name">' + R.stockWithdrawalLabel + '</span><span class="cashflow-row-val" style="color:var(--accent); font-weight:700;">+' + fmtMoney(R.monthlySWRIncomeEndgame || R.monthlySWRIncome) + '</span></div>';
+
+    const pensionLabelLump = '一次領 ' + fmtMoney(R.pensionLumpToStock) + ' 注入股市';
+    const pensionLabelMonthly = '月領 <span style="color:var(--system-green-dark); font-weight:700;">+' + fmtMoney(R.pensionMonthly) + '</span>';
+    
+    const pensionZeroHTML = '<div class="cashflow-row"><span class="cashflow-row-name">勞退新制</span><span class="cashflow-row-val" style="color:var(--label-tertiary);">$0 (鎖定期)</span></div>';
+    const pensionActiveHTML = '<div class="cashflow-row"><span class="cashflow-row-name">勞退新制</span><span class="cashflow-row-val">' + (pensionMode === 'monthly' ? pensionLabelMonthly : pensionLabelLump) + '</span></div>';
+    
+    const styleWaterfall = `
+      <style>
+        .waterfall-container { display: flex; gap: 16px; margin-top: 16px; }
+        .waterfall-phase { flex: 1; background: #F9FAFB; border-radius: 16px; padding: 18px; border: 1px solid rgba(0,0,0,0.03); display: flex; flex-direction: column; }
+        .phase-header { font-size: 13.5px; font-weight: 700; color: var(--label-primary); display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .phase-timeline { font-size: 11px; color: var(--label-secondary); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px dashed var(--separator); }
+        .wf-badge { font-size: 10.5px; padding: 3px 8px; border-radius: 6px; font-weight: 650; }
+        .wf-bridge { background: var(--system-orange-tint); color: #b45309; }
+        .wf-endgame { background: var(--system-green-tint); color: var(--system-green-dark); }
+        .wf-single { background: var(--system-blue-tint); color: var(--accent); }
+        .waterfall-container .cashflow-row { padding: 6px 0; font-size: 13px; }
+        .waterfall-container .final { margin-top: auto; padding-top: 12px; }
+        @media (max-width: 768px) { .waterfall-container { flex-direction: column; } }
+      </style>
+    `;
 
     if (R.hasBridgePeriod) {
-      // ── 雙階段 ──
-      const pensionRowP1 = pensionMode === 'monthly'
-        ? '<div class="cashflow-row"><span class="cashflow-row-name">第二支柱：勞退月領</span><span class="cashflow-row-val" style="color:var(--system-green-dark); font-weight:700;">+' + fmtMoney(R.pensionMonthly) + '／月</span></div>'
-        : '<div class="cashflow-row"><span class="cashflow-row-name">第二支柱：勞退專戶</span><span class="cashflow-row-val">' + pensionLabel + '</span></div>';
-
-      const pensionRowP2 = pensionMode === 'monthly'
-        ? '<div class="cashflow-row"><span class="cashflow-row-name">第二支柱：勞退月領</span><span class="cashflow-row-val" style="color:var(--system-green-dark); font-weight:700;">+' + fmtMoney(R.pensionMonthly) + '／月</span></div>'
-        : '';
-
-      container.innerHTML =
-        '<div class="cashflow-header">退休後每月名目現金流拆解</div>' +
-
-        '<div class="cashflow-phase-card">' +
-          '<div class="cashflow-phase-title"><span class="phase-badge bridge">過渡期</span><span>' + retire + '～' + claim + ' 歲（共 ' + R.bridgeYears + ' 年）</span></div>' +
-          '<div class="cashflow-row"><span class="cashflow-row-name">生活費需求</span><span class="cashflow-row-val">' + fmtMoney(R.nominalExpense) + '／月</span></div>' +
-          pledgeRow +
-          houseRow +
-          '<div class="cashflow-row"><span class="cashflow-row-name">' + R.stockWithdrawalLabel + '</span><span class="cashflow-row-val" style="color:var(--accent); font-weight:700;">+' + fmtMoney(R.monthlySWRIncome) + '／月</span></div>' +
-          '<div class="cashflow-row"><span class="cashflow-row-name">第一支柱：勞保年金</span><span class="cashflow-row-val" style="color:var(--label-tertiary);">$0（尚未起領）</span></div>' +
-          pensionRowP1 +
-          partTimeRow +
-          '<div class=\"cashflow-row total-inflow\"><span class=\"cashflow-row-name\">每月總可用資金 (收入加總)</span><span class=\"cashflow-row-val\">' + fmtMoney(R.totalMonthlyInflow) + '／月</span></div>' +
-          '<div class="cashflow-row final"><span class="cashflow-row-name">月淨現金流</span><span class="cashflow-row-val">' + fmtNet(R.netMonthlyCashflow) + '／月</span></div>' +
-        '</div>' +
-
-        '<div class="cashflow-phase-card">' +
-          '<div class="cashflow-phase-title"><span class="phase-badge life">終身期</span><span>' + claim + ' 歲起（勞保啟動）</span></div>' +
-          '<div class="cashflow-row"><span class="cashflow-row-name">生活費需求</span><span class="cashflow-row-val">' + fmtMoney(R.nominalExpense) + '／月</span></div>' +
-          pledgeRow +
-          houseRow +
-          '<div class="cashflow-row"><span class="cashflow-row-name">' + R.stockWithdrawalLabel + '</span><span class="cashflow-row-val" style="color:var(--accent); font-weight:700;">+' + fmtMoney(R.monthlySWRIncome) + '／月</span></div>' +
-          '<div class="cashflow-row"><span class="cashflow-row-name">第一支柱：勞保年金</span><span class="cashflow-row-val" style="color:var(--system-green-dark); font-weight:700;">+' + fmtMoney(R.laborFullMonthly) + '／月</span></div>' +
-          pensionRowP2 +
-          partTimeRow +
-          '<div class=\"cashflow-row total-inflow\"><span class=\"cashflow-row-name\">每月總可用資金 (收入加總)</span><span class=\"cashflow-row-val\">' + fmtMoney(R.totalInflowEndgame) + '／月</span></div>' +
-          '<div class="cashflow-row final"><span class="cashflow-row-name">月淨現金流</span><span class="cashflow-row-val">' + fmtNet(R.netCashflowEndgame) + '／月</span></div>' +
-          '<div style="font-size:11.5px; color:var(--label-secondary); margin-top:6px; line-height:1.5;">' +
-            '終身每月由投資組合提領 <strong style="color:var(--accent);">' + fmtMoney(R.monthlySWRIncome) + '</strong>（4% SWR）：其中約 <strong style="color:var(--system-green-dark);">+' + fmtMoney(naturalDivMonthly) + '</strong>（2.8%）由大盤指數自然配息進帳，每年僅需動態調度約 <strong style="color:var(--accent);">+' + fmtMoney(capGainMonthly) + '</strong> 資本利得，免受大量賣股恐慌。' +
+      container.innerHTML = styleWaterfall + 
+        '<div class="cashflow-header">退休後雙階段現金流對比</div>' +
+        '<div class="waterfall-container">' +
+          
+          '<div class="waterfall-phase">' +
+            '<div class="phase-header"><span class="wf-badge wf-bridge">第一階段：過渡期</span></div>' +
+            '<div class="phase-timeline">' + retire + '～' + claim + ' 歲（共 ' + R.bridgeYears + ' 年）<br>法規鎖定，全靠自己提領</div>' +
+            expenseHTML + pledgeRow + houseRow + swrPhase1HTML + laborZeroHTML + (R.isPensionLocked ? pensionZeroHTML : pensionActiveHTML) + partTimeRow +
+            '<div class="cashflow-row total-inflow" style="margin-top:12px; border-top:1px solid var(--separator-hairline); padding-top:12px;"><span class="cashflow-row-name">每月總可用資金</span><span class="cashflow-row-val">' + fmtMoney(R.totalMonthlyInflow) + '</span></div>' +
+            '<div class="cashflow-row final"><span class="cashflow-row-name">月淨現金流</span><span class="cashflow-row-val">' + fmtNet(R.netMonthlyCashflow) + '</span></div>' +
           '</div>' +
+
+          '<div class="waterfall-phase">' +
+            '<div class="phase-header"><span class="wf-badge wf-endgame">第二階段：終局期</span></div>' +
+            '<div class="phase-timeline">' + claim + ' 歲起（雙金齊發）<br>政府年金解鎖挹注</div>' +
+            expenseHTML + pledgeRow + houseRow + swrPhase2HTML + laborFullHTML + pensionActiveHTML + partTimeRow +
+            '<div class="cashflow-row total-inflow" style="margin-top:12px; border-top:1px solid var(--separator-hairline); padding-top:12px;"><span class="cashflow-row-name">每月總可用資金</span><span class="cashflow-row-val">' + fmtMoney(R.totalInflowEndgame) + '</span></div>' +
+            '<div class="cashflow-row final"><span class="cashflow-row-name">月淨現金流</span><span class="cashflow-row-val">' + fmtNet(R.netCashflowEndgame) + '</span></div>' +
+          '</div>' +
+
         '</div>';
-
     } else {
-      // ── 無空窗期：單階段 ──
       let laborNote = '（法定全額）';
-      if (claim < statutoryAge) {
-        laborNote = '（提前' + (statutoryAge - claim) + '年減額' + ((statutoryAge - claim) * 4) + '%）';
-      } else if (claim > statutoryAge) {
-        laborNote = '（延後' + (claim - statutoryAge) + '年增額' + ((claim - statutoryAge) * 4) + '%）';
-      }
+      if (claim < statutoryAge) laborNote = '（提前減額' + ((statutoryAge - claim) * 4) + '%）';
+      else if (claim > statutoryAge) laborNote = '（延後增額' + ((claim - statutoryAge) * 4) + '%）';
 
-      const pensionRowSingle = pensionMode === 'monthly'
-        ? '<div class="cashflow-row"><span class="cashflow-row-name">第二支柱：勞退月領</span><span class="cashflow-row-val" style="color:var(--system-green-dark); font-weight:700;">+' + fmtMoney(R.pensionMonthly) + '／月</span></div>'
-        : '<div class="cashflow-row"><span class="cashflow-row-name">第二支柱：勞退專戶</span><span class="cashflow-row-val">' + pensionLabel + '</span></div>';
-
-      container.innerHTML =
-        '<div class="cashflow-header">退休後每月名目現金流拆解</div>' +
-        '<div class="cashflow-phase-card">' +
-          '<div class="cashflow-phase-title"><span class="phase-badge life">終身階段</span><span>' + retire + ' 歲起（同步起領）</span></div>' +
-          '<div class="cashflow-row"><span class="cashflow-row-name">生活費需求</span><span class="cashflow-row-val">' + fmtMoney(R.nominalExpense) + '／月</span></div>' +
-          pledgeRow +
-          houseRow +
-          '<div class="cashflow-row"><span class="cashflow-row-name">' + R.stockWithdrawalLabel + '</span><span class="cashflow-row-val" style="color:var(--accent); font-weight:700;">+' + fmtMoney(R.monthlySWRIncome) + '／月</span></div>' +
-          '<div class="cashflow-row"><span class="cashflow-row-name">第一支柱：勞保年金 ' + laborNote + '</span><span class="cashflow-row-val" style="color:var(--system-green-dark); font-weight:700;">+' + fmtMoney(R.laborAtRetire) + '／月</span></div>' +
-          pensionRowSingle +
-          partTimeRow +
-          '<div class=\"cashflow-row total-inflow\"><span class=\"cashflow-row-name\">每月總可用資金 (收入加總)</span><span class=\"cashflow-row-val\">' + fmtMoney(R.totalMonthlyInflow) + '／月</span></div>' +
-          '<div class="cashflow-row final"><span class="cashflow-row-name">月淨現金流</span><span class="cashflow-row-val">' + fmtNet(R.netMonthlyCashflow) + '／月</span></div>' +
-          '<div style="font-size:11.5px; color:var(--label-secondary); margin-top:6px; line-height:1.5;">' +
-            '退休後每月由投資組合依 <strong>' + (swr*100).toFixed(1) + '%</strong> SWR 提領 <strong style="color:var(--accent);">' + fmtMoney(R.monthlySWRIncome) + '</strong>，搭配勞保年金 <strong style="color:var(--system-green-dark);">' + fmtMoney(R.laborAtRetire) + '</strong>。' +
+      container.innerHTML = styleWaterfall + 
+        '<div class="cashflow-header">退休後單階段現金流拆解</div>' +
+        '<div class="waterfall-container">' +
+          '<div class="waterfall-phase" style="max-width: 500px;">' +
+            '<div class="phase-header"><span class="wf-badge wf-single">終身階段</span></div>' +
+            '<div class="phase-timeline">' + retire + ' 歲起（無空窗同步起領）<br>勞保年金 ' + laborNote + '</div>' +
+            expenseHTML + pledgeRow + houseRow + swrPhase1HTML + laborRetireHTML + pensionActiveHTML + partTimeRow +
+            '<div class="cashflow-row total-inflow" style="margin-top:12px; border-top:1px solid var(--separator-hairline); padding-top:12px;"><span class="cashflow-row-name">每月總可用資金</span><span class="cashflow-row-val">' + fmtMoney(R.totalMonthlyInflow) + '</span></div>' +
+            '<div class="cashflow-row final"><span class="cashflow-row-name">月淨現金流</span><span class="cashflow-row-val">' + fmtNet(R.netMonthlyCashflow) + '</span></div>' +
           '</div>' +
         '</div>';
     }
@@ -3663,7 +3699,54 @@
       return `
         <div class="mixer-row" data-idx="${idx}">
           <div>
-            <input type="text" class="apple-input mixer-input-code" value="${item.code}" placeholder="代號" oninput="onMixerCodeChange(${idx}, this.value)">
+            <select class="apple-select mixer-input-code" style="width:100%; padding-right:10px; font-size:14px!important; height:40px; border-radius:10px;" onchange="onMixerCodeChange(${idx}, this.value)">
+  <optgroup label="台股市值大盤">
+    <option value="0050" ${item.code.toUpperCase() === '0050' ? 'selected' : ''}>0050 元大台灣50</option>
+    <option value="006208" ${item.code.toUpperCase() === '006208' ? 'selected' : ''}>006208 富邦台50</option>
+    <option value="00692" ${item.code.toUpperCase() === '00692' ? 'selected' : ''}>00692 富邦公司治理</option>
+    <option value="00850" ${item.code.toUpperCase() === '00850' ? 'selected' : ''}>00850 元大臺灣ESG永續</option>
+    <option value="00922" ${item.code.toUpperCase() === '00922' ? 'selected' : ''}>00922 國泰台灣領袖50</option>
+    <option value="0051" ${item.code.toUpperCase() === '0051' ? 'selected' : ''}>0051 元大中型100</option>
+  </optgroup>
+  <optgroup label="台股高股息">
+    <option value="0056" ${item.code.toUpperCase() === '0056' ? 'selected' : ''}>0056 元大高股息</option>
+    <option value="00878" ${item.code.toUpperCase() === '00878' ? 'selected' : ''}>00878 國泰永續高股息</option>
+    <option value="00713" ${item.code.toUpperCase() === '00713' ? 'selected' : ''}>00713 元大台灣高息低波</option>
+    <option value="00919" ${item.code.toUpperCase() === '00919' ? 'selected' : ''}>00919 群益台灣精選高息</option>
+    <option value="00929" ${item.code.toUpperCase() === '00929' ? 'selected' : ''}>00929 復華台灣科技優息</option>
+    <option value="00915" ${item.code.toUpperCase() === '00915' ? 'selected' : ''}>00915 凱基優選高股息30</option>
+    <option value="00900" ${item.code.toUpperCase() === '00900' ? 'selected' : ''}>00900 富邦特選高股息30</option>
+    <option value="00939" ${item.code.toUpperCase() === '00939' ? 'selected' : ''}>00939 統一台灣高息動能</option>
+    <option value="00940" ${item.code.toUpperCase() === '00940' ? 'selected' : ''}>00940 元大臺灣價值高息</option>
+  </optgroup>
+  <optgroup label="美股市值大盤">
+    <option value="VOO" ${item.code.toUpperCase() === 'VOO' ? 'selected' : ''}>VOO Vanguard 標普500</option>
+    <option value="SPY" ${item.code.toUpperCase() === 'SPY' ? 'selected' : ''}>SPY SPDR 標普500</option>
+    <option value="IVV" ${item.code.toUpperCase() === 'IVV' ? 'selected' : ''}>IVV iShares 標普500</option>
+    <option value="VTI" ${item.code.toUpperCase() === 'VTI' ? 'selected' : ''}>VTI Vanguard 全美寬基</option>
+    <option value="DIA" ${item.code.toUpperCase() === 'DIA' ? 'selected' : ''}>DIA SPDR 道瓊工業</option>
+  </optgroup>
+  <optgroup label="美股科技型">
+    <option value="QQQ" ${item.code.toUpperCase() === 'QQQ' ? 'selected' : ''}>QQQ Invesco 納斯達克100</option>
+    <option value="QQQM" ${item.code.toUpperCase() === 'QQQM' ? 'selected' : ''}>QQQM Invesco 納斯達克100 (小)</option>
+  </optgroup>
+  <optgroup label="美股價值紅利">
+    <option value="SCHD" ${item.code.toUpperCase() === 'SCHD' ? 'selected' : ''}>SCHD Schwab 美國紅利</option>
+    <option value="VYM" ${item.code.toUpperCase() === 'VYM' ? 'selected' : ''}>VYM Vanguard 高股息</option>
+    <option value="VIG" ${item.code.toUpperCase() === 'VIG' ? 'selected' : ''}>VIG Vanguard 股息成長</option>
+  </optgroup>
+  <optgroup label="全球市場與非美">
+    <option value="VT" ${item.code.toUpperCase() === 'VT' ? 'selected' : ''}>VT Vanguard 全球股票</option>
+    <option value="VEA" ${item.code.toUpperCase() === 'VEA' ? 'selected' : ''}>VEA Vanguard 發展中市場(非美)</option>
+    <option value="VWO" ${item.code.toUpperCase() === 'VWO' ? 'selected' : ''}>VWO Vanguard 新興市場</option>
+  </optgroup>
+  <optgroup label="公債與其他">
+    <option value="BND" ${item.code.toUpperCase() === 'BND' ? 'selected' : ''}>BND Vanguard 總體債券</option>
+    <option value="TLT" ${item.code.toUpperCase() === 'TLT' ? 'selected' : ''}>TLT iShares 20年美債</option>
+    <option value="GLD" ${item.code.toUpperCase() === 'GLD' ? 'selected' : ''}>GLD SPDR 黃金</option>
+    <option value="VNQ" ${item.code.toUpperCase() === 'VNQ' ? 'selected' : ''}>VNQ Vanguard 美國房地產</option>
+  </optgroup>
+</select>
           </div>
           <div class="mixer-meta-wrap">
             <div class="mixer-name">${etf.name}</div>
