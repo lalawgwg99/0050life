@@ -2604,8 +2604,8 @@
                   <span>自選標的混搭</span>
                   <span style="font-size:11.5px; color:var(--label-tertiary); font-weight:500;">(1～5 檔)</span>
                 </div>
-                <button type="button" class="btn-action-outline" onclick="rebalanceMixerWeights()" style="width:auto !important; height:30px !important; white-space:nowrap !important; flex-shrink:0 !important; padding:0 12px !important; font-size:12px !important; border-radius:100px !important; color:var(--label-secondary); background:#fff;">
-                  等比例平衡
+                <button type="button" class="btn-action-outline" onclick="rebalanceMixerWeights()" title="等比例再平衡各檔權重" style="width:32px !important; height:32px !important; padding:0 !important; border-radius:50% !important; display:inline-flex !important; align-items:center !important; justify-content:center !important; color:var(--label-secondary); border:1.5px solid #CBD5E1; background:#fff; flex-shrink:0;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v18"/><path d="M3 7l9-4 9 4"/><path d="M3 7v3a3 3 0 0 0 6 0V7"/><path d="M15 7v3a3 3 0 0 0 6 0V7"/></svg>
                 </button>
               </div>
 
@@ -2613,9 +2613,8 @@
               <div class="mixer-rows-wrap" id="etfMixerRows"></div>
 
               <div style="display:flex; justify-content:space-between; align-items:center; margin-top:10px;">
-                <button type="button" class="btn-action-outline" id="btnAddMixerRow" onclick="addMixerRow()" style="width:auto; height:auto; white-space:nowrap; flex-shrink:0; padding:6px 14px; font-size:12.5px; border-radius:100px; display:inline-flex; align-items:center; gap:6px; color:var(--accent); border-color:var(--accent);">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                  <span>新增標的 (最多 5 檔)</span>
+                <button type="button" class="btn-action-outline" id="btnAddMixerRow" onclick="addMixerRow()" title="新增投資標的 (最多 5 檔)" style="width:34px !important; height:34px !important; padding:0 !important; border-radius:50% !important; display:inline-flex !important; align-items:center !important; justify-content:center !important; color:var(--accent); border:1.5px solid var(--accent); background:#fff; flex-shrink:0;">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 </button>
                 <div style="font-size:11.5px; color:var(--label-tertiary);">支援 41 檔海內外主流 ETF</div>
               </div>
@@ -2957,26 +2956,9 @@
             ⚠️ <strong>風險說明</strong>：4% 提領率係基於歷史數據之假設模型，未保證未來市場報酬。質押屬槓桿融資，遇連續空頭時將面臨維持率不足之追繳或強制平倉風險，請務必保留 1～2 年緊急生活預備金。
           </div>
         </div>
-            <div class="pledge-dash-item">
-              <div class="pledge-dash-label">每月利息負擔</div>
-              <div class="pledge-dash-val" id="valPledgeInterest" style="color:var(--system-red);">--</div>
-            </div>
-            <div class="pledge-dash-item">
-              <div class="pledge-dash-label">擔保維持率</div>
-              <div class="pledge-dash-val" id="valPledgeMargin" style="color:var(--system-green-dark);">--</div>
-            </div>
-            <div class="pledge-dash-item">
-              <div class="pledge-dash-label">斷頭承受跌幅</div>
-              <div class="pledge-dash-val" id="valPledgeDrop" style="color:var(--accent);">--</div>
-            </div>
-          </div>
-          <!-- 實質負擔率與 4% 法則衝突警示卡片 -->
-          <div id="boxPledgeSWRWarning" style="display:none; margin-top:10px; padding:10px 12px; border-radius:8px; font-size:12px; line-height:1.5;"></div>
-          
-          <div class="pledge-dash-footer" id="txtPledgeWarning">
-            ⓘ 當股票市值下跌 X%，維持率低於 130% 時，將面臨券商追繳斷頭風險。
-          </div>
-        </div></section>
+        <!-- 實質負擔率與 4% 法則衝突警示卡片 -->
+        <div id="boxPledgeSWRWarning" style="display:none; margin-top:10px; padding:10px 12px; border-radius:8px; font-size:12px; line-height:1.5;"></div>
+      </section>
     </main>
 
     <!-- 右側：結果精算面板 -->
