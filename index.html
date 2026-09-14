@@ -298,21 +298,32 @@
     }
     .apple-input, .apple-select {
       width: 100%;
-      height: 38px;
+      height: 44px; /* 更大的觸控範圍 */
       border: 1px solid var(--separator);
       background-color: var(--card-subtle);
-      border-radius: 9px;
-      padding: 0 44px 0 12px;
-      font-size: 13.5px;
+      border-radius: 12px;
+      padding: 0 44px 0 16px;
+      font-size: 16px !important; /* 絕對避免 iOS Safari 自動放大畫面 */
       font-weight: 600;
       color: var(--label-primary);
       outline: none;
       font-variant-numeric: tabular-nums;
       transition: border-color 0.15s, background-color 0.15s, box-shadow 0.15s;
+      -webkit-appearance: none; /* 移除預設樣式 */
     }
     .apple-select {
       padding-right: 28px;
       cursor: pointer;
+    }
+    
+    /* 移除數字輸入框的上下箭頭，讓介面更乾淨 */
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type="number"] {
+      -moz-appearance: textfield;
     }
     .apple-input:focus, .apple-select:focus {
       border-color: var(--accent);
@@ -1090,6 +1101,51 @@
       padding: 10px 12px;
       border-radius: 8px;
       line-height: 1.4;
+    }
+    
+  
+    /* ================= 手機版排版與防溢出修正 ================= */
+    @media (max-width: 480px) {
+      .hero-summary {
+        padding: 24px 20px; /* 縮小邊距 */
+      }
+      .hero-metric {
+        font-size: clamp(32px, 9vw, 42px); /* 避免數字過大斷行 */
+      }
+      .triad-grid {
+        gap: 6px; /* 縮小網格間距 */
+      }
+      .triad-cell {
+        padding: 12px 6px; /* 爭取更多內部空間 */
+      }
+      .triad-value {
+        font-size: 14.5px; /* 避免百萬數字溢出 */
+        letter-spacing: -0.5px;
+      }
+      .triad-label {
+        font-size: 10px;
+        white-space: nowrap; /* 強制標題不換行 */
+      }
+      .breakeven-header {
+        flex-wrap: wrap; /* 允許標題與徽章換行，防擠壓 */
+      }
+      .cashflow-row {
+        gap: 8px; /* 保障名稱與數字間距 */
+      }
+      .cashflow-row-name {
+        flex: 1; /* 允許文字區域縮放 */
+        line-height: 1.3;
+      }
+      .cashflow-row-val {
+        flex-shrink: 0; /* 數字絕對不壓縮 */
+        font-size: 12px;
+      }
+      .longevity-age {
+        font-size: clamp(24px, 7vw, 28px);
+      }
+      .pledge-dash-val {
+        font-size: 15px; /* 防大數字擠壓 */
+      }
     }
     
   </style>
