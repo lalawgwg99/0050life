@@ -2285,7 +2285,7 @@
       totalPortfolioValue: Math.round(totalPortfolioValue),
       actualPledgeLoan: Math.round(actualPledgeLoan),
       monthlyPledgeInterest: Math.round(monthlyPledgeInterest),
-      actualLTV: actualPledgeLoan > 0 ? (actualPledgeLoan / baseStockAssets * 100) : 0,
+      actualLTV: actualPledgeLoan > 0 ? (actualPledgeLoan / netStockEquity * 100) : 0,
       maintenanceMargin: Math.round(maintenanceMargin),
       marginCallDrop: Number(marginCallDrop.toFixed(1)),
       monthlySWRIncome: Math.round(monthlySWRIncome),
@@ -2354,7 +2354,7 @@
       stockAssetsAtRetire: projectedStockAssets,
       enablePledge: enablePledge,
       pledgeStrategy: pledgeStrategy,
-      pledgeLTV: enablePledge ? n('pledgeLTV') : 0,
+      pledgeAmount: enablePledge ? n('pledgeAmount') : 0,
       pledgeInterestRate: enablePledge ? n('pledgeRate') : 0,
       swrRate: n('withdrawRate') / 100,
       withdrawalMode: withdrawalMode,
@@ -2385,7 +2385,10 @@
     if (isLumpSum && $('valStockPension')) $('valStockPension').textContent = fmtMoney(projectedPensionLump);
 
     // ── 渲染：質押動態儀表板 (Fifth Pillar Dashboard) ──
+    window._lastBaseStockAssets = projectedStockAssets + (isLumpSum ? projectedPensionLump : 0);
+    
     if (enablePledge) {
+      if ($('badgePledgeLTV')) $('badgePledgeLTV').textContent = 'LTV ' + R.actualLTV.toFixed(1) + '%';
       if ($('valPledgeAmount')) $('valPledgeAmount').textContent = fmtMoney(R.actualPledgeLoan);
       if ($('valPledgeInterest')) $('valPledgeInterest').textContent = fmtMoney(R.monthlyPledgeInterest) + ' / 月';
       
