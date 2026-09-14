@@ -6,26 +6,30 @@
   <title>退休準備三支柱精算系統</title>
   <style>
     :root {
-      --system-bg: #f5f5f7;
+      --system-bg: #f0f2f5;
       --card-bg: #ffffff;
-      --card-subtle: #f9f9fb;
-      --separator: rgba(60, 60, 67, 0.12);
-      --separator-hairline: rgba(60, 60, 67, 0.08);
-      --label-primary: #1d1d1f;
-      --label-secondary: #6e6e73;
-      --label-tertiary: #86868b;
-      --accent: #0071e3;
-      --accent-tint: rgba(0, 113, 227, 0.08);
-      --system-green: #34c759;
-      --system-green-tint: rgba(52, 199, 89, 0.12);
-      --system-green-dark: #1b7a36;
-      --system-red: #ff3b30;
-      --system-red-tint: rgba(255, 59, 48, 0.08);
-      --system-red-dark: #c92a2a;
-      --system-orange: #ff9500;
-      --system-orange-tint: rgba(255, 149, 0, 0.12);
-      --card-radius: 14px;
-      --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.02);
+      --card-subtle: #f8fafc;
+      --separator: rgba(30, 41, 59, 0.10);
+      --separator-hairline: rgba(30, 41, 59, 0.06);
+      --label-primary: #0f172a;
+      --label-secondary: #475569;
+      --label-tertiary: #64748b;
+      --accent: #0284c7;
+      --accent-hover: #0369a1;
+      --accent-tint: rgba(2, 132, 199, 0.10);
+      --accent-gradient: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+      --system-green: #10b981;
+      --system-green-tint: rgba(16, 185, 129, 0.12);
+      --system-green-dark: #047857;
+      --system-red: #ef4444;
+      --system-red-tint: rgba(239, 68, 68, 0.10);
+      --system-red-dark: #b91c1c;
+      --system-orange: #f59e0b;
+      --system-orange-tint: rgba(245, 158, 11, 0.12);
+      --card-radius: 16px;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04), 0 6px 16px rgba(15, 23, 42, 0.03);
+      --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 10px 24px -3px rgba(15, 23, 42, 0.06);
+      --shadow-hero: 0 8px 30px rgba(2, 132, 199, 0.08), 0 2px 8px rgba(15, 23, 42, 0.04);
     }
 
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -218,13 +222,25 @@
       top: 24px;
     }
 
-    /* Summary Card */
+    /* Summary Card with Apple Pro Glass / Ambient Gradient */
     .hero-summary {
-      background-color: var(--card-subtle);
-      border: 1px solid var(--separator);
-      border-radius: 14px;
-      padding: 20px;
-      margin-bottom: 16px;
+      background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+      border: 1px solid rgba(2, 132, 199, 0.18);
+      border-radius: 16px;
+      padding: 22px 20px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow-hero);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-summary::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: var(--accent-gradient);
     }
     .hero-top {
       display: flex;
@@ -287,10 +303,11 @@
       margin: 16px 0;
     }
     .triad-cell {
-      background-color: var(--card-subtle);
-      border: 1px solid var(--separator-hairline);
-      border-radius: 10px;
-      padding: 10px 10px;
+      background-color: #ffffff;
+      border: 1px solid var(--separator);
+      border-radius: 12px;
+      padding: 12px 10px;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.03);
     }
     .triad-label {
       font-size: 11px;
@@ -1421,6 +1438,7 @@
   ];
 
   inputIds.forEach(id => {
+    if (['birthYear', 'retireAge', 'laborYearsNow'].includes(id)) return;
     const el = $(id);
     if (el) el.addEventListener('input', () => {
       calculate(false);
@@ -1520,28 +1538,24 @@
   }
 
   // 自動同步：出生年次 → 年齡、未來年資、法定年齡 + 輸入防呆
-  function syncFromBirthYear() {
+  function syncFromBirthYear(isFromBirthChange = false) {
     const birthYear = n('birthYear');
     const currentYear = new Date().getFullYear() - 1911;
-    const age = currentYear - birthYear;
+    const age = Math.max(15, currentYear - birthYear);
     const normalAge = getNormalAge(birthYear);
 
-    // 防呆：退休年齡 >= 現在年齡
-    if (n('retireAge') < age) $('retireAge').value = age;
-    const retire = Math.max(n('retireAge'), age);
+    // 只有在修改出生年次，且退休年齡小於年齡時，才自動補正退休年齡為目前年齡
+    if (isFromBirthChange && n('retireAge') < age) {
+      $('retireAge').value = age;
+    }
+    const retire = n('retireAge') > 0 ? n('retireAge') : age;
     const futureYears = Math.max(0, retire - age);
 
-    // 防呆：勞保年資上限 = 現在年齡 - 15（法定最低工作年齡）
+    // 勞保年資防呆：不超過 (現在年齡 - 15)
     const maxLaborYears = Math.max(0, age - 15);
     if (n('laborYearsNow') > maxLaborYears) {
       $('laborYearsNow').value = maxLaborYears;
     }
-
-    // 防呆：起領年齡夾擊至法定合法區間
-    const minClaim = normalAge - 5;
-    const maxClaim = normalAge + 5;
-    if (n('claimAge') < minClaim) $('claimAge').value = minClaim;
-    if (n('claimAge') > maxClaim) $('claimAge').value = maxClaim;
 
     $('birthROC').value = birthYear;
     if (!$('currentAge')) {
@@ -1558,10 +1572,28 @@
       (n('laborYearsNow') + futureYears).toFixed(1);
   }
 
-  ['birthYear', 'retireAge', 'laborYearsNow'].forEach(id => {
-    const el = $(id);
-    if (el) el.addEventListener('input', () => { syncFromBirthYear(); calculate(false); });
-  });
+  // 獨立精確監聽：避免互相牽制
+  if ($('birthYear')) {
+    $('birthYear').addEventListener('input', () => {
+      syncFromBirthYear(true);
+      calculate(false);
+      saveStateToLocal();
+    });
+  }
+  if ($('retireAge')) {
+    $('retireAge').addEventListener('input', () => {
+      syncFromBirthYear(false);
+      calculate(false);
+      saveStateToLocal();
+    });
+  }
+  if ($('laborYearsNow')) {
+    $('laborYearsNow').addEventListener('input', () => {
+      syncFromBirthYear(false);
+      calculate(false);
+      saveStateToLocal();
+    });
+  }
 
   // 質押欄位顯示切換
   function togglePledgeFields() {
@@ -1685,39 +1717,6 @@
     const laborResult = calcLaborPension(n('avgInsuredSalary'), totalLaborYears, claim, birthROC);
     const statutoryAge = laborResult.normalAge;
 
-    // 起領年齡說明標籤
-    if ($('claimAgeHint')) {
-      if (!laborResult.isEligible) {
-        $('claimAgeHint').innerHTML = '<span style="color:var(--system-red); font-weight:600;">年資共 ' + totalLaborYears.toFixed(1) + ' 年（未達 15 年門檻），僅能一次請領老年一次金 ' + fmtMoney(laborResult.lumpSum) + '。</span>';
-      } else if (claim < laborResult.minClaimAge) {
-        $('claimAgeHint').innerHTML = '<span style="color:var(--system-red); font-weight:600;">法規限制：最多僅能提前至 ' + laborResult.minClaimAge + ' 歲請領。</span>';
-      } else if (claim === statutoryAge) {
-        $('claimAgeHint').textContent = '法定請領年齡 ' + statutoryAge + ' 歲，屬於全額領取。';
-      } else if (claim < statutoryAge) {
-        $('claimAgeHint').textContent = '提前 ' + (statutoryAge - claim) + ' 年請領，永久減額 ' + ((statutoryAge - claim) * 4) + '%（合法區間 ' + laborResult.minClaimAge + '～' + laborResult.maxClaimAge + ' 歲）。';
-      } else {
-        $('claimAgeHint').textContent = '延後 ' + (claim - statutoryAge) + ' 年請領，展延增額 ' + ((claim - statutoryAge) * 4) + '%（上限 ' + laborResult.maxClaimAge + ' 歲）。';
-      }
-      // 附帶黃金交叉與法定 CPI 抗通膨說明
-      $('claimAgeHint').innerHTML += '<div class="breakeven-card">' +
-        '<div class="breakeven-header">' +
-          '<span>勞保請領「黃金交叉平衡點」精算</span>' +
-          '<span class="breakeven-badge">平衡年齡約 ' + breakevenAge + ' 歲</span>' +
-        '</div>' +
-        '<div class="breakeven-track">' +
-          '<div class="breakeven-bar-early" style="width:55%;" title="60歲早領先行優勢"></div>' +
-          '<div class="breakeven-bar-normal" style="width:45%;" title="' + breakevenAge + '歲後足額領累計更多"></div>' +
-        '</div>' +
-        '<div class="breakeven-labels">' +
-          '<span>60 歲早領先拿 60 個月給付</span>' +
-          '<span>' + breakevenAge + ' 歲前早領總額多 ｜ 之後足額領超越</span>' +
-        '</div>' +
-        '<div style="font-size:11px; color:var(--label-tertiary); margin-top:6px; line-height:1.4;">' +
-          'ⓘ 勞保享有法定通膨調整（累計 CPI 達 5% 同步調升給付），能有效抗衡長線物價侵蝕。' +
-        '</div>' +
-      '</div>';
-    }
-
     // 第二支柱：勞退新制
     const monthlyEmployerContrib = n('pensionWage') * (0.06 + n('selfRate') / 100);
     const projectedPensionLump = fv(n('pensionBalance'), monthlyEmployerContrib, n('pensionReturn') / 100, monthsToRetire);
@@ -1734,42 +1733,7 @@
     const enablePledge = $('pledgeStrategy') && $('pledgeStrategy').value === 'pledge';
     togglePledgeFields();
 
-    // ── 顧問增強運算 1：勞保請領黃金交叉點（76歲平衡點）──
-    // 基準：60 歲早領（打 8 折） vs 65 歲足額（100%）
-    const earlyAge = statutoryAge - 5;
-    const normalLaborMonthly = baseLaborMonthly; // 65 歲 100%
-    const earlyLaborMonthly = baseLaborMonthly * 0.8; // 60 歲 80%
-    // 65 歲當下，早領者已先領 5 年 (60 個月) 的總額
-    const earlyHeadStart = earlyLaborMonthly * 60;
-    // 65 歲起，足額者每月多領 (normal - early)
-    const monthlyAdvantage = normalLaborMonthly - earlyLaborMonthly;
-    // 交叉所需月數
-    const catchupMonths = monthlyAdvantage > 0 ? (earlyHeadStart / monthlyAdvantage) : 0;
-    const breakevenAge = Number((statutoryAge + catchupMonths / 12).toFixed(1));
-
-    // ── 顧問增強運算 2：0050/VOO 配息自然覆蓋率 ──
-    const naturalDivRate = 0.028; // 長期大盤配息率約 2.8%
-    const naturalDivMonthly = (R.totalPortfolioValue * naturalDivRate) / 12;
-    const capGainMonthly = Math.max(0, R.monthlySWRIncome - naturalDivMonthly);
-
-    // ── 顧問增強運算 3：報酬順序風險 (SORR) 防禦力 ──
-    // 固定剛性現金流入涵蓋生活費的比例 (不依賴賣股的部分)
-    const fixedInflow = R.laborFullMonthly + R.pensionMonthly + R.nominalPartTime;
-    const sorrCoverage = R.nominalExpense > 0 ? (fixedInflow / R.nominalExpense) : 1;
-    let sorrBadge = '高防禦體質';
-    let sorrColor = 'var(--system-green-dark)';
-    let sorrBg = 'var(--system-green-tint)';
-    if (sorrCoverage < 0.35) {
-      sorrBadge = '高度依賴賣股（需注意開局回撤）';
-      sorrColor = 'var(--system-red-dark)';
-      sorrBg = 'var(--system-red-tint)';
-    } else if (sorrCoverage < 0.55) {
-      sorrBadge = '中度防禦體質';
-      sorrColor = '#b45309';
-      sorrBg = 'var(--system-orange-tint)';
-    }
-
-    // ── 呼叫解耦引擎 ──
+    // ── 呼叫解耦引擎 (先執行取得精算結果 R) ──
     const R = runRetirementEngine({
       currentAge: age, retireAge: retire, claimAge: claim,
       targetMonthlyToday: n('targetToday'), partTimeToday: n('partTime'),
@@ -1785,6 +1749,43 @@
       pledgeInterestRate: enablePledge ? n('pledgeRate') : 0,
       swrRate: n('withdrawRate') / 100
     });
+
+    // ── 顧問增強運算 1：勞保請領黃金交叉點（76歲平衡點）──
+    // 基準：60 歲早領（打 8 折） vs 65 歲足額（100%）
+    const baseLaborRate = Math.max(
+      n('avgInsuredSalary') * totalLaborYears * 0.00775 + 3000,
+      n('avgInsuredSalary') * totalLaborYears * 0.0155
+    );
+    const normalLaborMonthly = baseLaborRate; // 65 歲 100%
+    const earlyLaborMonthly = baseLaborRate * 0.8; // 60 歲 80%
+    // 65 歲當下，早領者已先領 5 年 (60 個月) 的總額
+    const earlyHeadStart = earlyLaborMonthly * 60;
+    // 65 歲起，足額者每月多領 (normal - early)
+    const monthlyAdvantage = normalLaborMonthly - earlyLaborMonthly;
+    // 交叉所需月數
+    const catchupMonths = monthlyAdvantage > 0 ? (earlyHeadStart / monthlyAdvantage) : 0;
+    const breakevenAge = Number((statutoryAge + catchupMonths / 12).toFixed(1));
+
+    // ── 顧問增強運算 2：0050/VOO 配息自然覆蓋率 ──
+    const naturalDivRate = 0.028; // 長期大盤配息率約 2.8%
+    const naturalDivMonthly = (R.totalPortfolioValue * naturalDivRate) / 12;
+    const capGainMonthly = Math.max(0, R.monthlySWRIncome - naturalDivMonthly);
+
+    // ── 顧問增強運算 3：報酬順序風險 (SORR) 防禦力 ──
+    const fixedInflow = R.laborFullMonthly + R.pensionMonthly + R.nominalPartTime;
+    const sorrCoverage = R.nominalExpense > 0 ? (fixedInflow / R.nominalExpense) : 1;
+    let sorrBadge = '高防禦體質';
+    let sorrColor = 'var(--system-green-dark)';
+    let sorrBg = 'var(--system-green-tint)';
+    if (sorrCoverage < 0.35) {
+      sorrBadge = '高度依賴賣股（需注意開局回撤）';
+      sorrColor = 'var(--system-red-dark)';
+      sorrBg = 'var(--system-red-tint)';
+    } else if (sorrCoverage < 0.55) {
+      sorrBadge = '中度防禦體質';
+      sorrColor = '#b45309';
+      sorrBg = 'var(--system-orange-tint)';
+    }
 
     // 質押上限標籤
     if ($('tagPledgeMax')) $('tagPledgeMax').textContent = '上限 ' + fmtMoney(R.netStockEquity * 0.4);
@@ -1873,6 +1874,40 @@
     } else {
       $('bridgeNotice').className = 'system-callout info';
       $('bridgeNoticeText').innerHTML = '<strong>無空窗期</strong>：退休與勞保同步於 ' + retire + ' 歲啟動，立即享有完整現金流。';
+    }
+
+    // 起領年齡說明標籤（在 R 計算後安全渲染）
+    if ($('claimAgeHint')) {
+      if (!laborResult.isEligible) {
+        $('claimAgeHint').innerHTML = '<span style="color:var(--system-red); font-weight:600;">年資共 ' + totalLaborYears.toFixed(1) + ' 年（未達 15 年門檻），僅能一次請領老年一次金 ' + fmtMoney(laborResult.lumpSum) + '。</span>';
+      } else if (claim < laborResult.minClaimAge) {
+        $('claimAgeHint').innerHTML = '<span style="color:var(--system-red); font-weight:600;">法規限制：最多僅能提前至 ' + laborResult.minClaimAge + ' 歲請領。</span>';
+      } else if (claim === statutoryAge) {
+        $('claimAgeHint').textContent = '法定請領年齡 ' + statutoryAge + ' 歲，屬於全額領取。';
+      } else if (claim < statutoryAge) {
+        $('claimAgeHint').textContent = '提前 ' + (statutoryAge - claim) + ' 年請領，永久減額 ' + ((statutoryAge - claim) * 4) + '%（合法區間 ' + laborResult.minClaimAge + '～' + laborResult.maxClaimAge + ' 歲）。';
+      } else {
+        $('claimAgeHint').textContent = '延後 ' + (claim - statutoryAge) + ' 年請領，展延增額 ' + ((claim - statutoryAge) * 4) + '%（上限 ' + laborResult.maxClaimAge + ' 歲）。';
+      }
+
+      // 附帶黃金交叉與法定 CPI 抗通膨說明
+      $('claimAgeHint').innerHTML += '<div class="breakeven-card">' +
+        '<div class="breakeven-header">' +
+          '<span>勞保請領「黃金交叉平衡點」精算</span>' +
+          '<span class="breakeven-badge">平衡年齡約 ' + breakevenAge + ' 歲</span>' +
+        '</div>' +
+        '<div class="breakeven-track">' +
+          '<div class="breakeven-bar-early" style="width:55%;" title="60歲早領先行優勢"></div>' +
+          '<div class="breakeven-bar-normal" style="width:45%;" title="' + breakevenAge + '歲後足額領累計更多"></div>' +
+        '</div>' +
+        '<div class="breakeven-labels">' +
+          '<span>60 歲早領先拿 60 個月給付</span>' +
+          '<span>' + breakevenAge + ' 歲前早領總額多 ｜ 之後足額領超越</span>' +
+        '</div>' +
+        '<div style="font-size:11px; color:var(--label-tertiary); margin-top:6px; line-height:1.4;">' +
+          'ⓘ 勞保享有法定通膨調整（累計 CPI 達 5% 同步調升給付），能有效抗衡長線物價侵蝕。' +
+        '</div>' +
+      '</div>';
     }
 
     // ════════════════════════════
@@ -1990,8 +2025,21 @@
         '<td>' + (isOk ? '<span style="color:var(--system-green-dark); font-weight:700;">完全達標</span>' : fmtMoney(gap)) + '</td>' +
       '</tr>';
     }).join('');
-  }
 
+    // 渲染：報酬順序風險 (SORR) 防禦指標
+    const sorrEl = $('boxSorrMeter');
+    if (sorrEl) {
+      sorrEl.innerHTML =
+        '<div style="display:flex; justify-content:space-between; align-items:center;">' +
+          '<span style="font-weight:600; color:var(--label-primary);">開局報酬順序風險 (SORR) 防禦力</span>' +
+          '<span style="font-size:11px; font-weight:700; padding:2px 8px; border-radius:99px; background:' + sorrBg + '; color:' + sorrColor + ';">' + sorrBadge + '</span>' +
+        '</div>' +
+        '<div style="font-size:11px; color:var(--label-secondary); margin-top:4px; line-height:1.4;">' +
+          '終身固定年金涵蓋基礎生活費達 <strong>' + (sorrCoverage * 100).toFixed(0) + '%</strong>。' +
+          (sorrCoverage >= 0.5 ? '即使退休首年遭遇大盤回撤 20%～30%，核心生活依然安全，不被迫在低檔拋售股票。' : '非股票現金流佔比較低，建議在資產中常備 1～2 年定存生活預備金以抵禦開局大跌。') +
+        '</div>';
+    }
+  }
   // 初始化預設值
   function applyPreset() {
     clearLocalState();
