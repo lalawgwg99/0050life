@@ -976,6 +976,10 @@
         </p>
       </div>
       <div class="header-actions">
+        <a href="blog/" class="btn-action-outline" title="閱讀退職精算研究專欄與指南">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          退職研究專欄
+        </a>
         <button class="btn-action-outline" onclick="exportPlanPDF()" title="以系統乾淨排版列印或存為 PDF 規劃書">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
           匯出 PDF 報告
@@ -2400,6 +2404,36 @@
     calculate(true);
   }
 
+
+  // 支援 URL 參數一鍵載入（供 Blog 專欄一鍵連動試算）
+  function loadFromUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    let updated = false;
+    params.forEach((val, key) => {
+      const el = $(key);
+      if (el) {
+        el.value = val;
+        updated = true;
+      }
+    });
+    if (params.get('withdrawalMode')) {
+      setWithdrawalMode(params.get('withdrawalMode'));
+      updated = true;
+    }
+    if (params.get('portfolioPreset')) {
+      const preset = params.get('portfolioPreset');
+      if ($('portfolioPreset')) {
+        $('portfolioPreset').value = preset;
+        applyPortfolioPreset();
+        updated = true;
+      }
+    }
+    if (updated) {
+      syncFromBirthYear();
+      calculate(false);
+    }
+  }
+
   // 初始化：優先載入本地已存設定，無暫存才套用預設
   syncFromBirthYear();
   if (!loadStateFromLocal()) {
@@ -2409,6 +2443,8 @@
     syncFromBirthYear();
     calculate(true);
   }
+  // 若 URL 帶有特定試算參數（來自專欄），覆蓋並即時試算
+  loadFromUrlParams();
 
   // 頁面初始化：手機端強制單欄 Tab
   if (window.innerWidth <= 960) {

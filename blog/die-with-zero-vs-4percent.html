@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4% 永續留本 vs 85歲平滑花光：為什麼不留遺產能少存 35%？ | 0050life</title>
+  <meta name="description" content="深入拆解美股 FIRE 4% SWR 永續法則與怪老子年金現值 (PV) 平滑消耗模型。對於不打算留遺產的退休者，精算如何大幅降低目標自備款門檻。">
+  <link rel="canonical" href="https://0050life.pages.dev/blog/die-with-zero-vs-4percent.html">
+  <meta property="og:title" content="4% 永續留本 vs 85歲平滑花光：為什麼不留遺產能少存 35%？">
+  <meta property="og:description" content="解析 Trinity Study 與怪老子實質年金模型，告訴你為什麼 Die with Zero 哲學能讓你提前 5 年安心退休。">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://0050life.pages.dev/blog/die-with-zero-vs-4percent.html">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "4% 永續留本 vs 85歲平滑花光：為什麼不留遺產能少存 35%？",
+    "author": { "@type": "Organization", "name": "0050life 退休規劃研究室" },
+    "datePublished": "2026-09-14",
+    "publisher": { "@type": "Organization", "name": "0050life" }
+  }
+  </script>
+  <style>
+
+    :root {
+      --bg: #fbfbfd;
+      --card-bg: #ffffff;
+      --label-primary: #1d1d1f;
+      --label-secondary: #515154;
+      --label-tertiary: #86868b;
+      --accent: #0071e3;
+      --accent-hover: #0077ed;
+      --accent-tint: rgba(0, 113, 227, 0.08);
+      --system-green: #34c759;
+      --system-green-dark: #1b8739;
+      --system-green-tint: rgba(52, 199, 89, 0.12);
+      --system-orange: #ff9500;
+      --system-orange-tint: rgba(255, 149, 0, 0.12);
+      --separator: rgba(0, 0, 0, 0.08);
+      --separator-strong: rgba(0, 0, 0, 0.16);
+      --font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "PingFang TC", "Helvetica Neue", sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--label-primary);
+      font-family: var(--font-family);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.8;
+      font-size: 16px;
+    }
+    a { color: inherit; text-decoration: none; }
+    
+    /* Top Apple Glass Navbar */
+    .site-nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(251, 251, 253, 0.85);
+      backdrop-filter: saturate(180%) blur(20px);
+      -webkit-backdrop-filter: saturate(180%) blur(20px);
+      border-bottom: 1px solid var(--separator);
+      height: 52px;
+      display: flex;
+      align-items: center;
+    }
+    .nav-inner {
+      max-width: 980px;
+      margin: 0 auto;
+      width: 100%;
+      padding: 0 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--label-primary);
+      letter-spacing: -0.01em;
+    }
+    .nav-brand-badge {
+      font-size: 11px;
+      padding: 2px 7px;
+      border-radius: 6px;
+      background: var(--separator);
+      color: var(--label-secondary);
+      font-weight: 500;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13px;
+    }
+    .nav-btn-back {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      color: var(--accent);
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 99px;
+      background: var(--accent-tint);
+      transition: background 0.15s;
+    }
+    .nav-btn-back:hover {
+      background: rgba(0, 113, 227, 0.14);
+    }
+
+    /* Container */
+    .article-wrap {
+      max-width: 720px;
+      margin: 48px auto 96px;
+      padding: 0 24px;
+    }
+    
+    /* Header */
+    .article-header {
+      margin-bottom: 40px;
+    }
+    .category-pill {
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      background: var(--accent-tint);
+      padding: 3px 10px;
+      border-radius: 6px;
+      margin-bottom: 14px;
+      letter-spacing: 0.02em;
+    }
+    .article-title {
+      font-size: 34px;
+      font-weight: 750;
+      line-height: 1.25;
+      letter-spacing: -0.025em;
+      margin-bottom: 14px;
+      color: var(--label-primary);
+    }
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 13px;
+      color: var(--label-tertiary);
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--separator);
+    }
+    .article-meta-dot { font-size: 10px; }
+
+    /* Prose */
+    .prose h2 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 42px 0 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--separator);
+      color: var(--label-primary);
+    }
+    .prose h3 {
+      font-size: 17px;
+      font-weight: 650;
+      letter-spacing: -0.01em;
+      margin: 28px 0 10px;
+      color: var(--label-primary);
+    }
+    .prose p {
+      margin-bottom: 20px;
+      color: #333336;
+      font-size: 16.5px;
+    }
+    .prose strong {
+      color: var(--label-primary);
+      font-weight: 650;
+    }
+    .prose ul, .prose ol {
+      margin: 0 0 24px 20px;
+      color: #333336;
+    }
+    .prose li {
+      margin-bottom: 8px;
+      padding-left: 4px;
+    }
+
+    /* Apple Callout Box */
+    .callout-box {
+      background: #ffffff;
+      border: 1px solid var(--separator);
+      border-left: 4px solid var(--accent);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin: 28px 0;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+    .callout-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .callout-body {
+      font-size: 14px;
+      color: var(--label-secondary);
+      line-height: 1.65;
+    }
+
+    /* Calculation Table */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0 28px;
+      background: #fff;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--separator);
+      font-size: 14px;
+    }
+    .data-table th {
+      background: #f5f5f7;
+      padding: 10px 14px;
+      font-weight: 650;
+      text-align: left;
+      color: var(--label-primary);
+      border-bottom: 1px solid var(--separator);
+    }
+    .data-table td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--separator);
+      color: #333336;
+    }
+    .data-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    /* Simulation Action Card */
+    .cta-card {
+      background: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+      border: 1.5px solid rgba(0, 113, 227, 0.2);
+      border-radius: 16px;
+      padding: 28px 24px;
+      margin: 48px 0 32px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0, 113, 227, 0.06);
+    }
+    .cta-badge {
+      display: inline-block;
+      font-size: 11.5px;
+      font-weight: 700;
+      color: var(--accent);
+      background: var(--accent-tint);
+      padding: 3px 10px;
+      border-radius: 99px;
+      margin-bottom: 10px;
+    }
+    .cta-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--label-primary);
+      margin-bottom: 8px;
+    }
+    .cta-desc {
+      font-size: 14px;
+      color: var(--label-secondary);
+      max-width: 520px;
+      margin: 0 auto 20px;
+      line-height: 1.6;
+    }
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: var(--accent);
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 650;
+      padding: 12px 28px;
+      border-radius: 12px;
+      transition: all 0.15s ease;
+      box-shadow: 0 2px 8px rgba(0, 113, 227, 0.25);
+    }
+    .cta-btn:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    /* Footer */
+    .site-footer {
+      border-top: 1px solid var(--separator);
+      padding: 36px 20px;
+      text-align: center;
+      font-size: 12.5px;
+      color: var(--label-tertiary);
+    }
+
+    @media (max-width: 640px) {
+      .article-title { font-size: 26px; }
+      .article-wrap { margin-top: 28px; }
+      .data-table { font-size: 13px; }
+    }
+
+  </style>
+</head>
+<body>
+
+  <header class="site-nav">
+    <div class="nav-inner">
+      <a href="index.html" class="nav-brand">
+        <span>0050life</span>
+        <span class="nav-brand-badge">退職研究專欄</span>
+      </a>
+      <div class="nav-links">
+        <a href="../index.html" class="nav-btn-back">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          進入精算機試算
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <article class="article-wrap">
+    <header class="article-header">
+      <span class="category-pill">提領模型 · 財務精算現值</span>
+      <h1 class="article-title">4% 永續留本 vs 85 歲平滑花光（Die with Zero）：為什麼不留遺產可以少存 35%？</h1>
+      <div class="article-meta">
+        <span>0050life 顧問團隊</span>
+        <span class="article-meta-dot">·</span>
+        <span>閱讀時間約 6 分鐘</span>
+        <span class="article-meta-dot">·</span>
+        <span>怪老子年金模型解析</span>
+      </div>
+    </header>
+
+    <div class="prose">
+      <p>
+        在談到退休規劃時，美股社群盛行的 <strong>4% 安全提領率（4% Rule / Trinity Study）</strong>幾乎被奉為唯一的真理：「只要準備 25 倍的年開銷，每年提取 4%，本金永遠花不完，資產還會持續長大。」
+      </p>
+      <p>
+        然而，當你把這個公式套用在台灣的一般上班族身上時，經常會得到一個令人望而卻步的天文數字：<strong>「你需要準備 2,200 萬」</strong>。這讓許多在 35～50 歲認真打拚的小資族陷入深深的財務焦慮，甚至直接放棄規劃。
+      </p>
+      <p>
+        但你是否曾停下來思考過一個根本問題：<strong>「我真的有義務把一整筆龐大的股票本金，原封不動留進棺材、留給下一代嗎？」</strong>
+      </p>
+
+      <h2>一、 兩種截然不同的退休哲學</h2>
+
+      <h3>哲學 A：4% 永續留本（美股 FIRE / 家族傳承模式）</h3>
+      <ul>
+        <li><strong>核心假設</strong>：提領年限趨近於無限大（永續年金）。</li>
+        <li><strong>本金狀態</strong>：資產只花配息與微量再平衡，本金完全不被消耗，死後留給子女或慈善機構。</li>
+        <li><strong>代價</strong>：所需準備的啟動本金最龐大，退休門檻極高。</li>
+      </ul>
+
+      <h3>哲學 B：平滑享老（怪老子 PV 模型 / Die with Zero 死前花光）</h3>
+      <ul>
+        <li><strong>核心假設</strong>：以預期壽命（如 85 歲）為規劃終點。</li>
+        <li><strong>本金狀態</strong>：股票資產在退休後隨年限<strong>「邊產生投資收益、邊平滑吃掉本金」</strong>，直到壽命終點那一刻剛好歸零。</li>
+        <li><strong>優勢</strong>：所需自備本金<strong>大幅降低 30%～40%</strong>，讓你可以提早 5 到 8 年從容退休！</li>
+      </ul>
+
+      <div class="callout-box">
+        <div class="callout-title">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          怪老子實質年金精算公式（Real Annuity PV）
+        </div>
+        <div class="callout-body">
+          考慮實質月報酬率（大盤淨報酬扣除通膨率 r_m）：<br>
+          <strong>PV = 每月淨缺口 × [1 − (1 + r_m)^(−期數)] ÷ r_m</strong><br>
+          這公式的威力在於：放在 0050/VOO 的錢每個月仍在賺取市場報酬，所以你根本不需要在退休當天準備全部的總開銷！
+        </div>
+      </div>
+
+      <h2>二、 真實數值對比：差距竟然高達數百萬！</h2>
+      <p>
+        假設 65 歲退休，每月在扣除勞保年金後，<strong>自有股票需要每個月補貼 25,000 元</strong>的生活費：
+      </p>
+
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>規劃模型</th>
+            <th>年限設定</th>
+            <th>所需自備本金</th>
+            <th>門檻差距</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>4% 永續模式</strong>（本金不減）</td>
+            <td>永續傳承（無限期）</td>
+            <td><strong>750 萬元</strong></td>
+            <td>基準對照線</td>
+          </tr>
+          <tr>
+            <td><strong>平滑享老至 90 歲</strong>（長壽安全）</td>
+            <td>支撐 25 年</td>
+            <td><strong>462 萬元</strong></td>
+            <td><strong style="color:var(--system-green-dark);">直接省下 288 萬 (-38%)</strong></td>
+          </tr>
+          <tr>
+            <td><strong>平滑享老至 85 歲</strong>（台灣均壽）</td>
+            <td>支撐 20 年</td>
+            <td><strong>395 萬元</strong></td>
+            <td><strong style="color:var(--system-green-dark);">直接省下 355 萬 (-47%)</strong></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <p>
+        看見差距了嗎？如果你本來就沒有要留遺產給他人，採用怪老子平滑消耗模型，你只需要 <strong>395 萬</strong> 的指數資產，就能享受到與準備 <strong>750 萬</strong> 完全一模一樣的生活品質！
+      </p>
+
+      <h2>三、 怪老子 NPER 反推：現有資產到底能撐到幾歲？</h2>
+      <p>
+        在我們的系統中，引進了怪老子著名的 <strong>NPER（期數反推）精算</strong>。很多使用者目前只有 500 萬股票，在 4% SWR 看到「缺口 250 萬」感到很沮喪；但 NPER 精算會告訴你：
+      </p>
+      <p>
+        <em>「以您目前的 500 萬股票，加上終身勞保年金，平滑提領足夠讓你安心花到 <strong>96 歲</strong>！」</em>
+      </p>
+      <p>
+        這個指標的核心價值在於：<strong>它把抽象的「缺口數字」，轉化為直觀的「壽命安全感」</strong>。
+      </p>
+    </div>
+
+    <!-- 行動呼籲卡片 -->
+    <div class="cta-card">
+      <span class="cta-badge">INTERACTIVE SIMULATOR</span>
+      <h3 class="cta-title">切換「平滑享老模式」實測您的退休金</h3>
+      <p class="cta-desc">
+        在精算機中切換 4% 永續與平滑享老雙模型，即時查看您的自備款缺口變化與資產支援壽命年限。
+      </p>
+      <a href="../index.html?withdrawalMode=deplete&lifeExpectancy=85" class="cta-btn">
+        <span>一鍵帶入平滑享老（至85歲）試算</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
+      </a>
+    </div>
+  </article>
+
+  <footer class="site-footer">
+    <p>0050life 退休規劃研究室 · 財務年金現值公式遵循 CFA / 國際財務策劃師精算準則</p>
+  </footer>
+
+</body>
+</html>
