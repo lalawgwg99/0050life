@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>退休準備三支柱精算系統</title>
+  <title>0050 Life 退休領航系統 ｜ FIRE 與終局現金流精算儀</title>
   <style>
     :root {
       --system-bg: #f0f2f5;
@@ -1527,235 +1527,388 @@
     }
 
 
-    /* PDF Export Print Styles */
-    @media print {
-      body { background: #fff !important; color: #000 !important; }
-      .container { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
-      header .header-row { border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px; }
-      .header-desc, .header-actions, .mobile-nav-segmented, .mobile-floating-bar, .inspector-sticky { display: none !important; }
-      .layout-grid { display: block !important; }
-      #asideContent { display: none !important; }
-      #mainContent { width: 100% !important; }
-      .hero-summary { box-shadow: none !important; border: 1px solid #ccc !important; page-break-inside: avoid; }
-      .triad-grid { display: flex !important; page-break-inside: avoid; }
-      .triad-cell { border: 1px solid #ccc !important; flex: 1; margin: 0 5px; }
-      .cashflow-box { page-break-inside: avoid; }
-      .system-callout { border: 1px solid #aaa !important; background: #fff !important; color: #000 !important; }
-      .cashflow-phase-card { border: 1px solid #aaa !important; background: #fff !important; break-inside: avoid; margin-bottom: 15px; }
-      .cashflow-row-name, .cashflow-row-val { color: #000 !important; }
-      
-      /* Water fall specific print styles */
-      .waterfall-container { flex-direction: column !important; }
-      .waterfall-phase {
-      background: #F9FAFB !important;
-      border: none !important;
-      box-shadow: none !important;
-      border-radius: 20px !important;
-      padding: 24px !important;
-    }
-    }
-    
-  
-    /* Apple Native Slider */
-    .apple-slider {
-      -webkit-appearance: none;
-      width: 100%;
-      height: 6px;
-      background: var(--separator);
-      border-radius: 4px;
-      outline: none;
-      margin-top: 14px;
-      margin-bottom: 4px;
-    }
-    .apple-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      background: #fff;
-      border: 1px solid rgba(0,0,0,0.1);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      cursor: pointer;
-      transition: transform 0.1s;
-    }
-    .apple-slider::-webkit-slider-thumb:active {
-      transform: scale(1.1);
-    }
-    
-  
-    /* =========================================
-       PREMIUM PAID APP UI UPGRADE
-       ========================================= */
+    /* =======================================================
+       0050 Life 退休領航系統 - Apple Pro Native Design System
+       ======================================================= */
     :root {
-      --body-bg: #F2F2F7;
+      --body-bg: #F8FAFC;
       --card-bg: #FFFFFF;
-      --label-primary: #1C1C1E;
-      --label-secondary: #8E8E93;
-      --label-tertiary: #C7C7CC;
-      --accent: #007AFF; 
-      --accent-hover: #0056B3;
-      --accent-tint: rgba(0, 122, 255, 0.1);
-      --accent-gradient: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
-      --system-green: #34C759;
-      --system-green-tint: rgba(52, 199, 89, 0.15);
-      --system-green-dark: #248A3D;
-      --system-red: #FF3B30;
-      --system-red-tint: rgba(255, 59, 48, 0.15);
-      --system-red-dark: #C93400;
-      --system-orange: #FF9500;
-      --system-orange-tint: rgba(255, 149, 0, 0.15);
-      --card-radius: 20px;
-      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.06);
-      --shadow-hero: 0 12px 32px rgba(0, 122, 255, 0.08);
+      --label-primary: #0F172A;
+      --label-secondary: #475569;
+      --label-tertiary: #64748B;
+      --accent: #0284C7;
+      --accent-hover: #0369A1;
+      --accent-tint: rgba(2, 132, 199, 0.10);
+      --accent-gradient: linear-gradient(135deg, #0284C7 0%, #2563EB 100%);
+      --system-green: #10B981;
+      --system-green-tint: rgba(16, 185, 129, 0.12);
+      --system-green-dark: #047857;
+      --system-red: #EF4444;
+      --system-red-tint: rgba(239, 68, 68, 0.10);
+      --system-red-dark: #B91C1C;
+      --system-orange: #F59E0B;
+      --system-orange-tint: rgba(245, 158, 11, 0.12);
+      --card-radius: 18px;
+      --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 12px rgba(15, 23, 42, 0.03);
+      --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 12px 28px -4px rgba(15, 23, 42, 0.07);
+      --shadow-hero: 0 10px 30px rgba(2, 132, 199, 0.09), 0 2px 8px rgba(15, 23, 42, 0.04);
     }
-    
+
     body {
       background-color: var(--body-bg) !important;
-      background-image: linear-gradient(180deg, rgba(0, 122, 255, 0.06) 0%, #F2F2F7 500px) !important;
+      background-image: 
+        radial-gradient(at 10% 0%, rgba(2, 132, 199, 0.07) 0px, transparent 50%),
+        radial-gradient(at 90% 0%, rgba(37, 99, 235, 0.05) 0px, transparent 50%),
+        linear-gradient(180deg, #EDF4FA 0%, #F8FAFC 380px) !important;
       background-repeat: no-repeat !important;
       background-attachment: fixed !important;
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif !important;
+      color: var(--label-primary) !important;
     }
-    
-    /* 1. App-like Header (Fix weird white box) */
-    header {
-      background: transparent !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-      border-bottom: none !important;
-      margin-bottom: 12px !important;
+
+    /* 頂部 Header 重構 */
+    .app-header {
+      margin-bottom: 28px;
     }
-    .header-title { font-weight: 800 !important; letter-spacing: -0.5px !important; color: #1C1C1E !important; }
-    
-    /* 2. Premium Cards */
+    .header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 24px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+    }
+    .brand-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+    .brand-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.12) 0%, rgba(37, 99, 235, 0.10) 100%);
+      color: #0284C7;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      padding: 4px 12px;
+      border-radius: 100px;
+      border: 1px solid rgba(2, 132, 199, 0.18);
+    }
+    .brand-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #0284C7;
+      box-shadow: 0 0 6px #0284C7;
+    }
+    .brand-tag {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--label-tertiary);
+    }
+    .header-title {
+      font-size: clamp(26px, 3.2vw, 34px) !important;
+      font-weight: 800 !important;
+      letter-spacing: -0.8px !important;
+      color: #0F172A !important;
+      margin: 0 0 6px 0 !important;
+    }
+    .header-desc {
+      font-size: 14.5px !important;
+      color: #64748B !important;
+      max-width: 680px !important;
+      line-height: 1.55 !important;
+      margin: 0 !important;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+    .btn-action-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: 100px;
+      border: 1px solid #CBD5E1;
+      background: #FFFFFF;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+      transition: all 0.2s ease;
+    }
+    .btn-action-outline:hover {
+      border-color: #0284C7;
+      color: #0284C7;
+      background: rgba(2, 132, 199, 0.04);
+      transform: translateY(-1px);
+    }
+    .btn-reset {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid #CBD5E1;
+      background: #FFFFFF;
+      color: #64748B;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+      transition: all 0.2s ease;
+    }
+    .btn-reset:hover {
+      border-color: #EF4444;
+      color: #EF4444;
+      background: rgba(239, 68, 68, 0.04);
+      transform: translateY(-1px);
+    }
+
+    /* 手機端 Header 適配 */
+    @media (max-width: 768px) {
+      .app-header {
+        margin-bottom: 16px;
+      }
+      .header-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+        padding-bottom: 14px;
+      }
+      .header-actions {
+        display: flex;
+        justify-content: flex-start;
+        gap: 8px;
+        width: 100%;
+      }
+      .btn-action-text {
+        font-size: 12px;
+      }
+    }
+
+    /* 卡片設計：溫潤有層次，告別灰白無趣 */
     .apple-card {
-      border: none !important;
+      background: #FFFFFF !important;
       border-radius: var(--card-radius) !important;
+      border: 1px solid rgba(226, 232, 240, 0.9) !important;
       box-shadow: var(--shadow-sm) !important;
       padding: 24px !important;
-      transition: transform 0.2s, box-shadow 0.2s !important;
-      background: #FFFFFF !important;
-    }
-    .apple-card:hover {
-      box-shadow: var(--shadow-md) !important;
+      margin-bottom: 20px !important;
+      transition: box-shadow 0.2s ease;
     }
     .card-title {
+      font-size: 18px !important;
       font-weight: 700 !important;
-      font-size: 19px !important;
-      letter-spacing: -0.4px !important;
-      color: #1C1C1E !important;
+      color: #0F172A !important;
+      letter-spacing: -0.3px !important;
+      margin-bottom: 6px !important;
     }
-    
-    /* 3. iOS Inputs */
+    .card-subtitle {
+      color: #64748B !important;
+      font-size: 13.5px !important;
+      line-height: 1.5 !important;
+    }
+
+    /* 表單輸入框：清晰高對比，白色底 + 柔和灰線，聚焦湛藍 */
     .apple-input, .apple-select {
-      background: #F2F2F7 !important;
-      border: none !important;
+      background: #FFFFFF !important;
+      border: 1.5px solid #CBD5E1 !important;
       border-radius: 12px !important;
-      font-size: 17px !important;
+      font-size: 16px !important;
       font-weight: 600 !important;
-      padding: 12px 16px !important;
-      color: var(--accent-hover) !important;
+      padding: 11px 14px !important;
+      color: #0F172A !important;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03) !important;
+      transition: all 0.15s ease !important;
     }
     .apple-input:focus, .apple-select:focus {
+      border-color: #0284C7 !important;
+      box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.18) !important;
+      outline: none !important;
+    }
+
+    /* 快捷晶片按鈕：靈活精緻 */
+    .chip-btn {
+      background: #F1F5F9;
+      border: 1px solid #E2E8F0;
+      color: #475569;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 5px 10px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .chip-btn:hover {
+      background: rgba(2, 132, 199, 0.10);
+      border-color: #0284C7;
+      color: #0284C7;
+    }
+
+    /* 儀表板 Hero 卡片：高雅湛藍漸層與權威感 */
+    .hero-summary {
+      background: linear-gradient(180deg, #FFFFFF 0%, #F0F9FF 100%) !important;
+      border-radius: 20px !important;
+      border: 1px solid rgba(2, 132, 199, 0.18) !important;
+      border-top: 4px solid #0284C7 !important;
+      box-shadow: var(--shadow-hero) !important;
+      padding: 24px !important;
+      position: relative !important;
+    }
+    .hero-summary .card-title {
+      font-size: 14px !important;
+      font-weight: 700 !important;
+      color: #64748B !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.5px !important;
+    }
+    .hero-summary .hero-metric, .hero-metric {
+      font-family: ui-rounded, -apple-system, "SF Pro Rounded", sans-serif !important;
+      font-size: clamp(38px, 4vw, 50px) !important;
+      font-weight: 850 !important;
+      letter-spacing: -1.2px !important;
+      color: #0284C7 !important;
+      margin: 10px 0 !important;
+      text-shadow: none !important;
+    }
+    .hero-summary .hero-subtitle {
+      font-size: 13px !important;
+      color: #64748B !important;
+    }
+    .hero-pill {
+      font-size: 12px !important;
+      font-weight: 700 !important;
+      padding: 4px 10px !important;
+      border-radius: 100px !important;
+      background: rgba(245, 158, 11, 0.14) !important;
+      color: #B45309 !important;
+    }
+    .hero-pill.success {
+      background: rgba(16, 185, 129, 0.14) !important;
+      color: #047857 !important;
+    }
+
+    /* 三欄資產卡：色彩識別度分明 */
+    .triad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .triad-cell {
+      padding: 14px 12px;
+      border-radius: 14px;
+      text-align: center;
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.02);
+    }
+    .triad-cell:nth-child(1) {
+      background: #F8FAFC;
+    }
+    .triad-cell:nth-child(2) {
+      background: rgba(2, 132, 199, 0.05);
+      border-color: rgba(2, 132, 199, 0.15);
+    }
+    .triad-cell:nth-child(3) {
+      background: rgba(16, 185, 129, 0.05);
+      border-color: rgba(16, 185, 129, 0.15);
+    }
+    .triad-cell .stat-label {
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #64748B;
+      margin-bottom: 4px;
+    }
+    .triad-cell .stat-val {
+      font-family: ui-rounded, -apple-system, "SF Pro Rounded", sans-serif;
+      font-size: 16px;
+      font-weight: 800;
+      color: #0F172A;
+    }
+    .triad-cell:nth-child(2) .stat-val {
+      color: #0284C7;
+    }
+    .triad-cell:nth-child(3) .stat-val {
+      color: #059669;
+    }
+
+    /* 滑桿升級：蘋果藍滑塊 */
+    .apple-slider {
+      -webkit-appearance: none !important;
+      width: 100% !important;
+      height: 6px !important;
+      background: #E2E8F0 !important;
+      border-radius: 4px !important;
+      outline: none !important;
+      margin: 14px 0 6px 0 !important;
+    }
+    .apple-slider::-webkit-slider-thumb {
+      -webkit-appearance: none !important;
+      appearance: none !important;
+      width: 24px !important;
+      height: 24px !important;
+      border-radius: 50% !important;
       background: #FFFFFF !important;
-      border-color: var(--accent) !important;
-      box-shadow: 0 0 0 3px var(--accent-tint) !important;
+      border: 2px solid #0284C7 !important;
+      box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3) !important;
+      cursor: pointer !important;
+      transition: transform 0.1s !important;
     }
-    .field-cell {
-      border: none !important;
-      background: transparent !important;
-      padding: 12px 0 !important;
+    .apple-slider::-webkit-slider-thumb:active {
+      transform: scale(1.15) !important;
     }
-    
-    /* 4. Segmented Control */
+
+    /* 瀑布流階段卡 */
+    .waterfall-phase {
+      background: #FFFFFF !important;
+      border-radius: 16px !important;
+      padding: 20px !important;
+      border: 1px solid rgba(226, 232, 240, 0.9) !important;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03) !important;
+    }
+
+    /* 分段切換器 */
     .apple-segmented-control {
-      background: #E5E5EA !important;
-      border-radius: 9px !important;
-      padding: 2px !important;
-      border: none !important;
+      background: #E2E8F0 !important;
+      border-radius: 10px !important;
+      padding: 3px !important;
     }
     .seg-btn {
-      color: #8E8E93 !important;
+      color: #64748B !important;
       font-weight: 600 !important;
-      border-radius: 7px !important;
-      font-size: 14px !important;
-      padding: 6px 12px !important;
+      border-radius: 8px !important;
+      font-size: 13.5px !important;
+      padding: 7px 12px !important;
+      border: none !important;
+      background: transparent !important;
+      transition: all 0.15s ease !important;
     }
     .seg-btn.active {
       background: #FFFFFF !important;
-      color: var(--accent) !important;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.12), 0 3px 1px rgba(0,0,0,0.04) !important;
+      color: #0284C7 !important;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08) !important;
     }
-    
-    /* 5. The Hero Dashboard (Ultra-Clean Apple Style) */
-    .hero-summary {
-      background: linear-gradient(135deg, #FFFFFF 0%, #F5F9FF 100%) !important;
-      border: none !important;
-      box-shadow: var(--shadow-hero) !important;
-      color: var(--label-primary) !important;
-      border-radius: 24px !important;
-    }
-    .hero-summary .card-title,
-    .hero-summary .stat-label {
-      color: var(--label-secondary) !important;
-    }
-    .hero-summary .card-subtitle {
-      color: var(--label-tertiary) !important;
-    }
-    .hero-summary .stat-val {
-      color: var(--label-primary) !important;
-    }
-    .hero-summary .hero-metric, .hero-metric {
-      color: var(--accent-hover) !important;
-      font-family: ui-rounded, -apple-system, "SF Pro Rounded", sans-serif !important;
-      font-weight: 800 !important;
-      text-shadow: none !important;
-    }
-    .hero-summary .progress-track {
-      background: rgba(0, 0, 0, 0.05) !important;
-    }
-    .hero-summary .progress-fill {
-      background: var(--accent-gradient) !important;
-      box-shadow: none !important;
-    }
-    
-    /* 6. Refined Sliders */
-    .apple-slider {
-      height: 8px !important;
-      background: #E5E5EA !important;
-      border-radius: 4px !important;
-    }
-    .apple-slider::-webkit-slider-thumb {
-      width: 28px !important;
-      height: 28px !important;
-      background: #FFFFFF !important;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.1) !important;
-    }
-    
-    /* 7. Beautiful Waterfall Chart */
-    .waterfall-phase {
-      background: #F9FAFB !important;
-      border: none !important;
-      box-shadow: none !important;
-      border-radius: 20px !important;
-      padding: 24px !important;
-    }
-    .cashflow-row-val {
-      font-family: ui-rounded, -apple-system, "SF Pro Rounded", sans-serif !important;
-    }
-    
-  
+
     /* =========================================
        ULTIMATE PRINT OVERRIDES (Must be last)
        ========================================= */
     @media print {
       body { background: #fff !important; background-image: none !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
       .container { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
-      header { background: transparent !important; border: none !important; margin-bottom: 20px !important; }
-      header .header-row { border-bottom: 2px solid #000 !important; padding-bottom: 10px !important; }
+      .app-header { margin-bottom: 20px !important; }
+      .header-row { border-bottom: 2px solid #000 !important; padding-bottom: 10px !important; }
       .header-desc, .header-actions, .mobile-nav-segmented, .mobile-floating-bar, .inspector-sticky { display: none !important; }
+      .brand-pill { border: 1px solid #000 !important; color: #000 !important; background: transparent !important; }
       
       .layout-grid { display: block !important; }
       #asideContent { display: none !important; }
@@ -1774,33 +1927,47 @@
       }
       
       .triad-grid { display: flex !important; page-break-inside: avoid !important; }
-      .triad-cell { border: 1px solid #ccc !important; flex: 1 !important; margin: 0 5px !important; box-shadow: none !important; }
+      .triad-cell { border: 1px solid #ccc !important; flex: 1 !important; margin: 0 5px !important; box-shadow: none !important; background: #fff !important; }
+      .triad-cell .stat-val { color: #000 !important; }
       
       .waterfall-container { flex-direction: column !important; }
       .cashflow-row-name, .cashflow-row-val { color: #000 !important; }
       .progress-fill { background: #333 !important; }
       .progress-track { background: #eee !important; border: 1px solid #ccc !important; }
     }
-    
   </style>
 </head>
 <body>
 
 <div class="container">
   <!-- 頂部標題與工具列 -->
-  <header>
+  <header class="app-header">
     <div class="header-row">
-      <div>
-        <h1 class="header-title">退休準備三支柱精算系統</h1>
+      <div class="brand-container">
+        <div class="brand-eyebrow">
+          <span class="brand-pill">
+            <span class="brand-dot"></span>
+            0050 Life
+          </span>
+          <span class="brand-tag">FIRE 財務自由精算沙盤</span>
+        </div>
+        <h1 class="header-title">退休領航系統</h1>
         <p class="header-desc">
-          以今日實質購買力為基準，整合勞保年金、勞退新制專戶與自有投資資產，精算各階段現金流與資產缺口。
-          <a href="blog/retirement-asset-allocation-guide.html" class="apple-field-link" style="margin-left:4px; font-weight:650;">新手指南：如何開始三支柱資產配置？ ↗</a>
+          以實質購買力為基準，整合勞保年金、勞退新制與指數化資產，精算各階段現金流、通膨折算與長壽提領防線。
         </p>
       </div>
       <div class="header-actions">
-        <a href="blog/" class="btn-action-outline" title="閱讀退職精算研究專欄與指南"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"> <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></a>
-        <button class="btn-action-outline" onclick="exportPlanPDF()" title="匯出 PDF 規劃書"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"> <polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
-        <button class="btn-reset" onclick="applyPreset()" title="重置為預設值"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"> <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg></button>
+        <a href="blog/" class="btn-action-outline" title="閱讀退職精算研究專欄與指南">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+          <span class="btn-action-text">研究專欄</span>
+        </a>
+        <button class="btn-action-outline" onclick="exportPlanPDF()" title="匯出 PDF 規劃書">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+          <span class="btn-action-text">匯出 PDF</span>
+        </button>
+        <button class="btn-reset" onclick="applyPreset()" title="重置為預設值">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        </button>
       </div>
     </div>
   </header>
@@ -3805,250 +3972,17 @@
     const styleWaterfall = `
       <style>
         .waterfall-container { display: flex; gap: 16px; margin-top: 16px; }
-        .waterfall-phase {
-      background: #F9FAFB !important;
-      border: none !important;
-      box-shadow: none !important;
-      border-radius: 20px !important;
-      padding: 24px !important;
-    }
+        .waterfall-phase { flex: 1; background: #FFFFFF; border-radius: 16px; padding: 20px; border: 1px solid rgba(226, 232, 240, 0.9); box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03); display: flex; flex-direction: column; }
         .phase-header { font-size: 13.5px; font-weight: 700; color: var(--label-primary); display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
-        .phase-timeline { font-size: 11px; color: var(--label-secondary); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px dashed var(--separator); }
-        .wf-badge { font-size: 10.5px; padding: 3px 8px; border-radius: 6px; font-weight: 650; }
-        .wf-bridge { background: var(--system-orange-tint); color: #b45309; }
-        .wf-endgame { background: var(--system-green-tint); color: var(--system-green-dark); }
-        .wf-single { background: var(--system-blue-tint); color: var(--accent); }
-        .waterfall-container .cashflow-row { padding: 6px 0; font-size: 13px; }
-        .waterfall-container .final { margin-top: auto; padding-top: 12px; }
+        .phase-timeline { font-size: 11.5px; color: var(--label-secondary); margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px dashed var(--separator); line-height: 1.5; }
+        .wf-badge { font-size: 11px; padding: 4px 10px; border-radius: 6px; font-weight: 700; }
+        .wf-bridge { background: rgba(245, 158, 11, 0.12); color: #B45309; }
+        .wf-endgame { background: rgba(16, 185, 129, 0.12); color: #047857; }
+        .wf-single { background: rgba(2, 132, 199, 0.12); color: var(--accent); }
+        .waterfall-container .cashflow-row { padding: 7px 0; font-size: 13px; }
+        .waterfall-container .final { margin-top: auto; padding-top: 14px; }
         @media (max-width: 768px) { .waterfall-container { flex-direction: column; } }
-      
-    /* Apple Native Slider */
-    .apple-slider {
-      -webkit-appearance: none;
-      width: 100%;
-      height: 6px;
-      background: var(--separator);
-      border-radius: 4px;
-      outline: none;
-      margin-top: 14px;
-      margin-bottom: 4px;
-    }
-    .apple-slider::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      appearance: none;
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      background: #fff;
-      border: 1px solid rgba(0,0,0,0.1);
-      box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-      cursor: pointer;
-      transition: transform 0.1s;
-    }
-    .apple-slider::-webkit-slider-thumb:active {
-      transform: scale(1.1);
-    }
-    
-  
-    /* =========================================
-       PREMIUM PAID APP UI UPGRADE
-       ========================================= */
-    :root {
-      --body-bg: #F2F2F7;
-      --card-bg: #FFFFFF;
-      --label-primary: #1C1C1E;
-      --label-secondary: #8E8E93;
-      --label-tertiary: #C7C7CC;
-      --accent: #007AFF; 
-      --accent-hover: #0056B3;
-      --accent-tint: rgba(0, 122, 255, 0.1);
-      --accent-gradient: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
-      --system-green: #34C759;
-      --system-green-tint: rgba(52, 199, 89, 0.15);
-      --system-green-dark: #248A3D;
-      --system-red: #FF3B30;
-      --system-red-tint: rgba(255, 59, 48, 0.15);
-      --system-red-dark: #C93400;
-      --system-orange: #FF9500;
-      --system-orange-tint: rgba(255, 149, 0, 0.15);
-      --card-radius: 20px;
-      --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.04);
-      --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.06);
-      --shadow-hero: 0 12px 32px rgba(0, 122, 255, 0.08);
-    }
-    
-    body {
-      background-color: var(--body-bg) !important;
-      background-image: linear-gradient(180deg, rgba(0, 122, 255, 0.06) 0%, #F2F2F7 500px) !important;
-      background-repeat: no-repeat !important;
-      background-attachment: fixed !important;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif !important;
-    }
-    
-    /* 1. App-like Header (Fix weird white box) */
-    header {
-      background: transparent !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-      border-bottom: none !important;
-      margin-bottom: 12px !important;
-    }
-    .header-title { font-weight: 800 !important; letter-spacing: -0.5px !important; color: #1C1C1E !important; }
-    
-    /* 2. Premium Cards */
-    .apple-card {
-      border: none !important;
-      border-radius: var(--card-radius) !important;
-      box-shadow: var(--shadow-sm) !important;
-      padding: 24px !important;
-      transition: transform 0.2s, box-shadow 0.2s !important;
-      background: #FFFFFF !important;
-    }
-    .apple-card:hover {
-      box-shadow: var(--shadow-md) !important;
-    }
-    .card-title {
-      font-weight: 700 !important;
-      font-size: 19px !important;
-      letter-spacing: -0.4px !important;
-      color: #1C1C1E !important;
-    }
-    
-    /* 3. iOS Inputs */
-    .apple-input, .apple-select {
-      background: #F2F2F7 !important;
-      border: none !important;
-      border-radius: 12px !important;
-      font-size: 17px !important;
-      font-weight: 600 !important;
-      padding: 12px 16px !important;
-      color: var(--accent-hover) !important;
-    }
-    .apple-input:focus, .apple-select:focus {
-      background: #FFFFFF !important;
-      border-color: var(--accent) !important;
-      box-shadow: 0 0 0 3px var(--accent-tint) !important;
-    }
-    .field-cell {
-      border: none !important;
-      background: transparent !important;
-      padding: 12px 0 !important;
-    }
-    
-    /* 4. Segmented Control */
-    .apple-segmented-control {
-      background: #E5E5EA !important;
-      border-radius: 9px !important;
-      padding: 2px !important;
-      border: none !important;
-    }
-    .seg-btn {
-      color: #8E8E93 !important;
-      font-weight: 600 !important;
-      border-radius: 7px !important;
-      font-size: 14px !important;
-      padding: 6px 12px !important;
-    }
-    .seg-btn.active {
-      background: #FFFFFF !important;
-      color: var(--accent) !important;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.12), 0 3px 1px rgba(0,0,0,0.04) !important;
-    }
-    
-    /* 5. The Hero Dashboard (Ultra-Clean Apple Style) */
-    .hero-summary {
-      background: linear-gradient(135deg, #FFFFFF 0%, #F5F9FF 100%) !important;
-      border: none !important;
-      box-shadow: var(--shadow-hero) !important;
-      color: var(--label-primary) !important;
-      border-radius: 24px !important;
-    }
-    .hero-summary .card-title,
-    .hero-summary .stat-label {
-      color: var(--label-secondary) !important;
-    }
-    .hero-summary .card-subtitle {
-      color: var(--label-tertiary) !important;
-    }
-    .hero-summary .stat-val {
-      color: var(--label-primary) !important;
-    }
-    .hero-summary .hero-metric, .hero-metric {
-      color: var(--accent-hover) !important;
-      font-family: ui-rounded, -apple-system, "SF Pro Rounded", sans-serif !important;
-      font-weight: 800 !important;
-      text-shadow: none !important;
-    }
-    .hero-summary .progress-track {
-      background: rgba(0, 0, 0, 0.05) !important;
-    }
-    .hero-summary .progress-fill {
-      background: var(--accent-gradient) !important;
-      box-shadow: none !important;
-    }
-    
-    /* 6. Refined Sliders */
-    .apple-slider {
-      height: 8px !important;
-      background: #E5E5EA !important;
-      border-radius: 4px !important;
-    }
-    .apple-slider::-webkit-slider-thumb {
-      width: 28px !important;
-      height: 28px !important;
-      background: #FFFFFF !important;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.1) !important;
-    }
-    
-    /* 7. Beautiful Waterfall Chart */
-    .waterfall-phase {
-      background: #F9FAFB !important;
-      border: none !important;
-      box-shadow: none !important;
-      border-radius: 20px !important;
-      padding: 24px !important;
-    }
-    .cashflow-row-val {
-      font-family: ui-rounded, -apple-system, "SF Pro Rounded", sans-serif !important;
-    }
-    
-  
-    /* =========================================
-       ULTIMATE PRINT OVERRIDES (Must be last)
-       ========================================= */
-    @media print {
-      body { background: #fff !important; background-image: none !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .container { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
-      header { background: transparent !important; border: none !important; margin-bottom: 20px !important; }
-      header .header-row { border-bottom: 2px solid #000 !important; padding-bottom: 10px !important; }
-      .header-desc, .header-actions, .mobile-nav-segmented, .mobile-floating-bar, .inspector-sticky { display: none !important; }
-      
-      .layout-grid { display: block !important; }
-      #asideContent { display: none !important; }
-      #mainContent { width: 100% !important; }
-      
-      .apple-card, .hero-summary, .waterfall-phase, .system-callout {
-        box-shadow: none !important;
-        border: 1px solid #ccc !important;
-        background: #fff !important;
-        page-break-inside: avoid !important;
-        border-radius: 8px !important;
-      }
-      
-      .hero-summary .card-title, .hero-summary .stat-label, .hero-summary .stat-val, .hero-metric, .card-title, .card-subtitle {
-        color: #000 !important;
-      }
-      
-      .triad-grid { display: flex !important; page-break-inside: avoid !important; }
-      .triad-cell { border: 1px solid #ccc !important; flex: 1 !important; margin: 0 5px !important; box-shadow: none !important; }
-      
-      .waterfall-container { flex-direction: column !important; }
-      .cashflow-row-name, .cashflow-row-val { color: #000 !important; }
-      .progress-fill { background: #333 !important; }
-      .progress-track { background: #eee !important; border: 1px solid #ccc !important; }
-    }
-    
-  </style>
+      </style>
     `;
 
     if (R.hasBridgePeriod) {
