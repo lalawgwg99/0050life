@@ -1,5 +1,22 @@
 export type PensionMode = "lump" | "monthly";
 export type LaborIndexation = "threshold" | "none";
+export type RetirementAllocation = "steady" | "balanced" | "growth" | "custom";
+export type FutureYearsMode = "until-retirement" | "custom";
+
+export interface InvestmentHolding {
+  id: string;
+  name: string;
+  valueNow: number;
+  monthlyContributionToday: number;
+  grossReturnRate: number;
+  feeRate: number;
+}
+
+export interface InvestmentHoldingProjection {
+  id: string;
+  name: string;
+  projectedValueNominal: number;
+}
 
 export interface PlanningInput {
   asOf: { year: number; month: number };
@@ -18,15 +35,23 @@ export interface PlanningInput {
   laborInsurance: {
     insuredYearsNow: number;
     insuredYearsFuture: number;
+    futureYearsMode: FutureYearsMode;
     averageSalaryToday: number;
     salaryGrowthRate: number;
     claimAge: number;
+    indexation: LaborIndexation;
+  };
+  nationalPension: {
+    enabled: boolean;
+    insuredYears: number;
+    aFormulaEligible: boolean;
     indexation: LaborIndexation;
   };
   laborPension: {
     balanceNow: number;
     seniorityYearsNow: number;
     seniorityYearsFuture: number;
+    futureYearsMode: FutureYearsMode;
     monthlyWageToday: number;
     wageGrowthRate: number;
     employerRate: number;
@@ -36,13 +61,14 @@ export interface PlanningInput {
     mode: PensionMode;
   };
   investment: {
-    assetsNow: number;
-    monthlyContributionToday: number;
+    holdings: InvestmentHolding[];
     contributionGrowthRate: number;
-    grossReturnRate: number;
-    feeRate: number;
+    retirementAllocation: RetirementAllocation;
+    retirementGrossReturnRate: number;
+    retirementFeeRate: number;
   };
   partTime: {
+    enabled: boolean;
     monthlyToday: number;
     startAge: number;
     endAge: number;
@@ -57,6 +83,7 @@ export interface MonthlyEvent {
 
 export interface LaborInsuranceProjection {
   eligibleForAnnuity: boolean;
+  eligibleByCombinedYears: boolean;
   normalAge: number;
   minimumClaimAge: number;
   claimMonth: number;
@@ -78,11 +105,25 @@ export interface LaborPensionProjection {
   ruleVersion: string;
 }
 
+export interface NationalPensionProjection {
+  enabled: boolean;
+  claimMonth: number;
+  insuredYears: number;
+  formulaUsed: "A" | "B" | "none";
+  aFormulaEligible: boolean;
+  initialMonthlyNominal: number;
+  formulaAAmountNominal: number;
+  formulaBAmountNominal: number;
+  events: Map<number, number>;
+  ruleVersion: string;
+}
+
 export interface MonthlyRecord {
   month: number;
   age: number;
   expenseNominal: number;
   laborInsuranceNominal: number;
+  nationalPensionNominal: number;
   laborPensionNominal: number;
   partTimeNominal: number;
   portfolioReturnNominal: number;
@@ -95,11 +136,13 @@ export interface MonthlyRecord {
 
 export interface ProjectionResult {
   input: PlanningInput;
+  investmentHoldings: InvestmentHoldingProjection[];
   projectedInvestmentAtRetirement: number;
   requiredInvestmentAtRetirement: number;
   investmentGapAtRetirement: number;
   readiness: number;
   laborInsurance: LaborInsuranceProjection;
+  nationalPension: NationalPensionProjection;
   laborPension: LaborPensionProjection;
   records: MonthlyRecord[];
   depletedMonth: number | null;
@@ -110,6 +153,6 @@ export interface ProjectionResult {
 
 export interface ScenarioResult {
   name: "壓力" | "基準" | "成長";
-  stockReturnRate: number;
+  retirementReturnRate: number;
   result: ProjectionResult;
 }

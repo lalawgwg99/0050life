@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import { birthSerial, monthAtAge } from "../domain/time";
 import { makeInput } from "../test-fixtures";
 import { projectPlan, projectScenarios } from "./project";
+import { yearsUntilRetirement } from "../domain/coverage";
+import { additionalContributionWeights, estimateAdditionalMonthlyInvestment } from "./actions";
 
 describe("integrated monthly projection", () => {
   it("does not use future pension income before its claim month", () => {
@@ -30,11 +32,11 @@ describe("integrated monthly projection", () => {
         mode: "monthly"
       },
       investment: {
-        assetsNow: 1_000_000,
-        monthlyContributionToday: 0,
+        holdings: [{ id: "cash", name: "投資", valueNow: 1_000_000, monthlyContributionToday: 0, grossReturnRate: 0, feeRate: 0 }],
         contributionGrowthRate: 0,
-        grossReturnRate: 0,
-        feeRate: 0
+        retirementAllocation: "custom",
+        retirementGrossReturnRate: 0,
+        retirementFeeRate: 0
       },
       partTime: { monthlyToday: 0, startAge: 55, endAge: 55, growthRate: 0 }
     });
@@ -54,7 +56,7 @@ describe("integrated monthly projection", () => {
     const result = projectPlan(makeInput());
     let opening = result.projectedInvestmentAtRetirement;
     for (const record of result.records) {
-      const income = record.laborInsuranceNominal + record.laborPensionNominal + record.partTimeNominal;
+      const income = record.laborInsuranceNominal + record.nationalPensionNominal + record.laborPensionNominal + record.partTimeNominal;
       const surplus = Math.max(0, income - record.expenseNominal);
       const expected = Math.max(0, opening + record.portfolioReturnNominal - record.portfolioWithdrawalNominal + surplus);
       expect(record.portfolioNominal).toBeCloseTo(expected, 6);
@@ -69,7 +71,7 @@ describe("integrated monthly projection", () => {
       spending: { monthlyToday: 10_000 },
       laborInsurance: { insuredYearsNow: 0, insuredYearsFuture: 0, averageSalaryToday: 0, salaryGrowthRate: 0, claimAge: 65, indexation: "none" },
       laborPension: { balanceNow: 0, seniorityYearsNow: 0, seniorityYearsFuture: 0, monthlyWageToday: 0, wageGrowthRate: 0, employerRate: 0.06, voluntaryRate: 0, returnRate: 0, claimAge: 65, mode: "lump" },
-      investment: { assetsNow: 0, monthlyContributionToday: 0, contributionGrowthRate: 0, grossReturnRate: 0, feeRate: 0 },
+      investment: { holdings: [], contributionGrowthRate: 0, retirementAllocation: "custom", retirementGrossReturnRate: 0, retirementFeeRate: 0 },
       partTime: { monthlyToday: 0, startAge: 65, endAge: 65, growthRate: 0 }
     });
     const result = projectPlan(input);
@@ -77,9 +79,70 @@ describe("integrated monthly projection", () => {
   });
 
   it("keeps negative stress returns in scenario calculations", () => {
-    const input = makeInput({ investment: { grossReturnRate: 0.01 } });
+    const input = makeInput({ investment: {
+      holdings: [{ id: "fund", name: "投資", valueNow: 1_000_000, monthlyContributionToday: 0, grossReturnRate: 0.01, feeRate: 0 }],
+      retirementGrossReturnRate: 0.01
+    } });
     const scenarios = projectScenarios(input);
-    expect(scenarios[0].stockReturnRate).toBeCloseTo(-0.01, 10);
+    expect(scenarios[0].retirementReturnRate).toBeCloseTo(-0.01, 10);
     expect(scenarios[0].result.projectedInvestmentAtRetirement).toBeLessThan(scenarios[1].result.projectedInvestmentAtRetirement);
+  });
+
+  it("counts part-time income only when the user turns it on", () => {
+    const base = makeInput({
+      profile: { retirementAge: 65, longevityAge: 66 },
+      economy: { inflationRate: 0 },
+      spending: { monthlyToday: 10_000 },
+      laborInsurance: { insuredYearsNow: 0, insuredYearsFuture: 0, averageSalaryToday: 0, salaryGrowthRate: 0, claimAge: 65, indexation: "none" },
+      laborPension: { balanceNow: 0, seniorityYearsNow: 0, seniorityYearsFuture: 0, monthlyWageToday: 0, wageGrowthRate: 0, employerRate: 0.06, voluntaryRate: 0, returnRate: 0, claimAge: 65, mode: "lump" },
+      investment: { holdings: [], contributionGrowthRate: 0, retirementAllocation: "custom", retirementGrossReturnRate: 0, retirementFeeRate: 0 },
+      partTime: { enabled: false, monthlyToday: 10_000, startAge: 65, endAge: 66, growthRate: 0 }
+    });
+    expect(projectPlan(base).requiredInvestmentAtRetirement).toBeCloseTo(120_000, 2);
+    expect(projectPlan({ ...base, partTime: { ...base.partTime, enabled: true } }).requiredInvestmentAtRetirement).toBe(0);
+  });
+
+  it("automatically counts coverage through the selected retirement age", () => {
+    const input = makeInput({
+      laborInsurance: { futureYearsMode: "until-retirement" },
+      laborPension: { futureYearsMode: "until-retirement" }
+    });
+    const result = projectPlan(input);
+    expect(result.laborInsurance.insuredYearsAtClaim).toBeCloseTo(input.laborInsurance.insuredYearsNow + yearsUntilRetirement(input), 8);
+  });
+
+  it("can qualify labor insurance through combined labor and national pension years", () => {
+    const input = makeInput({
+      laborInsurance: {
+        insuredYearsNow: 10,
+        insuredYearsFuture: 0,
+        futureYearsMode: "custom",
+        claimAge: 65
+      },
+      nationalPension: { enabled: true, insuredYears: 5, aFormulaEligible: true }
+    });
+    const result = projectPlan(input);
+    expect(result.laborInsurance.eligibleByCombinedYears).toBe(true);
+    expect(result.laborInsurance.eligibleForAnnuity).toBe(true);
+    expect(result.nationalPension.formulaUsed).toBe("B");
+  });
+
+  it("bases the extra-saving suggestion on every holding's return", () => {
+    const input = makeInput({
+      spending: { monthlyToday: 100_000 },
+      investment: {
+        holdings: [
+          { id: "a", name: "A", valueNow: 0, monthlyContributionToday: 5_000, grossReturnRate: 0, feeRate: 0 },
+          { id: "b", name: "B", valueNow: 0, monthlyContributionToday: 5_000, grossReturnRate: 0, feeRate: 0 }
+        ],
+        contributionGrowthRate: 0,
+        retirementAllocation: "custom",
+        retirementGrossReturnRate: 0,
+        retirementFeeRate: 0
+      }
+    });
+    const result = projectPlan(input);
+    expect(additionalContributionWeights(input)).toEqual([0.5, 0.5]);
+    expect(estimateAdditionalMonthlyInvestment(input, result)).toBeGreaterThan(0);
   });
 });

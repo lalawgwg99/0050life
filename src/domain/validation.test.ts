@@ -10,15 +10,18 @@ const validInput: PlanningInput = {
   laborInsurance: {
     insuredYearsNow: 10,
     insuredYearsFuture: 29,
+    futureYearsMode: "custom",
     averageSalaryToday: 45_800,
     salaryGrowthRate: 0.02,
     claimAge: 65,
     indexation: "threshold"
   },
+  nationalPension: { enabled: false, insuredYears: 0, aFormulaEligible: false, indexation: "threshold" },
   laborPension: {
     balanceNow: 300_000,
     seniorityYearsNow: 10,
     seniorityYearsFuture: 29,
+    futureYearsMode: "custom",
     monthlyWageToday: 45_800,
     wageGrowthRate: 0.02,
     employerRate: 0.06,
@@ -28,13 +31,13 @@ const validInput: PlanningInput = {
     mode: "lump"
   },
   investment: {
-    assetsNow: 1_000_000,
-    monthlyContributionToday: 20_000,
+    holdings: [{ id: "core", name: "0050", valueNow: 1_000_000, monthlyContributionToday: 20_000, grossReturnRate: 0.08, feeRate: 0.003 }],
     contributionGrowthRate: 0.02,
-    grossReturnRate: 0.08,
-    feeRate: 0.003
+    retirementAllocation: "balanced",
+    retirementGrossReturnRate: 0.05,
+    retirementFeeRate: 0.003
   },
-  partTime: { monthlyToday: 0, startAge: 65, endAge: 70, growthRate: 0.02 }
+  partTime: { enabled: false, monthlyToday: 0, startAge: 65, endAge: 70, growthRate: 0.02 }
 };
 
 describe("input validation", () => {
@@ -66,11 +69,14 @@ describe("input validation", () => {
     const invalid = {
       ...validInput,
       profile: { ...validInput.profile, birthMonth: Number.NaN },
-      investment: { ...validInput.investment, monthlyContributionToday: Number.NaN }
+      investment: {
+        ...validInput.investment,
+        holdings: [{ ...validInput.investment.holdings[0], monthlyContributionToday: Number.NaN }]
+      }
     };
     expect(validateInput(invalid)).toEqual([
       "出生月份需要填入數字。",
-      "每月投資金額需要填入數字。"
+      "0050每月投入需要填入數字。"
     ]);
   });
 
@@ -79,11 +85,45 @@ describe("input validation", () => {
       ...validInput,
       laborInsurance: { ...validInput.laborInsurance, insuredYearsNow: -1 },
       laborPension: { ...validInput.laborPension, voluntaryRate: 0.07 },
-      partTime: { ...validInput.partTime, startAge: 70, endAge: 60 }
+      partTime: { ...validInput.partTime, enabled: true, startAge: 70, endAge: 60 }
     };
     const errors = validateInput(invalid);
     expect(errors.some((error) => error.includes("勞保年資"))).toBe(true);
     expect(errors.some((error) => error.includes("最多為 6%"))).toBe(true);
     expect(errors.some((error) => error.includes("兼職結束年齡"))).toBe(true);
+  });
+
+  it("ignores unused part-time details when the option is off", () => {
+    const input: PlanningInput = {
+      ...validInput,
+      partTime: { enabled: false, monthlyToday: -1, startAge: 80, endAge: 60, growthRate: -1 }
+    };
+    expect(validateInput(input)).toEqual([]);
+  });
+
+  it("ignores manual future years while automatic coverage is selected", () => {
+    const input: PlanningInput = {
+      ...validInput,
+      laborInsurance: { ...validInput.laborInsurance, futureYearsMode: "until-retirement", insuredYearsFuture: Number.NaN },
+      laborPension: { ...validInput.laborPension, futureYearsMode: "until-retirement", seniorityYearsFuture: Number.NaN }
+    };
+    expect(validateInput(input)).toEqual([]);
+  });
+
+  it("requires a positive national pension year count when enabled", () => {
+    const input: PlanningInput = {
+      ...validInput,
+      nationalPension: { ...validInput.nationalPension, enabled: true, insuredYears: 0 }
+    };
+    expect(validateInput(input).some((error) => error.includes("國保年資"))).toBe(true);
+  });
+
+  it("does not allow delayed claiming in the combined labor and national pension case", () => {
+    const input: PlanningInput = {
+      ...validInput,
+      laborInsurance: { ...validInput.laborInsurance, insuredYearsNow: 10, insuredYearsFuture: 0, claimAge: 70 },
+      nationalPension: { ...validInput.nationalPension, enabled: true, insuredYears: 5 }
+    };
+    expect(validateInput(input).some((error) => error.includes("不能套用延後請領"))).toBe(true);
   });
 });

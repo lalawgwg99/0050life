@@ -9,10 +9,46 @@ import { projectPlan, projectScenarios } from "./engine/project";
 
 const STORAGE_KEY = "0050life-web-v3";
 
+type LegacyInvestment = Partial<PlanningInput["investment"]> & {
+  assetsNow?: number;
+  monthlyContributionToday?: number;
+  grossReturnRate?: number;
+  feeRate?: number;
+};
+
 function loadSavedInput(): PlanningInput {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null") as { version?: number; input?: PlanningInput } | null;
-    if (saved?.version === 1 && saved.input) return { ...saved.input, asOf: defaultInput.asOf };
+    if ((saved?.version === 1 || saved?.version === 2 || saved?.version === 3) && saved.input) {
+      const oldInvestment = saved.input.investment as LegacyInvestment;
+      const defaultHolding = defaultInput.investment.holdings[0];
+      const holdings = Array.isArray(oldInvestment.holdings)
+        ? oldInvestment.holdings
+        : [{
+          ...defaultHolding,
+          valueNow: oldInvestment.assetsNow ?? defaultHolding.valueNow,
+          monthlyContributionToday: oldInvestment.monthlyContributionToday ?? defaultHolding.monthlyContributionToday,
+          grossReturnRate: oldInvestment.grossReturnRate ?? defaultHolding.grossReturnRate,
+          feeRate: oldInvestment.feeRate ?? defaultHolding.feeRate
+        }];
+      return {
+        ...saved.input,
+        asOf: defaultInput.asOf,
+        partTime: { ...defaultInput.partTime, ...saved.input.partTime },
+        nationalPension: { ...defaultInput.nationalPension, ...saved.input.nationalPension },
+        laborInsurance: {
+          ...defaultInput.laborInsurance,
+          ...saved.input.laborInsurance,
+          futureYearsMode: saved.input.laborInsurance.futureYearsMode ?? "custom"
+        },
+        laborPension: {
+          ...defaultInput.laborPension,
+          ...saved.input.laborPension,
+          futureYearsMode: saved.input.laborPension.futureYearsMode ?? "custom"
+        },
+        investment: { ...defaultInput.investment, ...oldInvestment, holdings }
+      };
+    }
   } catch {
     // Broken browser storage should never prevent the calculator from opening.
   }
@@ -33,12 +69,16 @@ export default function App() {
   }, [errors.length, input]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 1, input }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 3, input }));
   }, [input]);
 
   const reset = () => {
     localStorage.removeItem(STORAGE_KEY);
     setInput(defaultInput);
+  };
+  const showMobileView = (view: "inputs" | "results") => {
+    setMobileView(view);
+    if (window.matchMedia("(max-width: 820px)").matches) window.scrollTo({ top: 0, behavior: "auto" });
   };
 
   return (
@@ -50,14 +90,14 @@ export default function App() {
         </a>
         <nav aria-label="主要功能">
           <a href="/blog/index.html"><BookOpen aria-hidden="true" />退休筆記</a>
-          <button type="button" className="icon-button" onClick={reset} aria-label="重新填寫"><RotateCcw aria-hidden="true" /></button>
-          <button type="button" className="icon-button" onClick={() => window.print()} aria-label="列印結果"><Printer aria-hidden="true" /></button>
+          <button type="button" className="icon-button" onClick={reset} aria-label="重新填寫" title="重新填寫"><RotateCcw aria-hidden="true" /></button>
+          <button type="button" className="icon-button" onClick={() => window.print()} aria-label="列印結果" title="列印結果"><Printer aria-hidden="true" /></button>
         </nav>
       </header>
 
       <div className="mobile-tabs" role="tablist" aria-label="試算頁面">
-        <button type="button" role="tab" aria-selected={mobileView === "inputs"} className={mobileView === "inputs" ? "active" : ""} onClick={() => setMobileView("inputs")}><SlidersHorizontal aria-hidden="true" />填寫資料</button>
-        <button type="button" role="tab" aria-selected={mobileView === "results"} className={mobileView === "results" ? "active" : ""} onClick={() => setMobileView("results")}><ChartNoAxesCombined aria-hidden="true" />查看結果</button>
+        <button type="button" role="tab" aria-selected={mobileView === "inputs"} className={mobileView === "inputs" ? "active" : ""} onClick={() => showMobileView("inputs")}><SlidersHorizontal aria-hidden="true" />填寫資料</button>
+        <button type="button" role="tab" aria-selected={mobileView === "results"} className={mobileView === "results" ? "active" : ""} onClick={() => showMobileView("results")}><ChartNoAxesCombined aria-hidden="true" />查看結果</button>
       </div>
 
       <main className="workspace">
@@ -68,7 +108,7 @@ export default function App() {
           ) : calculation && "error" in calculation ? (
             <div className="empty-state" role="alert"><EmptyIcon /><h1>這次沒有算完</h1><p>{calculation.error}</p></div>
           ) : calculation && "result" in calculation ? (
-            <ResultsPanel result={calculation.result} scenarios={calculation.scenarios} />
+            <ResultsPanel result={calculation.result} scenarios={calculation.scenarios} onChange={setInput} />
           ) : null}
         </div>
       </main>

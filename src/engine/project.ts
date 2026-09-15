@@ -3,15 +3,17 @@ import type { PlanningInput, ProjectionResult, ScenarioResult } from "../domain/
 import { validateInput } from "../domain/validation";
 import { projectLaborInsurance } from "../modules/labor-insurance";
 import { projectLaborPension } from "../modules/labor-pension";
-import { projectInvestmentAtRetirement } from "../modules/investment";
+import { projectInvestmentHoldingsAtRetirement } from "../modules/investment";
+import { projectNationalPension } from "../modules/national-pension";
 import { simulateRetirement } from "./simulate";
 
 function solveRequiredInvestment(
   input: PlanningInput,
   laborInsurance: ReturnType<typeof projectLaborInsurance>,
+  nationalPension: ReturnType<typeof projectNationalPension>,
   laborPension: ReturnType<typeof projectLaborPension>
 ): number {
-  const succeeds = (balance: number) => simulateRetirement(input, laborInsurance, laborPension, balance).depletedMonth === null;
+  const succeeds = (balance: number) => simulateRetirement(input, laborInsurance, nationalPension, laborPension, balance).depletedMonth === null;
   if (succeeds(0)) return 0;
 
   let low = 0;
@@ -34,10 +36,12 @@ export function projectPlan(input: PlanningInput): ProjectionResult {
   const birth = birthSerial(input.profile.birthYearROC, input.profile.birthMonth);
   const endMonth = monthAtAge(birth, input.profile.longevityAge);
   const laborInsurance = projectLaborInsurance(input, endMonth);
+  const nationalPension = projectNationalPension(input, endMonth, laborInsurance.eligibleForAnnuity);
   const laborPension = projectLaborPension(input, endMonth);
-  const projectedInvestmentAtRetirement = projectInvestmentAtRetirement(input);
-  const requiredInvestmentAtRetirement = solveRequiredInvestment(input, laborInsurance, laborPension);
-  const simulation = simulateRetirement(input, laborInsurance, laborPension, projectedInvestmentAtRetirement);
+  const investmentHoldings = projectInvestmentHoldingsAtRetirement(input);
+  const projectedInvestmentAtRetirement = investmentHoldings.reduce((sum, holding) => sum + holding.projectedValueNominal, 0);
+  const requiredInvestmentAtRetirement = solveRequiredInvestment(input, laborInsurance, nationalPension, laborPension);
+  const simulation = simulateRetirement(input, laborInsurance, nationalPension, laborPension, projectedInvestmentAtRetirement);
   const investmentGapAtRetirement = Math.max(0, requiredInvestmentAtRetirement - projectedInvestmentAtRetirement);
   const readiness = requiredInvestmentAtRetirement === 0
     ? 1
@@ -51,14 +55,23 @@ export function projectPlan(input: PlanningInput): ProjectionResult {
   if (input.laborInsurance.indexation === "threshold") {
     warnings.push("勞保年金依假設物價模擬累計達 5% 才調整，實際金額仍依未來公告。");
   }
+  if (nationalPension.enabled) {
+    warnings.push("國保金額依目前月投保金額與已繳年資估算；欠費、曾領其他社會保險給付等情況，可能影響 A 式資格，請以勞保局核定為準。");
+    if (nationalPension.claimMonth >= endMonth) warnings.push("目前規劃終點早於 65 歲，國保尚未開始領取，因此沒有放進這段退休現金流。");
+  }
+  if (laborInsurance.eligibleByCombinedYears) {
+    warnings.push("勞保年資未滿 15 年，本次依勞保與國保合計年資滿 15 年的條件估算勞保年金；實際資格請以勞保局核定為準。");
+  }
 
   return {
     input,
+    investmentHoldings,
     projectedInvestmentAtRetirement,
     requiredInvestmentAtRetirement,
     investmentGapAtRetirement,
     readiness,
     laborInsurance,
+    nationalPension,
     laborPension,
     records: simulation.records,
     depletedMonth: simulation.depletedMonth,
@@ -77,11 +90,18 @@ export function projectScenarios(input: PlanningInput): ScenarioResult[] {
     { name: "成長", delta: 0.02 }
   ];
   return cases.map(({ name, delta }) => {
-    const stockReturnRate = Math.max(-0.99, input.investment.grossReturnRate + delta);
+    const retirementReturnRate = Math.max(-0.99, input.investment.retirementGrossReturnRate + delta);
     const scenarioInput: PlanningInput = {
       ...input,
-      investment: { ...input.investment, grossReturnRate: stockReturnRate }
+      investment: {
+        ...input.investment,
+        retirementGrossReturnRate: retirementReturnRate,
+        holdings: input.investment.holdings.map((holding) => ({
+          ...holding,
+          grossReturnRate: Math.max(-0.99, holding.grossReturnRate + delta)
+        }))
+      }
     };
-    return { name, stockReturnRate, result: projectPlan(scenarioInput) };
+    return { name, retirementReturnRate, result: projectPlan(scenarioInput) };
   });
 }

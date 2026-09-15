@@ -50,4 +50,16 @@ describe("labor insurance", () => {
     expect(result.events.get(result.claimMonth + 12)).toBe(first);
     expect([...result.events.values()].some((amount) => amount > first * 1.049)).toBe(true);
   });
+
+  it("does not add a delayed-claim bonus to the combined labor and national pension case", () => {
+    const input = makeInput({
+      nationalPension: { enabled: true, insuredYears: 5 },
+      laborInsurance: { insuredYearsNow: 10, insuredYearsFuture: 0, futureYearsMode: "custom", averageSalaryToday: 45_800, salaryGrowthRate: 0, claimAge: 65 },
+      economy: { inflationRate: 0 }
+    });
+    const birth = birthSerial(input.profile.birthYearROC, input.profile.birthMonth);
+    const result = projectLaborInsurance(input, monthAtAge(birth, 90));
+    expect(result.eligibleByCombinedYears).toBe(true);
+    expect(result.initialMonthlyNominal).toBeCloseTo(45_800 * 10 * 0.0155, 8);
+  });
 });

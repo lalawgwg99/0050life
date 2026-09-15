@@ -1,25 +1,31 @@
 import { effectiveMonthlyRate, growthFactor, netAnnualReturn } from "../domain/rates";
 import { birthSerial, monthAtAge, toSerial } from "../domain/time";
-import type { PlanningInput } from "../domain/types";
+import type { InvestmentHoldingProjection, PlanningInput } from "../domain/types";
 
-export function projectInvestmentAtRetirement(input: PlanningInput): number {
+export function projectInvestmentHoldingsAtRetirement(input: PlanningInput): InvestmentHoldingProjection[] {
   const asOf = toSerial(input.asOf.year, input.asOf.month);
   const birth = birthSerial(input.profile.birthYearROC, input.profile.birthMonth);
   const retirementMonth = monthAtAge(birth, input.profile.retirementAge);
-  const monthlyReturn = effectiveMonthlyRate(netAnnualReturn(
-    input.investment.grossReturnRate,
-    input.investment.feeRate
-  ));
-  let balance = input.investment.assetsNow;
+  const balances = input.investment.holdings.map((holding) => ({
+    id: holding.id,
+    name: holding.name,
+    balance: holding.valueNow,
+    monthlyContributionToday: holding.monthlyContributionToday,
+    monthlyReturn: effectiveMonthlyRate(netAnnualReturn(holding.grossReturnRate, holding.feeRate))
+  }));
 
   for (let month = asOf; month < retirementMonth; month += 1) {
-    balance *= 1 + monthlyReturn;
-    const contribution = input.investment.monthlyContributionToday * growthFactor(
-      input.investment.contributionGrowthRate,
-      month - asOf
-    );
-    balance += contribution;
+    const contributionGrowth = growthFactor(input.investment.contributionGrowthRate, month - asOf);
+    for (const holding of balances) {
+      holding.balance *= 1 + holding.monthlyReturn;
+      holding.balance += holding.monthlyContributionToday * contributionGrowth;
+    }
   }
 
-  return balance;
+  return balances.map(({ id, name, balance }) => ({ id, name, projectedValueNominal: balance }));
+}
+
+export function projectInvestmentAtRetirement(input: PlanningInput): number {
+  return projectInvestmentHoldingsAtRetirement(input)
+    .reduce((sum, holding) => sum + holding.projectedValueNominal, 0);
 }

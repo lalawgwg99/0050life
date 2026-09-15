@@ -1,6 +1,7 @@
 import { effectiveMonthlyRate, growthFactor } from "../domain/rates";
 import { birthSerial, fromSerial, monthAtAge, toSerial } from "../domain/time";
 import type { LaborInsuranceProjection, PlanningInput } from "../domain/types";
+import { laborInsuranceFutureYears } from "../domain/coverage";
 import { laborInsuranceNormalAge, TAIWAN_RULES_2026 } from "../rules/taiwan-2026";
 
 export function projectLaborInsurance(input: PlanningInput, endMonth: number): LaborInsuranceProjection {
@@ -9,18 +10,23 @@ export function projectLaborInsurance(input: PlanningInput, endMonth: number): L
   const asOf = toSerial(input.asOf.year, input.asOf.month);
   const claimMonth = monthAtAge(birth, input.laborInsurance.claimAge);
   const normalAge = laborInsuranceNormalAge(input.profile.birthYearROC);
-  const insuredYearsAtClaim = input.laborInsurance.insuredYearsNow + input.laborInsurance.insuredYearsFuture;
+  const insuredYearsAtClaim = input.laborInsurance.insuredYearsNow + laborInsuranceFutureYears(input);
   const salaryAtClaim = input.laborInsurance.averageSalaryToday * growthFactor(
     input.laborInsurance.salaryGrowthRate,
     Math.max(0, claimMonth - asOf)
   );
   const adjustmentYears = Math.max(-5, Math.min(5, input.laborInsurance.claimAge - normalAge));
-  const adjustment = 1 + adjustmentYears * rules.earlyLateRatePerYear;
   const baseBenefit = Math.max(
     salaryAtClaim * insuredYearsAtClaim * rules.formulaOneRate + rules.formulaOneAddition,
     salaryAtClaim * insuredYearsAtClaim * rules.formulaTwoRate
   );
-  const eligibleForAnnuity = insuredYearsAtClaim >= rules.minimumAnnuityYears;
+  const combinedYears = insuredYearsAtClaim + (input.nationalPension.enabled ? input.nationalPension.insuredYears : 0);
+  const eligibleByCombinedYears = input.laborInsurance.claimAge >= TAIWAN_RULES_2026.nationalPension.eligibleAge
+    && insuredYearsAtClaim > 0
+    && insuredYearsAtClaim < rules.minimumAnnuityYears
+    && combinedYears >= rules.minimumAnnuityYears;
+  const eligibleForAnnuity = insuredYearsAtClaim >= rules.minimumAnnuityYears || eligibleByCombinedYears;
+  const adjustment = eligibleByCombinedYears ? 1 : 1 + adjustmentYears * rules.earlyLateRatePerYear;
   const initialMonthlyNominal = eligibleForAnnuity ? baseBenefit * adjustment : 0;
   const lumpSumNominal = eligibleForAnnuity ? 0 : salaryAtClaim * insuredYearsAtClaim;
   const events = new Map<number, number>();
@@ -48,6 +54,7 @@ export function projectLaborInsurance(input: PlanningInput, endMonth: number): L
 
   return {
     eligibleForAnnuity,
+    eligibleByCombinedYears,
     normalAge,
     minimumClaimAge: normalAge - 5,
     claimMonth,

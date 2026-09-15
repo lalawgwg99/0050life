@@ -1,6 +1,6 @@
 import { effectiveMonthlyRate, growthFactor, netAnnualReturn, realValue } from "../domain/rates";
 import { ageAtMonth, birthSerial, monthAtAge, toSerial } from "../domain/time";
-import type { LaborInsuranceProjection, LaborPensionProjection, MonthlyRecord, PlanningInput } from "../domain/types";
+import type { LaborInsuranceProjection, LaborPensionProjection, MonthlyRecord, NationalPensionProjection, PlanningInput } from "../domain/types";
 
 export interface RetirementSimulationResult {
   records: MonthlyRecord[];
@@ -12,6 +12,7 @@ export interface RetirementSimulationResult {
 export function simulateRetirement(
   input: PlanningInput,
   laborInsurance: LaborInsuranceProjection,
+  nationalPension: NationalPensionProjection,
   laborPension: LaborPensionProjection,
   investmentAtRetirement: number
 ): RetirementSimulationResult {
@@ -20,8 +21,8 @@ export function simulateRetirement(
   const retirementMonth = monthAtAge(birth, input.profile.retirementAge);
   const endMonth = monthAtAge(birth, input.profile.longevityAge);
   const monthlyReturn = effectiveMonthlyRate(netAnnualReturn(
-    input.investment.grossReturnRate,
-    input.investment.feeRate
+    input.investment.retirementGrossReturnRate,
+    input.investment.retirementFeeRate
   ));
   const partTimeStart = monthAtAge(birth, input.partTime.startAge);
   const partTimeEnd = monthAtAge(birth, input.partTime.endAge);
@@ -36,11 +37,12 @@ export function simulateRetirement(
     portfolio += portfolioReturnNominal;
     const expenseNominal = input.spending.monthlyToday * growthFactor(input.economy.inflationRate, monthsFromAsOf);
     const laborInsuranceNominal = laborInsurance.events.get(month) ?? 0;
+    const nationalPensionNominal = nationalPension.events.get(month) ?? 0;
     const laborPensionNominal = laborPension.events.get(month) ?? 0;
-    const partTimeNominal = month >= partTimeStart && month < partTimeEnd
+    const partTimeNominal = input.partTime.enabled && month >= partTimeStart && month < partTimeEnd
       ? input.partTime.monthlyToday * growthFactor(input.partTime.growthRate, monthsFromAsOf)
       : 0;
-    const income = laborInsuranceNominal + laborPensionNominal + partTimeNominal;
+    const income = laborInsuranceNominal + nationalPensionNominal + laborPensionNominal + partTimeNominal;
     const need = Math.max(0, expenseNominal - income);
     const surplus = Math.max(0, income - expenseNominal);
     const portfolioWithdrawalNominal = Math.min(portfolio, need);
@@ -55,6 +57,7 @@ export function simulateRetirement(
       age: ageAtMonth(birth, month),
       expenseNominal,
       laborInsuranceNominal,
+      nationalPensionNominal,
       laborPensionNominal,
       partTimeNominal,
       portfolioReturnNominal,

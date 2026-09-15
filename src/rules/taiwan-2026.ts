@@ -11,6 +11,15 @@ export const TAIWAN_RULES_2026 = {
     cpiAdjustmentThreshold: 0.05,
     source: "https://www.bli.gov.tw/0109187.html"
   },
+  nationalPension: {
+    eligibleAge: 65,
+    monthlyInsuredAmount: 21_103,
+    formulaARate: 0.0065,
+    formulaAAddition: 4_049,
+    formulaBRate: 0.013,
+    cpiAdjustmentThreshold: 0.05,
+    source: "https://www.bli.gov.tw/0100754.html"
+  },
   laborPension: {
     eligibleAge: 60,
     minimumMonthlyYears: 15,

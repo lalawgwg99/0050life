@@ -1,6 +1,7 @@
 import { effectiveMonthlyRate, growthFactor } from "../domain/rates";
 import { birthSerial, monthAtAge, toSerial } from "../domain/time";
 import type { LaborPensionProjection, PlanningInput } from "../domain/types";
+import { laborPensionFutureYears } from "../domain/coverage";
 import { laborPensionRemainingYears, TAIWAN_RULES_2026 } from "../rules/taiwan-2026";
 
 export function projectLaborPension(input: PlanningInput, endMonth: number): LaborPensionProjection {
@@ -11,8 +12,9 @@ export function projectLaborPension(input: PlanningInput, endMonth: number): Lab
   const claimMonth = monthAtAge(birth, input.laborPension.claimAge);
   const fundMonthlyRate = effectiveMonthlyRate(input.laborPension.returnRate);
   const actuarialMonthlyRate = effectiveMonthlyRate(rules.actuarialAnnualRate);
-  const contributionMonths = Math.round(input.laborPension.seniorityYearsFuture * 12);
-  const seniorityAtClaim = input.laborPension.seniorityYearsNow + input.laborPension.seniorityYearsFuture;
+  const futureYears = laborPensionFutureYears(input);
+  const contributionMonths = Math.round(futureYears * 12);
+  const seniorityAtClaim = input.laborPension.seniorityYearsNow + futureYears;
   const eligibleForMonthly = seniorityAtClaim >= rules.minimumMonthlyYears;
   const events = new Map<number, number>();
   const accountByMonth = new Map<number, number>();
