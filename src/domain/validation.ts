@@ -19,7 +19,7 @@ export function validateInput(input: PlanningInput): string[] {
   if (input.spending.monthlyToday < 0) errors.push("生活費不可為負數。");
   if (input.investment.assetsNow < 0 || input.investment.monthlyContributionToday < 0) errors.push("投資資產與投入不可為負數。");
   if (input.laborPension.balanceNow < 0 || input.laborPension.monthlyWageToday < 0) errors.push("勞退餘額與提繳工資不可為負數。");
-  if (input.economy.inflationRate <= -1 || input.investment.grossReturnRate <= -1 || input.laborPension.returnRate <= -1) errors.push("年化率必須大於 -100%。");
+  if (input.economy.inflationRate <= -1 || input.investment.grossReturnRate <= -1 || input.laborPension.returnRate <= -1) errors.push("每年變動比例必須大於 -100%。");
   if (input.investment.feeRate < 0 || input.investment.feeRate >= 1) errors.push("投資費用率必須介於 0% 與 100% 之間。");
 
   const birth = birthSerial(input.profile.birthYearROC, input.profile.birthMonth);

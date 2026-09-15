@@ -43,13 +43,13 @@ export function projectPlan(input: PlanningInput): ProjectionResult {
     ? 1
     : Math.min(1, projectedInvestmentAtRetirement / requiredInvestmentAtRetirement);
   const warnings = [
-    "未來法規、通膨與投資報酬可能改變；本結果是規劃情境，不是給付保證。"
+    "未來規定、物價與投資表現可能改變；這是依目前資料做的規劃，不是給付保證。"
   ];
   if (input.laborPension.mode === "monthly") {
-    warnings.push("勞退月退休金採現行利率與自訂領取年數估算，申請前應以勞保局試算結果覆核。");
+    warnings.push("勞退按月領依目前利率與填寫的領取年數估算，申請前請再用勞保局資料核對。");
   }
   if (input.laborInsurance.indexation === "threshold") {
-    warnings.push("勞保年金依假設通膨模擬 CPI 累計達 5% 才調整，實際調整依未來公告。");
+    warnings.push("勞保年金依假設物價模擬累計達 5% 才調整，實際金額仍依未來公告。");
   }
 
   return {
