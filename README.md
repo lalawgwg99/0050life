@@ -9,6 +9,8 @@ npm install
 npm run dev
 ```
 
+開發頁面是 `http://localhost:5173/index.vite.html`。正式建置完成後，編譯過的首頁與資源也會同步到專案根目錄，供目前未設定建置指令的 Cloudflare Pages 直接發布。
+
 ## 檢查
 
 ```bash
@@ -19,7 +21,7 @@ npm run build
 
 - `npm test`：檢查日期、利率、勞保、勞退、投資與整體試算。
 - `npm run test:e2e`：用桌機及手機尺寸實際操作頁面。
-- `npm run build`：檢查型別並建立正式網站檔案。
+- `npm run build`：檢查型別、建立正式網站檔案，並同步 Cloudflare Pages 直接發布所需的檔案。
 
 ## 計算原則
 
