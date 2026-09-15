@@ -6,7 +6,7 @@ import type { ProjectionResult, ScenarioResult } from "../domain/types";
 import { formatCompactMoney, formatMoney, formatMonth, formatPercent } from "../lib/format";
 import { TAIWAN_RULES_2026 } from "../rules/taiwan-2026";
 import { BalanceChart } from "./BalanceChart";
-import { additionalContributionWeights, estimateAdditionalMonthlyInvestment, estimateAffordableMonthlySpending } from "../engine/actions";
+import { additionalContributionWeights, allocateMonthlyAmount, estimateAdditionalMonthlyInvestment, estimateAffordableMonthlySpending } from "../engine/actions";
 
 interface ResultsPanelProps {
   result: ProjectionResult;
@@ -24,6 +24,16 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
   const projectedToday = toToday(result.projectedInvestmentAtRetirement, retirementMonth);
   const requiredToday = toToday(result.requiredInvestmentAtRetirement, retirementMonth);
   const gapToday = Math.max(0, requiredToday - projectedToday);
+  const retirementRecord = result.records[0];
+  const retirementExpenseToday = retirementRecord ? toToday(retirementRecord.expenseNominal, retirementRecord.month) : 0;
+  const recurringIncomeNominal = retirementRecord
+    ? (result.laborInsurance.eligibleForAnnuity ? retirementRecord.laborInsuranceNominal : 0)
+      + (result.nationalPension.enabled ? retirementRecord.nationalPensionNominal : 0)
+      + (input.laborPension.mode === "monthly" ? retirementRecord.laborPensionNominal : 0)
+      + (input.partTime.enabled ? retirementRecord.partTimeNominal : 0)
+    : 0;
+  const recurringIncomeToday = retirementRecord ? toToday(recurringIncomeNominal, retirementRecord.month) : 0;
+  const monthlyCashflowGapToday = Math.max(0, retirementExpenseToday - recurringIncomeToday);
   const depletedRecord = result.depletedMonth === null ? null : result.records.find((record) => record.month === result.depletedMonth) ?? null;
   const chartData = result.records
     .filter((_, index) => index % 12 === 0 || index === result.records.length - 1)
@@ -50,7 +60,8 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
     const firstHolding = input.investment.holdings[0];
     if (firstHolding) {
       const weights = additionalContributionWeights(input);
-      onChange({ ...input, investment: { ...input.investment, holdings: input.investment.holdings.map((holding, index) => ({ ...holding, monthlyContributionToday: holding.monthlyContributionToday + roundedExtraMonthly * (weights[index] ?? 0) })) } });
+      const extraByHolding = allocateMonthlyAmount(roundedExtraMonthly, weights);
+      onChange({ ...input, investment: { ...input.investment, holdings: input.investment.holdings.map((holding, index) => ({ ...holding, monthlyContributionToday: holding.monthlyContributionToday + (extraByHolding[index] ?? 0) })) } });
     } else {
       onChange({ ...input, investment: { ...input.investment, holdings: [{ id: `holding-${Date.now()}`, name: "退休準備", valueNow: 0, monthlyContributionToday: roundedExtraMonthly, grossReturnRate: input.investment.retirementGrossReturnRate, feeRate: input.investment.retirementFeeRate }] } });
     }
@@ -99,6 +110,16 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
           <p className="action-plan-footnote">也可以把退休年齡往後調 1 年再比較；延後時間會同時增加準備期、減少支出期。</p>
         </section>
       )}
+
+      <section className="result-section cashflow-section">
+        <div className="result-heading"><div><span>先看每個月</span><h2>退休第一個月，錢夠不夠用</h2></div><small>換算成今天的物價</small></div>
+        <div className="cashflow-grid">
+          <article className="cashflow-card"><span>每月生活費</span><strong>{formatMoney(retirementExpenseToday)}</strong><small>退休後第一個月的預估支出</small></article>
+          <article className="cashflow-card"><span>每月收入</span><strong>{formatMoney(recurringIncomeToday)}</strong><small>只算按月進來的勞保、國保、勞退與兼職</small></article>
+          <article className={`cashflow-card ${monthlyCashflowGapToday > 0 ? "attention" : "covered"}`}><span>{monthlyCashflowGapToday > 0 ? "每月還要補" : "固定收入狀態"}</span><strong>{monthlyCashflowGapToday > 0 ? formatMoney(monthlyCashflowGapToday) : "已足夠"}</strong><small>{monthlyCashflowGapToday > 0 ? "需要從投資資產補上的金額" : "固定收入已蓋過第一個月生活費"}</small></article>
+        </div>
+        <p className="section-footnote">一次領的勞保或勞退會放進退休資產，不會被誤算成每月固定收入。</p>
+      </section>
 
       <section className="result-section chart-section">
         <div className="result-heading"><div><span>退休以後</span><h2>投資資產還剩多少</h2></div><small>今天的物價</small></div>

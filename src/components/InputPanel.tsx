@@ -218,6 +218,7 @@ export function InputPanel({ input, errors, onChange }: InputPanelProps) {
           <BriefcaseBusiness aria-hidden="true" />
           <div><span>第五步</span><h2>自己的投資</h2></div>
         </div>
+        <p className="brand-note"><strong>0050 Life</strong> 可以從 0050 開始；有其他股票或基金，再逐筆加入。</p>
         <div className="holding-list">
           {input.investment.holdings.map((holding, index) => (
             <article className="holding-item" key={holding.id}>

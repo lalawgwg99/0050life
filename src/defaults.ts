@@ -38,7 +38,7 @@ export const defaultInput: PlanningInput = {
   investment: {
     holdings: [{
       id: "core",
-      name: "目前投資組合",
+      name: "0050",
       valueNow: 1_000_000,
       monthlyContributionToday: 20_000,
       grossReturnRate: 0.08,

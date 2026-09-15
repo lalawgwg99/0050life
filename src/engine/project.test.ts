@@ -3,7 +3,7 @@ import { birthSerial, monthAtAge } from "../domain/time";
 import { makeInput } from "../test-fixtures";
 import { projectPlan, projectScenarios } from "./project";
 import { yearsUntilRetirement } from "../domain/coverage";
-import { additionalContributionWeights, estimateAdditionalMonthlyInvestment } from "./actions";
+import { additionalContributionWeights, allocateMonthlyAmount, estimateAdditionalMonthlyInvestment } from "./actions";
 
 describe("integrated monthly projection", () => {
   it("does not use future pension income before its claim month", () => {
@@ -144,5 +144,11 @@ describe("integrated monthly projection", () => {
     const result = projectPlan(input);
     expect(additionalContributionWeights(input)).toEqual([0.5, 0.5]);
     expect(estimateAdditionalMonthlyInvestment(input, result)).toBeGreaterThan(0);
+  });
+
+  it("keeps extra saving in whole hundreds while preserving the total", () => {
+    const allocation = allocateMonthlyAmount(3_400, [0.5, 0.3, 0.2]);
+    expect(allocation).toEqual([1_700, 1_000, 700]);
+    expect(allocation.reduce((sum, value) => sum + value, 0)).toBe(3_400);
   });
 });

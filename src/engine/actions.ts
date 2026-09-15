@@ -30,6 +30,30 @@ export function additionalContributionWeights(input: PlanningInput): number[] {
   return holdings.map((_, index) => index === 0 ? 1 : 0);
 }
 
+/** Keep the suggested monthly amount in whole hundreds while preserving its total. */
+export function allocateMonthlyAmount(amount: number, weights: number[]): number[] {
+  if (weights.length === 0 || !Number.isFinite(amount) || amount <= 0) return weights.map(() => 0);
+  const totalUnits = Math.max(0, Math.round(amount / 100));
+  const positiveWeights = weights.map((weight) => Math.max(0, Number.isFinite(weight) ? weight : 0));
+  const weightTotal = positiveWeights.reduce((sum, weight) => sum + weight, 0);
+  if (weightTotal <= 0) return positiveWeights.map((_, index) => index === 0 ? totalUnits * 100 : 0);
+
+  const rawUnits = positiveWeights.map((weight) => totalUnits * weight / weightTotal);
+  const units = rawUnits.map(Math.floor);
+  let remaining = totalUnits - units.reduce((sum, value) => sum + value, 0);
+  const order = rawUnits
+    .map((value, index) => ({ index, fraction: value - Math.floor(value) }))
+    .sort((left, right) => right.fraction - left.fraction)
+    .map(({ index }) => index);
+  let cursor = 0;
+  while (remaining > 0 && order.length > 0) {
+    units[order[cursor % order.length]] += 1;
+    remaining -= 1;
+    cursor += 1;
+  }
+  return units.map((unit) => unit * 100);
+}
+
 export function estimateAdditionalMonthlyInvestment(input: PlanningInput, result: ProjectionResult): number {
   const gap = Math.max(0, result.requiredInvestmentAtRetirement - result.projectedInvestmentAtRetirement);
   if (gap <= 0) return 0;
