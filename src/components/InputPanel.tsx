@@ -101,7 +101,6 @@ export function InputPanel({ input, errors, onChange }: InputPanelProps) {
             <Field label="雇主提繳比例" value={input.laborPension.employerRate * 100} onChange={(value) => update("laborPension", "employerRate", value / 100)} suffix="%" step={0.1} />
             <Field label="專戶每年成長" value={input.laborPension.returnRate * 100} onChange={(value) => update("laborPension", "returnRate", value / 100)} suffix="%" step={0.1} />
             <Field label="提繳工資每年成長" value={input.laborPension.wageGrowthRate * 100} onChange={(value) => update("laborPension", "wageGrowthRate", value / 100)} suffix="%" step={0.1} />
-            {input.laborPension.mode === "monthly" && <Field label="預計分幾年領完" value={input.laborPension.payoutYears} onChange={(value) => update("laborPension", "payoutYears", value)} suffix="年" min={1} max={40} />}
           </div>
         </details>
         <a className="source-link" href="https://www.bli.gov.tw/0104047.html" target="_blank" rel="noreferrer">到勞保局核對月退休金</a>

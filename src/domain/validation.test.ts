@@ -25,8 +25,7 @@ const validInput: PlanningInput = {
     voluntaryRate: 0.06,
     returnRate: 0.03,
     claimAge: 65,
-    mode: "lump",
-    payoutYears: 20
+    mode: "lump"
   },
   investment: {
     assetsNow: 1_000_000,
@@ -61,5 +60,30 @@ describe("input validation", () => {
     expect(errors.some((error) => error.includes("勞保最早"))).toBe(true);
     expect(errors.some((error) => error.includes("勞退請領年齡"))).toBe(true);
     expect(errors.some((error) => error.includes("未滿 15 年"))).toBe(true);
+  });
+
+  it("rejects missing values before attempting date calculations", () => {
+    const invalid = {
+      ...validInput,
+      profile: { ...validInput.profile, birthMonth: Number.NaN },
+      investment: { ...validInput.investment, monthlyContributionToday: Number.NaN }
+    };
+    expect(validateInput(invalid)).toEqual([
+      "出生月份需要填入數字。",
+      "每月投資金額需要填入數字。"
+    ]);
+  });
+
+  it("rejects negative years, impossible ranges, and rates outside the rules", () => {
+    const invalid: PlanningInput = {
+      ...validInput,
+      laborInsurance: { ...validInput.laborInsurance, insuredYearsNow: -1 },
+      laborPension: { ...validInput.laborPension, voluntaryRate: 0.07 },
+      partTime: { ...validInput.partTime, startAge: 70, endAge: 60 }
+    };
+    const errors = validateInput(invalid);
+    expect(errors.some((error) => error.includes("勞保年資"))).toBe(true);
+    expect(errors.some((error) => error.includes("最多為 6%"))).toBe(true);
+    expect(errors.some((error) => error.includes("兼職結束年齡"))).toBe(true);
   });
 });

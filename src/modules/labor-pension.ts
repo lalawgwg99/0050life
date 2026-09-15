@@ -1,7 +1,7 @@
 import { effectiveMonthlyRate, growthFactor } from "../domain/rates";
 import { birthSerial, monthAtAge, toSerial } from "../domain/time";
 import type { LaborPensionProjection, PlanningInput } from "../domain/types";
-import { TAIWAN_RULES_2026 } from "../rules/taiwan-2026";
+import { laborPensionRemainingYears, TAIWAN_RULES_2026 } from "../rules/taiwan-2026";
 
 export function projectLaborPension(input: PlanningInput, endMonth: number): LaborPensionProjection {
   const rules = TAIWAN_RULES_2026.laborPension;
@@ -22,7 +22,8 @@ export function projectLaborPension(input: PlanningInput, endMonth: number): Lab
   let initialMonthlyNominal = 0;
   let claimed = false;
   let payoutCount = 0;
-  const payoutMonths = Math.max(1, Math.round(input.laborPension.payoutYears * 12));
+  const payoutYears = laborPensionRemainingYears(input.laborPension.claimAge);
+  const payoutMonths = payoutYears * 12;
 
   for (let month = asOf; month < endMonth; month += 1) {
     if (month === retirementMonth) balanceAtRetirement = balance;
@@ -36,9 +37,10 @@ export function projectLaborPension(input: PlanningInput, endMonth: number): Lab
         accountByMonth.set(month, balance);
         continue;
       }
+      const annualDiscount = 1 - Math.pow(1 + rules.actuarialAnnualRate, -payoutYears);
       initialMonthlyNominal = actuarialMonthlyRate === 0
         ? balance / payoutMonths
-        : (balance * actuarialMonthlyRate) / (1 - Math.pow(1 + actuarialMonthlyRate, -payoutMonths));
+        : balance * actuarialMonthlyRate / annualDiscount / (1 + actuarialMonthlyRate);
     }
 
     if (!claimed) {
@@ -48,11 +50,11 @@ export function projectLaborPension(input: PlanningInput, endMonth: number): Lab
         balance += wage * (input.laborPension.employerRate + input.laborPension.voluntaryRate);
       }
     } else if (input.laborPension.mode === "monthly" && payoutCount < payoutMonths && balance > 0) {
-      balance *= 1 + actuarialMonthlyRate;
       const payment = payoutCount === payoutMonths - 1 ? balance : Math.min(initialMonthlyNominal, balance);
       events.set(month, payment);
       balance -= payment;
       payoutCount += 1;
+      if (balance > 0) balance *= 1 + actuarialMonthlyRate;
     }
 
     accountByMonth.set(month, Math.max(0, balance));

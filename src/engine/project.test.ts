@@ -27,8 +27,7 @@ describe("integrated monthly projection", () => {
         voluntaryRate: 0,
         returnRate: 0,
         claimAge: 60,
-        mode: "monthly",
-        payoutYears: 15
+        mode: "monthly"
       },
       investment: {
         assetsNow: 1_000_000,
@@ -69,7 +68,7 @@ describe("integrated monthly projection", () => {
       economy: { inflationRate: 0 },
       spending: { monthlyToday: 10_000 },
       laborInsurance: { insuredYearsNow: 0, insuredYearsFuture: 0, averageSalaryToday: 0, salaryGrowthRate: 0, claimAge: 65, indexation: "none" },
-      laborPension: { balanceNow: 0, seniorityYearsNow: 0, seniorityYearsFuture: 0, monthlyWageToday: 0, wageGrowthRate: 0, employerRate: 0.06, voluntaryRate: 0, returnRate: 0, claimAge: 65, mode: "lump", payoutYears: 20 },
+      laborPension: { balanceNow: 0, seniorityYearsNow: 0, seniorityYearsFuture: 0, monthlyWageToday: 0, wageGrowthRate: 0, employerRate: 0.06, voluntaryRate: 0, returnRate: 0, claimAge: 65, mode: "lump" },
       investment: { assetsNow: 0, monthlyContributionToday: 0, contributionGrowthRate: 0, grossReturnRate: 0, feeRate: 0 },
       partTime: { monthlyToday: 0, startAge: 65, endAge: 65, growthRate: 0 }
     });

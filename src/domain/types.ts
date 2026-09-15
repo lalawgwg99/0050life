@@ -34,7 +34,6 @@ export interface PlanningInput {
     returnRate: number;
     claimAge: number;
     mode: PensionMode;
-    payoutYears: number;
   };
   investment: {
     assetsNow: number;
