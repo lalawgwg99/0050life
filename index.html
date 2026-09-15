@@ -2924,7 +2924,7 @@
             <span class="hero-pill" id="badgeStatus">計算中</span>
           </div>
           <div class="hero-metric" id="valShortfall">$0</div>
-          <div class="hero-subtitle" id="valShortfallReal">折合今日幣值 $0（退休當年名目金額）</div>
+          <div class="hero-subtitle" id="valShortfallReal" style="color:var(--system-green-dark); font-weight:500;">所有試算皆已扣除通膨，為【實質購買力 (今日幣值)】</div>
           <div>
             
           </div>
@@ -3545,9 +3545,10 @@ class LongevityModel {
    */
   function runRetirementEngine(p) {
     const yearsToRetire = Math.max(0, p.retireAge - p.currentAge);
-    const inflFactor = Math.pow(1 + p.inflationRate / 100, yearsToRetire);
-    const nominalExpense = p.targetMonthlyToday * inflFactor;
-    const nominalPartTime = p.partTimeToday * inflFactor;
+    // 【核心修正】系統全面改用今日幣值 (Real Dollars)，不再放大名目數字
+    const inflFactor = 1.0; 
+    const nominalExpense = p.targetMonthlyToday;
+    const nominalPartTime = p.partTimeToday;
 
     // 第一支柱：勞保老年年金
     const statutoryAge = LaborInsuranceModel.getNormalAge(p.birthROC);
@@ -3623,9 +3624,8 @@ class LongevityModel {
     const planningYears = Math.max(1, (p.lifeExpectancy || 85) - p.retireAge);
     
     // 實質實算年報酬率（扣除通膨）
-    const rNet = p.netReturnRate || 0.077;
-    const rInfl = (p.inflationRate || 2.0) / 100;
-    const rReal = (rInfl > -0.5) ? ((1 + rNet) / (1 + rInfl) - 1) : rNet;
+    // 【核心修正】外部傳入的 netReturnRate 已經是實質報酬率（Real Return）
+    const rReal = p.netReturnRate || 0.05;
     const rRealMonthly = rReal / 12;
 
     if (p.withdrawalMode === 'deplete') {
@@ -3813,7 +3813,7 @@ class LongevityModel {
   syncSlider('retireAge', 'retireAgeSlider');
   syncSlider('claimAge', 'claimAgeSlider');
 
-  function calculate(isSettingBaseline = false) {
+  function calculate(isSettingBaseline = false) { const inflRate = n('inflation') / 100;
     const age = n('currentAge') || 44;
     
     // ── 全面防呆邊界檢核 ──
@@ -3841,10 +3841,12 @@ class LongevityModel {
     const statutoryAge = laborResult.normalAge;
 
     // 第二支柱：勞退新制 (動態薪資成長與 PV 反推)
-    const wageGrowthRate = 0.02; // 預設 2% 薪資成長率
+    // 【核心修正】勞退也使用實質報酬，薪資成長設為 0% (代表與通膨持平，維持今日購買力)
+    const realPensionReturn = (1 + n('pensionReturn') / 100) / (1 + inflRate) - 1;
+    const wageGrowthRate = 0.0; 
     const pensionResult = LaborPensionModel.calculateAccumulation(
       n('pensionBalance'), n('pensionWage'), 0.06, n('selfRate') / 100,
-      n('pensionReturn') / 100, wageGrowthRate, monthsToRetire / 12
+      realPensionReturn, wageGrowthRate, monthsToRetire / 12
     );
     const projectedPensionLump = pensionResult.finalBalance;
     const pensionMode = $('pensionMode').value;
@@ -3853,7 +3855,8 @@ class LongevityModel {
     
     // ── 渲染：勞退雙方案即時對照卡片 ──
     const swrBenefit = Math.round((projectedPensionLump * (n('withdrawRate') / 100)) / 12);
-    const bridgeMonthsCovered = Math.floor(projectedPensionLump / Math.max(1, (n('targetToday') * Math.pow(1 + n('inflation')/100, Math.max(0, retire - age)))));
+    // 【核心修正】因為 projectedPensionLump 已經是實質購買力，所以直接除以今日生活費 (Real)
+    const bridgeMonthsCovered = Math.floor(projectedPensionLump / Math.max(1, n('targetToday')));
     
     if ($('tagPensionModeDesc')) {
       $('tagPensionModeDesc').textContent = (pensionMode === 'monthly')
@@ -3879,7 +3882,9 @@ class LongevityModel {
     // 第三支柱：自有投資
     const grossReturn = n('expectedReturn') / 100;
     const feeRate = n('fee') / 100;
-    const netReturn = (1 + grossReturn) / (1 + feeRate) - 1;
+    const nominalNetReturn = (1 + grossReturn) / (1 + feeRate) - 1;
+    // 【核心修正】全部轉換為實質報酬率（Real Return），讓整個系統維持在「今日購買力（今日幣值）」
+    const netReturn = (1 + nominalNetReturn) / (1 + inflRate) - 1;
     updateNetReturnTag();
     const projectedStockAssets = fv(n('assetsNow'), n('monthlyInvest'), netReturn, monthsToRetire);
 
@@ -3910,6 +3915,7 @@ class LongevityModel {
 
     // ── 呼叫解耦引擎 (先執行取得精算結果 R) ──
     const R = runRetirementEngine({
+      netReturnRate: netReturn, // 傳入實質報酬率 (Real Return)
       currentAge: age, retireAge: retire, claimAge: claim,
       targetMonthlyToday: n('targetToday'), partTimeToday: n('partTime'),
       inflationRate: n('inflation'), birthROC: birthROC,
@@ -4158,7 +4164,7 @@ class LongevityModel {
     // Hero 缺口金額（達標時改綠色）
     $('valShortfall').textContent = fmtMoney(shortfall);
     $('valShortfall').style.color = shortfall <= 0 ? 'var(--system-green-dark)' : '';
-    $('valShortfallReal').textContent = '折合今日幣值約 ' + fmtMoney(shortfall / R.inflFactor) + '（退休當年名目金額）';
+    // 不需更新 valShortfallReal 文字，保留預設的「已扣除通膨」說明
 
     // Triad 三欄
     $('valCurrent').textContent = fmtMoney(n('assetsNow') + n('pensionBalance'));
