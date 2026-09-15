@@ -959,64 +959,7 @@
     }
 
     /* Print Stylesheet */
-    @media print {
-      body {
-      margin: 0;
-      padding: 0;
-      background-color: var(--body-bg);
-      background-image: linear-gradient(180deg, var(--accent-tint) 0%, var(--body-bg) 400px);
-      background-repeat: no-repeat;
-      background-attachment: fixed;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
-      color: var(--label-primary);
-      -webkit-font-smoothing: antialiased;
-    }
-      .container {
-        max-width: 100% !important;
-        padding: 0 !important;
-      }
-      .mobile-nav-segmented,
-      .mobile-floating-bar,
-      .btn-reset,
-      .btn-action-outline,
-      .quick-chips,
-      header .btn-reset,
-      #tabBtnInputs,
-      #tabBtnResults {
-        display: none !important;
-      }
-      .layout-grid {
-        display: block !important;
-      }
-      #mainContent {
-        display: none !important; /* 列印時專注於精算報告結果 */
-      }
-      #asideContent {
-        display: block !important;
-        position: static !important;
-      }
-      .apple-card {
-        box-shadow: none !important;
-        border: 1px solid #d1d1d6 !important;
-        break-inside: avoid;
-        margin-bottom: 12px !important;
-        padding: 16px !important;
-      }
-      .hero-summary {
-      background: #ffffff;
-      border: none;
-      border-radius: 28px;
-      padding: 32px 28px;
-      margin-bottom: 24px;
-      box-shadow: var(--shadow-hero);
-      position: relative;
-      overflow: hidden;
-    }
-      .privacy-footer {
-        display: block !important;
-        margin-top: 20px !important;
-      }
-    }
+    
   
     /* Investment Dashboard */
     .invest-dashboard {
@@ -1904,39 +1847,7 @@
     /* =========================================
        ULTIMATE PRINT OVERRIDES (Must be last)
        ========================================= */
-    @media print {
-      body { background: #fff !important; background-image: none !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .container { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
-      .app-header { margin-bottom: 20px !important; }
-      .header-row { border-bottom: 2px solid #000 !important; padding-bottom: 10px !important; }
-      .header-desc, .header-actions, .mobile-nav-segmented, .mobile-floating-bar, .inspector-sticky { display: none !important; }
-      .brand-pill { border: 1px solid #000 !important; color: #000 !important; background: transparent !important; }
-      
-      .layout-grid { display: block !important; }
-      #asideContent { display: none !important; }
-      #mainContent { width: 100% !important; }
-      
-      .apple-card, .hero-summary, .waterfall-phase, .system-callout {
-        box-shadow: none !important;
-        border: 1px solid #ccc !important;
-        background: #fff !important;
-        page-break-inside: avoid !important;
-        border-radius: 8px !important;
-      }
-      
-      .hero-summary .card-title, .hero-summary .stat-label, .hero-summary .stat-val, .hero-metric, .card-title, .card-subtitle {
-        color: #000 !important;
-      }
-      
-      .triad-grid { display: flex !important; page-break-inside: avoid !important; }
-      .triad-cell { border: 1px solid #ccc !important; flex: 1 !important; margin: 0 5px !important; box-shadow: none !important; background: #fff !important; }
-      .triad-cell .stat-val { color: #000 !important; }
-      
-      .waterfall-container { flex-direction: column !important; }
-      .cashflow-row-name, .cashflow-row-val { color: #000 !important; }
-      .progress-fill { background: #333 !important; }
-      .progress-track { background: #eee !important; border: 1px solid #ccc !important; }
-    }
+    
   
 
     /* Header Action Buttons Fix */
@@ -2132,7 +2043,57 @@
         gap: 8px !important;
       }
     }
-    </style>
+    
+    @media print {
+      body {
+        background: #fff !important;
+        background-image: none !important;
+        color: #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .container {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      /* Hide navigation and headers not needed for print */
+      .header-desc, .header-actions, .mobile-nav-segmented, .mobile-floating-bar, .app-header {
+        display: none !important;
+      }
+      
+      /* Stack layout */
+      .layout-grid {
+        display: block !important;
+      }
+      
+      /* Show both main and aside but stack them cleanly */
+      #mainContent, #asideContent {
+        display: block !important;
+        width: 100% !important;
+        position: static !important;
+      }
+      
+      /* Format cards for print */
+      .apple-card, .hero-summary, .waterfall-phase, .system-callout {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        background: #fff !important;
+        page-break-inside: avoid !important;
+        border-radius: 8px !important;
+        margin-bottom: 20px !important;
+      }
+      
+      .cashflow-box, .waterfall-container {
+        page-break-inside: avoid !important;
+      }
+
+      /* Reduce font sizes slightly to fit better */
+      body {
+        font-size: 13px !important;
+      }
+    }
+</style>
 </head>
 <body>
 <div class="container">
@@ -4433,7 +4394,57 @@ class LongevityModel {
         .waterfall-container .cashflow-row { padding: 7px 0; font-size: 13px; }
         .waterfall-container .final { margin-top: auto; padding-top: 14px; }
         @media (max-width: 768px) { .waterfall-container { flex-direction: column; } }
-      </style>
+      
+    @media print {
+      body {
+        background: #fff !important;
+        background-image: none !important;
+        color: #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+      .container {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+      /* Hide navigation and headers not needed for print */
+      .header-desc, .header-actions, .mobile-nav-segmented, .mobile-floating-bar, .app-header {
+        display: none !important;
+      }
+      
+      /* Stack layout */
+      .layout-grid {
+        display: block !important;
+      }
+      
+      /* Show both main and aside but stack them cleanly */
+      #mainContent, #asideContent {
+        display: block !important;
+        width: 100% !important;
+        position: static !important;
+      }
+      
+      /* Format cards for print */
+      .apple-card, .hero-summary, .waterfall-phase, .system-callout {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+        background: #fff !important;
+        page-break-inside: avoid !important;
+        border-radius: 8px !important;
+        margin-bottom: 20px !important;
+      }
+      
+      .cashflow-box, .waterfall-container {
+        page-break-inside: avoid !important;
+      }
+
+      /* Reduce font sizes slightly to fit better */
+      body {
+        font-size: 13px !important;
+      }
+    }
+</style>
     `;
 
     if (R.hasBridgePeriod) {
