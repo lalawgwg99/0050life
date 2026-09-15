@@ -4011,8 +4011,10 @@ class LongevityModel {
       if ($('subPledgeExposure')) $('subPledgeExposure').textContent = '總市值 $' + fmtMoney(R.totalPortfolioValue);
       
       if ($('valPledgeBaseWithdraw')) $('valPledgeBaseWithdraw').textContent = fmtMoney(R.monthlySWRIncome * 12) + ' / 年';
+      if ($('subPledgeBaseWithdraw')) $('subPledgeBaseWithdraw').textContent = '每月 ' + fmtMoney(R.monthlySWRIncome);
       
       if ($('valPledgeAnnualInterest')) $('valPledgeAnnualInterest').textContent = '-' + fmtMoney(R.monthlyPledgeInterest * 12) + ' / 年';
+      if ($('subPledgeMonthlyInterest')) $('subPledgeMonthlyInterest').textContent = '每月 -' + fmtMoney(R.monthlyPledgeInterest);
       
       const annualDisposable = (R.monthlySWRIncome * 12) - (R.monthlyPledgeInterest * 12);
       if ($('valPledgeDisposable')) $('valPledgeDisposable').textContent = fmtMoney(annualDisposable) + ' / 年';
