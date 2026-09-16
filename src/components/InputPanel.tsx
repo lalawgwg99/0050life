@@ -284,9 +284,9 @@ export function InputPanel({ input, errors, onChange }: InputPanelProps) {
               <div className="subsection-label">退休後提領方式（選填）</div>
               <label className="toggle-field compact-toggle">
                 <input type="checkbox" role="switch" checked={input.investment.withdrawalRule?.enabled ?? false} onChange={(event) => updateInvestment({ withdrawalRule: { ...(input.investment.withdrawalRule ?? { annualRate: 0.04 }), enabled: event.target.checked } })} />
-                <span className="toggle-control" aria-hidden="true" /><span>我想參考「每年固定比例提領」</span>
+                <span className="toggle-control" aria-hidden="true" /><span>我想參考「固定比例提領」</span>
               </label>
-              {input.investment.withdrawalRule?.enabled && <Field label="每年提領比例" value={(input.investment.withdrawalRule.annualRate ?? 0.04) * 100} onChange={(value) => updateInvestment({ withdrawalRule: { ...(input.investment.withdrawalRule ?? { enabled: true }), annualRate: value / 100 } })} suffix="%" min={0.1} max={20} step={0.1} hint="常見參考值是 4%，只是情境比較，不會改變上面的主要結果。" />}
+              {input.investment.withdrawalRule?.enabled && <Field label="每年固定提領比例" value={(input.investment.withdrawalRule.annualRate ?? 0.04) * 100} onChange={(value) => updateInvestment({ withdrawalRule: { ...(input.investment.withdrawalRule ?? { enabled: true }), annualRate: value / 100 } })} suffix="%" min={0.1} max={20} step={0.1} hint="常見參考值是 4%，只是情境比較，不代表本金一定不會減少。" />}
               <div className="subsection-label">股票質押（選填）</div>
               <label className="toggle-field compact-toggle">
                 <input type="checkbox" role="switch" checked={input.investment.stockPledge?.enabled ?? false} onChange={(event) => updateInvestment({ stockPledge: { ...(input.investment.stockPledge ?? { loanToValue: 0.3, annualInterestRate: 0.025, maintenanceRate: 0.13 }), enabled: event.target.checked } })} />

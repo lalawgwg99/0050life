@@ -85,12 +85,12 @@ test("keeps voluntary labor-pension contribution optional", async ({ page }) => 
 
 test("keeps optional withdrawal and pledge comparisons out of the main result", async ({ page, isMobile }) => {
   await page.getByText("進階設定：報酬、費用與退休後配置", { exact: true }).click();
-  await page.getByText("我想參考「每年固定比例提領」", { exact: true }).click();
+  await page.getByText("我想參考「固定比例提領」", { exact: true }).click();
   await page.getByText("我想看看股票質押能借多少", { exact: true }).click();
   if (isMobile) await page.getByRole("tab", { name: "查看結果" }).click();
   await expect(page.getByRole("heading", { name: "提領與借款試算" })).toBeVisible();
   await expect(page.getByText("不會改變主要結果", { exact: true })).toBeVisible();
-  await expect(page.getByText("固定比例提領", { exact: true })).toBeVisible();
+  await expect(page.getByText("固定比例提領參考", { exact: true })).toBeVisible();
   await expect(page.getByText("股票質押估算", { exact: true })).toBeVisible();
 });
 

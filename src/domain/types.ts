@@ -147,12 +147,18 @@ export interface MonthlyRecord {
   portfolioNominal: number;
   portfolioReal: number;
   pensionAccountNominal: number;
+  cashReserveNominal: number;
+  totalRetirementAssetsNominal: number;
 }
 
 export interface ProjectionResult {
   input: PlanningInput;
   investmentHoldings: InvestmentHoldingProjection[];
   projectedInvestmentAtRetirement: number;
+  lumpPensionAmountAtRetirement: number;
+  lumpPensionReinvestedAtRetirement: number;
+  lumpPensionCashAtRetirement: number;
+  projectedRetirementAssetsAtRetirement: number;
   requiredInvestmentAtRetirement: number;
   investmentGapAtRetirement: number;
   readiness: number;

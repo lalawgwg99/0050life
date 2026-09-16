@@ -58,7 +58,10 @@ describe("integrated monthly projection", () => {
     for (const record of result.records) {
       const income = record.laborInsuranceNominal + record.nationalPensionNominal + record.laborPensionNominal + record.partTimeNominal;
       const surplus = Math.max(0, income - record.expenseNominal);
-      const expected = Math.max(0, opening + record.portfolioReturnNominal - record.portfolioWithdrawalNominal + surplus);
+      const lumpReinvested = record.month === result.laborPension.claimMonth && result.input.laborPension.mode === "lump"
+        ? result.laborPension.balanceAtClaim * (result.input.laborPension.lumpReinvestRate ?? 1)
+        : 0;
+      const expected = Math.max(0, opening + lumpReinvested + record.portfolioReturnNominal - record.portfolioWithdrawalNominal + surplus);
       expect(record.portfolioNominal).toBeCloseTo(expected, 6);
       opening = record.portfolioNominal;
     }
@@ -166,6 +169,25 @@ describe("integrated monthly projection", () => {
     const allCash = projectPlan({ ...base, laborPension: { ...base.laborPension, lumpReinvestRate: 0 } });
     expect(allInvested.records[0].portfolioNominal).toBe(1_100_000);
     expect(allCash.records[0].portfolioNominal).toBe(0);
+    expect(allCash.records[0].cashReserveNominal).toBe(1_100_000);
+    expect(allCash.records[0].totalRetirementAssetsNominal).toBe(1_100_000);
+    expect(allInvested.projectedRetirementAssetsAtRetirement).toBe(1_200_000);
+    expect(allInvested.lumpPensionReinvestedAtRetirement).toBe(1_200_000);
     expect(allCash.depletedMonth).toBeNull();
+  });
+
+  it("adds a reinvested lump pension before applying the monthly investment return", () => {
+    const input = makeInput({
+      profile: { retirementAge: 65, longevityAge: 66 },
+      economy: { inflationRate: 0 },
+      spending: { monthlyToday: 0 },
+      laborInsurance: { insuredYearsNow: 0, insuredYearsFuture: 0, averageSalaryToday: 0, salaryGrowthRate: 0, claimAge: 65, indexation: "none" },
+      laborPension: { balanceNow: 1_200_000, seniorityYearsNow: 20, seniorityYearsFuture: 0, monthlyWageToday: 0, wageGrowthRate: 0, employerRate: 0, voluntaryRate: 0, returnRate: 0, claimAge: 65, mode: "lump", lumpReinvestRate: 1 },
+      investment: { holdings: [], contributionGrowthRate: 0, retirementAllocation: "custom", retirementGrossReturnRate: 0.12, retirementFeeRate: 0 },
+      partTime: { monthlyToday: 0, startAge: 65, endAge: 65, growthRate: 0 }
+    });
+    const result = projectPlan(input);
+    expect(result.records[0].portfolioReturnNominal).toBeGreaterThan(0);
+    expect(result.records[0].portfolioNominal).toBeGreaterThan(1_200_000);
   });
 });

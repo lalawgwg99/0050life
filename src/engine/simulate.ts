@@ -34,8 +34,6 @@ export function simulateRetirement(
 
   for (let month = retirementMonth; month < endMonth; month += 1) {
     const monthsFromAsOf = month - asOf;
-    const portfolioReturnNominal = portfolio * monthlyReturn;
-    portfolio += portfolioReturnNominal;
     const expenseNominal = input.spending.monthlyToday * growthFactor(input.economy.inflationRate, monthsFromAsOf);
     const laborInsuranceNominal = laborInsurance.events.get(month) ?? 0;
     const nationalPensionNominal = nationalPension.events.get(month) ?? 0;
@@ -43,12 +41,20 @@ export function simulateRetirement(
     const isLumpPension = input.laborPension.mode === "lump";
     const lumpReinvestNominal = isLumpPension ? laborPensionEventNominal * (input.laborPension.lumpReinvestRate ?? 1) : 0;
     const lumpCashNominal = isLumpPension ? laborPensionEventNominal - lumpReinvestNominal : 0;
-    if (lumpCashNominal > 0) cashReserve += lumpCashNominal;
-    const laborPensionNominal = isLumpPension ? lumpReinvestNominal : laborPensionEventNominal;
+    if (isLumpPension && laborPensionEventNominal > 0) {
+      portfolio += lumpReinvestNominal;
+      cashReserve += lumpCashNominal;
+    }
+    const laborInsuranceLumpNominal = laborInsurance.eligibleForAnnuity ? 0 : laborInsuranceNominal;
+    if (laborInsuranceLumpNominal > 0) cashReserve += laborInsuranceLumpNominal;
+    const portfolioReturnNominal = portfolio * monthlyReturn;
+    portfolio += portfolioReturnNominal;
+    const laborPensionNominal = isLumpPension ? 0 : laborPensionEventNominal;
+    const laborInsuranceIncomeNominal = laborInsurance.eligibleForAnnuity ? laborInsuranceNominal : 0;
     const partTimeNominal = input.partTime.enabled && month >= partTimeStart && month < partTimeEnd
       ? input.partTime.monthlyToday * growthFactor(input.partTime.growthRate, monthsFromAsOf)
       : 0;
-    const income = laborInsuranceNominal + nationalPensionNominal + laborPensionNominal + partTimeNominal;
+    const income = laborInsuranceIncomeNominal + nationalPensionNominal + laborPensionNominal + partTimeNominal;
     const need = Math.max(0, expenseNominal - income);
     const surplus = Math.max(0, income - expenseNominal);
     const cashWithdrawalNominal = Math.min(cashReserve, need);
@@ -65,7 +71,7 @@ export function simulateRetirement(
       month,
       age: ageAtMonth(birth, month),
       expenseNominal,
-      laborInsuranceNominal,
+      laborInsuranceNominal: laborInsuranceIncomeNominal,
       nationalPensionNominal,
       laborPensionNominal,
       partTimeNominal,
@@ -74,7 +80,9 @@ export function simulateRetirement(
       unmetNeedNominal,
       portfolioNominal: portfolio,
       portfolioReal: realValue(portfolio, input.economy.inflationRate, monthsFromAsOf),
-      pensionAccountNominal: laborPension.accountByMonth.get(month) ?? 0
+      pensionAccountNominal: laborPension.accountByMonth.get(month) ?? 0,
+      cashReserveNominal: cashReserve,
+      totalRetirementAssetsNominal: portfolio + cashReserve
     });
   }
 

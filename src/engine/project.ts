@@ -40,12 +40,18 @@ export function projectPlan(input: PlanningInput): ProjectionResult {
   const laborPension = projectLaborPension(input, endMonth);
   const investmentHoldings = projectInvestmentHoldingsAtRetirement(input);
   const projectedInvestmentAtRetirement = investmentHoldings.reduce((sum, holding) => sum + holding.projectedValueNominal, 0);
+  const lumpPensionAmountAtRetirement = input.laborPension.mode === "lump" && laborPension.claimMonth === monthAtAge(birth, input.profile.retirementAge)
+    ? laborPension.balanceAtClaim
+    : 0;
+  const lumpPensionReinvestedAtRetirement = lumpPensionAmountAtRetirement * (input.laborPension.lumpReinvestRate ?? 1);
+  const lumpPensionCashAtRetirement = lumpPensionAmountAtRetirement - lumpPensionReinvestedAtRetirement;
+  const projectedRetirementAssetsAtRetirement = projectedInvestmentAtRetirement + lumpPensionAmountAtRetirement;
   const requiredInvestmentAtRetirement = solveRequiredInvestment(input, laborInsurance, nationalPension, laborPension);
   const simulation = simulateRetirement(input, laborInsurance, nationalPension, laborPension, projectedInvestmentAtRetirement);
   const investmentGapAtRetirement = Math.max(0, requiredInvestmentAtRetirement - projectedInvestmentAtRetirement);
   const readiness = requiredInvestmentAtRetirement === 0
     ? 1
-    : Math.min(1, projectedInvestmentAtRetirement / requiredInvestmentAtRetirement);
+    : Math.min(1, (projectedInvestmentAtRetirement + lumpPensionAmountAtRetirement) / requiredInvestmentAtRetirement);
   const warnings = [
     "未來規定、物價與投資表現可能改變；這是依目前資料做的規劃，不是給付保證。"
   ];
@@ -67,6 +73,10 @@ export function projectPlan(input: PlanningInput): ProjectionResult {
     input,
     investmentHoldings,
     projectedInvestmentAtRetirement,
+    lumpPensionAmountAtRetirement,
+    lumpPensionReinvestedAtRetirement,
+    lumpPensionCashAtRetirement,
+    projectedRetirementAssetsAtRetirement,
     requiredInvestmentAtRetirement,
     investmentGapAtRetirement,
     readiness,

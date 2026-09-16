@@ -22,6 +22,7 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
   const retirementOffset = retirementMonth - asOf;
   const toToday = (amount: number, month: number) => realValue(amount, input.economy.inflationRate, month - asOf);
   const projectedToday = toToday(result.projectedInvestmentAtRetirement, retirementMonth);
+  const projectedTotalToday = toToday(result.projectedRetirementAssetsAtRetirement, retirementMonth);
   const requiredToday = toToday(result.requiredInvestmentAtRetirement, retirementMonth);
   const gapToday = Math.max(0, requiredToday - projectedToday);
   const retirementRecord = result.records[0];
@@ -117,8 +118,8 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
       </section>
 
       <div className="metric-grid">
-        <article className="metric-card primary"><span>退休時預計投資資產</span><strong>{formatMoney(projectedToday)}</strong><small>今天購買力｜退休當年帳面約 {formatMoney(result.projectedInvestmentAtRetirement)}</small></article>
-        <article className="metric-card"><span>建議準備的投資資產</span><strong>{formatMoney(requiredToday)}</strong><small>今天購買力｜退休當年帳面約 {formatMoney(result.requiredInvestmentAtRetirement)}</small></article>
+        <article className="metric-card primary"><span>退休時可運用資產</span><strong>{formatMoney(projectedTotalToday)}</strong><small>自己的投資 {formatMoney(projectedToday)} ＋勞退一次領 {formatMoney(toToday(result.lumpPensionAmountAtRetirement, retirementMonth))}</small></article>
+        <article className="metric-card"><span>依目前假設至少需要</span><strong>{formatMoney(requiredToday)}</strong><small>退休時的最低可運用資產估算，不是保證金額</small></article>
         <article className="metric-card"><span>退休後每月由投資支付</span><strong>{monthlyCashflowGapToday > 0 ? formatMoney(monthlyCashflowGapToday) : "不需要"}</strong><small>年金收入不夠支付生活費時，由自己的投資資產支付；不代表資產不夠</small></article>
       </div>
 
@@ -129,9 +130,9 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
       </section>
 
       <section className="readiness-band" aria-label={`退休準備完成 ${readinessPercent}%`}>
-        <div className="readiness-heading"><div><span>退休準備進度</span><small>距離退休約 {yearsToRetirement.toFixed(1)} 年</small></div><strong>{readinessPercent}%</strong></div>
+        <div className="readiness-heading"><div><span>退休準備進度</span><small>距離退休約 {yearsToRetirement.toFixed(1)} 年</small></div><strong>{projectedTotalToday >= requiredToday ? `超過 ${formatCompactMoney(projectedTotalToday - requiredToday)}` : `${readinessPercent}%`}</strong></div>
         <div className="progress-track"><span style={{ width: `${result.readiness * 100}%` }} /></div>
-        <div className="progress-scale"><span>0%</span><span>目前 {readinessPercent}%</span><span>目標 100%</span></div>
+        <div className="progress-scale"><span>0%</span><span>{projectedTotalToday >= requiredToday ? "目前已達標" : `目前 ${readinessPercent}%`}</span><span>目標</span></div>
         <div className="readiness-detail">
           <div><span>預計準備</span><strong>{formatMoney(projectedToday)}</strong></div>
           <div><span>需要目標</span><strong>{formatMoney(requiredToday)}</strong></div>
@@ -187,7 +188,7 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
         </details>}
       </section>
 
-      {(withdrawalRule?.enabled || pledge?.enabled) && <section className="result-section optional-analysis"><div className="result-heading"><div><span>選用比較</span><h2>提領與借款試算</h2></div><small>不會改變主要結果</small></div><div className="analysis-grid">{withdrawalRule?.enabled && <article><strong>固定比例提領</strong><span>每年 {formatPercent(withdrawalRule.annualRate)}</span><b>{formatMoney(fourPercentMonthly)}／月</b><small>以退休時預計資產估算；比例越高，本金越容易下降。</small></article>}{pledge?.enabled && <article><strong>股票質押估算</strong><span>約可借 {formatMoney(pledgeLoanToday)}</span><b>每月利息約 {formatMoney(pledgeInterestMonthlyToday)}</b><small>以退休時投資市值、借款 {formatPercent(pledge.loanToValue)}、年利率 {formatPercent(pledge.annualInterestRate)} 估算；股價下跌可能被追繳或賣出。</small></article>}</div></section>}
+      {(withdrawalRule?.enabled || pledge?.enabled) && <section className="result-section optional-analysis"><div className="result-heading"><div><span>選用比較</span><h2>提領與借款試算</h2></div><small>不會改變主要結果</small></div><div className="analysis-grid">{withdrawalRule?.enabled && <article><strong>固定比例提領參考</strong><span>每年 {formatPercent(withdrawalRule.annualRate)}</span><b>{formatMoney(fourPercentMonthly)}／月</b><small>以退休時預計投資資產估算；只是提領情境，不代表本金不會減少，也不是保證。</small></article>}{pledge?.enabled && <article><strong>股票質押估算</strong><span>約可借 {formatMoney(pledgeLoanToday)}</span><b>每月利息約 {formatMoney(pledgeInterestMonthlyToday)}</b><small>以退休時投資市值、借款 {formatPercent(pledge.loanToValue)}、年利率 {formatPercent(pledge.annualInterestRate)} 估算；股價下跌可能被追繳或賣出。</small></article>}</div></section>}
 
       <section className="result-section">
         <div className="result-heading"><div><span>不同市場狀況</span><h2>結果可能差多少</h2></div></div>
@@ -195,7 +196,7 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
           <table className="scenario-table">
             <thead><tr><th>情況</th><th>退休後報酬</th><th>退休時投資</th><th>能否撐到目標</th></tr></thead>
             <tbody>{scenarios.map((scenario) => {
-              const scenarioProjected = toToday(scenario.result.projectedInvestmentAtRetirement, retirementMonth);
+              const scenarioProjected = toToday(scenario.result.projectedRetirementAssetsAtRetirement, retirementMonth);
               const depletedAge = scenario.result.records.find((record) => record.month === scenario.result.depletedMonth)?.age;
               return <tr key={scenario.name}><td><strong>{scenario.name}</strong></td><td>{formatPercent(scenario.retirementReturnRate)}</td><td>{formatMoney(scenarioProjected)}</td><td className={scenario.result.depletedMonth === null ? "ok" : "not-ok"}>{scenario.result.depletedMonth === null ? "可以" : `約 ${depletedAge?.toFixed(0)} 歲不足`}</td></tr>;
             })}</tbody>
