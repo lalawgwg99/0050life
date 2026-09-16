@@ -55,7 +55,7 @@ export function allocateMonthlyAmount(amount: number, weights: number[]): number
 }
 
 export function estimateAdditionalMonthlyInvestment(input: PlanningInput, result: ProjectionResult): number {
-  const gap = Math.max(0, result.requiredInvestmentAtRetirement - result.projectedInvestmentAtRetirement);
+  const gap = result.investmentGapAtRetirement;
   if (gap <= 0) return 0;
 
   const weights = additionalContributionWeights(input);

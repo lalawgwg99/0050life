@@ -10,6 +10,7 @@ import { additionalContributionWeights, allocateMonthlyAmount, estimateAdditiona
 import { projectPlan } from "../engine/project";
 import { runMonteCarlo } from "../engine/monte-carlo";
 import { projectLaborPension } from "../modules/labor-pension";
+import { summarizeResult } from "../engine/result-summary";
 
 interface ResultsPanelProps {
   result: ProjectionResult;
@@ -25,9 +26,10 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
   const retirementOffset = retirementMonth - asOf;
   const toToday = (amount: number, month: number) => realValue(amount, input.economy.inflationRate, month - asOf);
   const projectedToday = toToday(result.projectedInvestmentAtRetirement, retirementMonth);
-  const projectedTotalToday = toToday(result.projectedRetirementAssetsAtRetirement, retirementMonth);
-  const requiredToday = toToday(result.requiredRetirementAssetsAtRetirement, retirementMonth);
-  const gapToday = Math.max(0, requiredToday - projectedToday);
+  const summary = summarizeResult(result);
+  const projectedTotalToday = summary.available;
+  const requiredToday = summary.target;
+  const gapToday = summary.gap;
   const retirementRecord = result.records[0];
   const retirementExpenseToday = retirementRecord ? toToday(retirementRecord.expenseNominal, retirementRecord.month) : 0;
   const recurringIncomeNominal = retirementRecord
@@ -36,9 +38,10 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
       + (input.laborPension.mode === "monthly" ? retirementRecord.laborPensionNominal : 0)
       + (input.partTime.enabled ? retirementRecord.partTimeNominal : 0)
     : 0;
-  const recurringIncomeToday = retirementRecord ? toToday(recurringIncomeNominal, retirementRecord.month) : 0;
+  const netRecurringIncomeNominal = Math.max(0, recurringIncomeNominal - (retirementRecord?.taxNominal ?? 0));
+  const recurringIncomeToday = retirementRecord ? toToday(netRecurringIncomeNominal, retirementRecord.month) : 0;
   const monthlyCashflowGapToday = Math.max(0, retirementExpenseToday - recurringIncomeToday);
-  const monthlyCashflowGapNominal = Math.max(0, (retirementRecord?.expenseNominal ?? 0) - recurringIncomeNominal);
+  const monthlyCashflowGapNominal = Math.max(0, (retirementRecord?.expenseNominal ?? 0) - netRecurringIncomeNominal);
   const withdrawalRule = input.investment.withdrawalRule;
   const fourPercentMonthly = projectedToday * (withdrawalRule?.annualRate ?? 0.04) / 12;
   const lumpAmountToday = toToday(result.laborPension.balanceAtClaim, result.laborPension.claimMonth);
@@ -49,11 +52,11 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
   const pledgeInterestMonthlyToday = pledgeLoanToday * (pledge?.annualInterestRate ?? 0) / 12;
   const pledgeCallDrop = pledge?.enabled && pledge.loanToValue > 0 ? Math.max(0, 1 - pledge.maintenanceRate * pledge.loanToValue) : 0;
   const yearsToRetirement = Math.max(0, retirementOffset / 12);
-  const readinessPercent = Math.round(result.readiness * 100);
+  const readinessPercent = Math.floor(summary.progress * 100);
   const depletedRecord = result.depletedMonth === null ? null : result.records.find((record) => record.month === result.depletedMonth) ?? null;
   const chartData = result.records
     .filter((_, index) => index % 12 === 0 || index === result.records.length - 1)
-    .map((record) => ({ age: Number(record.age.toFixed(1)), assets: Math.round(record.portfolioReal) }));
+    .map((record) => ({ age: Number(record.age.toFixed(1)), assets: Math.round(toToday(record.totalRetirementAssetsNominal, record.month)) }));
   const laborValue = result.laborInsurance.eligibleForAnnuity
     ? toToday(result.laborInsurance.initialMonthlyNominal, result.laborInsurance.claimMonth)
     : toToday(result.laborInsurance.lumpSumNominal, result.laborInsurance.claimMonth);
@@ -64,7 +67,7 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
   const partTimeStartMonth = monthAtAge(birth, input.partTime.startAge);
   const partTimeStartNominal = input.partTime.monthlyToday * growthFactor(input.partTime.growthRate, partTimeStartMonth - asOf);
   const partTimeValue = toToday(partTimeStartNominal, partTimeStartMonth);
-  const statusGood = result.depletedMonth === null;
+  const statusGood = summary.meetsPlan;
   const includedIncome = ["勞保", "勞退"];
   if (result.nationalPension.enabled) includedIncome.splice(1, 0, "國保");
   if (input.partTime.enabled) includedIncome.push("兼職收入");
@@ -133,18 +136,18 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
       <section className="result-overview">
         <div className="overview-copy">
           <span className="eyebrow">全部換成今天的物價</span>
-          <h1>{gapToday <= 1 ? "目前準備足夠" : `退休準備還差 ${formatCompactMoney(gapToday)} 元`}</h1>
+          <h1>{statusGood ? "目前準備符合固定報酬假設" : `退休準備還差 ${formatCompactMoney(gapToday)} 元`}</h1>
           <p>{statusGood ? `照目前填寫的條件，投資資產可支撐到 ${input.profile.longevityAge} 歲。` : `照目前填寫的條件，大約在 ${depletedRecord?.age.toFixed(1)} 歲開始不夠支付生活費。`}</p>
         </div>
         <div className={`status-mark ${statusGood ? "good" : "attention"}`}>
           {statusGood ? <Check aria-hidden="true" /> : <CircleAlert aria-hidden="true" />}
-          <span>{statusGood ? "通過目前目標" : "需要調整"}</span>
+          <span>{statusGood ? "固定報酬試算達標" : "需要調整"}</span>
         </div>
       </section>
 
       <div className="metric-grid">
         <article className="metric-card primary"><span>退休時可運用資產</span><strong>{formatMoney(projectedTotalToday)}</strong><small>自己的投資 {formatMoney(projectedToday)} ＋勞退一次領 {formatMoney(toToday(result.lumpPensionAmountAtRetirement, retirementMonth))}</small></article>
-        <article className="metric-card"><span>依目前假設至少需要</span><strong>{formatMoney(requiredToday)}</strong><small>退休時的最低可運用資產估算，不是保證金額</small></article>
+        <article className="metric-card"><span>依目前計畫需要的資產</span><strong>{formatMoney(requiredToday)}</strong><small>保留既定勞退領取方式與現金分配後的目標；與左側使用相同範圍</small></article>
         <article className="metric-card"><span>退休後每月由投資支付</span><strong>{monthlyCashflowGapToday > 0 ? formatMoney(monthlyCashflowGapToday) : "不需要"}</strong><small>年金收入不夠支付生活費時，由自己的投資資產支付；不代表資產不夠</small></article>
       </div>
 
@@ -155,17 +158,19 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
       </section>
 
       <section className="readiness-band" aria-label={`退休準備完成 ${readinessPercent}%`}>
-        <div className="readiness-heading"><div><span>退休準備進度</span><small>距離退休約 {yearsToRetirement.toFixed(1)} 年</small></div><strong>{projectedTotalToday >= requiredToday ? `超過 ${formatCompactMoney(projectedTotalToday - requiredToday)}` : `${readinessPercent}%`}</strong></div>
-        <div className="progress-track"><span style={{ width: `${result.readiness * 100}%` }} /></div>
-        <div className="progress-scale"><span>0%</span><span>{projectedTotalToday >= requiredToday ? "目前已達標" : `目前 ${readinessPercent}%`}</span><span>目標</span></div>
+        <div className="readiness-heading"><div><span>退休準備進度</span><small>距離退休約 {yearsToRetirement.toFixed(1)} 年</small></div><strong>{statusGood ? `超過目標 ${formatMoney(summary.surplus)}` : `還差 ${formatMoney(gapToday)}`}</strong></div>
+        <div className="progress-track"><span style={{ width: `${summary.progress * 100}%` }} /></div>
+        <div className="progress-scale"><span>0%</span><span>{statusGood ? "固定報酬試算達標" : `目前 ${readinessPercent}%`}</span><span>目標</span></div>
         <div className="readiness-detail">
-          <div><span>預計準備</span><strong>{formatMoney(projectedToday)}</strong></div>
+          <div><span>預計準備（合計）</span><strong>{formatMoney(projectedTotalToday)}</strong></div>
           <div><span>需要目標</span><strong>{formatMoney(requiredToday)}</strong></div>
-          <div className={gapToday > 1 ? "attention" : "good"}><span>{gapToday > 1 ? "還差" : "超過目標"}</span><strong>{formatMoney(gapToday > 1 ? gapToday : Math.max(0, projectedToday - requiredToday))}</strong></div>
+          <div className={statusGood ? "good" : "attention"}><span>{statusGood ? "超過目標" : "還差"}</span><strong>{formatMoney(statusGood ? summary.surplus : gapToday)}</strong></div>
         </div>
+        <p className="section-footnote">達標僅代表目前固定報酬假設下收支可支應到規劃年齡。超過目標的金額越少，對支出增加或報酬下降的緩衝越有限。</p>
+        <p className="section-footnote">市場波動測試：{monteCarlo.trials} 次模擬中，{Math.round(monteCarlo.successRate * monteCarlo.trials)} 次可支應到規劃年齡。固定報酬達標與波動下不足可能同時發生，請一起查看下方壓力測試。</p>
       </section>
 
-      {gapToday > 1 && (
+      {!statusGood && gapToday > 0 && (
         <section className="action-plan" aria-label="改善建議">
           <div className="action-plan-heading"><div><span>現在可以怎麼做</span><h2>先選一個改變，結果會立刻更新</h2></div><CircleAlert aria-hidden="true" /></div>
           <p className="action-plan-lead">這不是要一次做到完美，而是把差距拆成今天做得到的下一步。</p>
@@ -187,14 +192,14 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
         <div className="result-heading"><div><span>先看每個月</span><h2>退休第一個月，錢夠不夠用</h2></div><small>換算成今天的物價</small></div>
         <div className="cashflow-grid">
           <article className="cashflow-card"><span>每月生活費</span><strong>{formatMoney(retirementExpenseToday)}</strong><small>今天購買力</small><em>退休當年約 {formatMoney(retirementRecord?.expenseNominal ?? 0)}</em></article>
-          <article className="cashflow-card"><span>每月收入</span><strong>{formatMoney(recurringIncomeToday)}</strong><small>今天購買力，只算每月進來的收入</small><em>退休當年約 {formatMoney(recurringIncomeNominal)}</em></article>
+          <article className="cashflow-card"><span>每月可用收入</span><strong>{formatMoney(recurringIncomeToday)}</strong><small>今天購買力，已扣除你設定的估計稅額</small><em>退休當年約 {formatMoney(netRecurringIncomeNominal)}</em></article>
           <article className={`cashflow-card ${monthlyCashflowGapToday > 0 ? "attention" : "covered"}`}><span>{monthlyCashflowGapToday > 0 ? "每月由投資支付" : "固定收入狀態"}</span><strong>{monthlyCashflowGapToday > 0 ? formatMoney(monthlyCashflowGapToday) : "不需要"}</strong><small>{monthlyCashflowGapToday > 0 ? "今天購買力，從自己的投資資產支付；不是代表資產不夠" : "固定收入已蓋過生活費"}</small>{monthlyCashflowGapToday > 0 && <em>退休當年約 {formatMoney(monthlyCashflowGapNominal)}</em>}</article>
         </div>
         <p className="section-footnote">一次領的勞保或勞退會放進退休資產，不會被誤算成每月固定收入。</p>
       </section>
 
       <section className="result-section chart-section">
-        <div className="result-heading"><div><span>退休以後</span><h2>投資資產還剩多少</h2></div><small>今天的物價</small></div>
+        <div className="result-heading"><div><span>退休以後</span><h2>投資與保留現金還剩多少</h2></div><small>今天的物價・每月收支後</small></div>
         <BalanceChart data={chartData} />
         <div className="balance-milestones">{fiveYearBalances.map((record) => <div key={record.month}><span>{record.age.toFixed(0)} 歲</span><strong>{formatMoney(record.portfolioReal + toToday(record.cashReserveNominal, record.month))}</strong></div>)}</div>
       </section>
@@ -229,7 +234,7 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
       <section className="result-section professional-section">
         <div className="result-heading"><div><span>進階風險</span><h2>不要只看平均報酬</h2></div><small>規劃工具，不是預測</small></div>
         <div className="professional-grid">
-          <article><strong>隨機市場模擬</strong><b>{formatPercent(monteCarlo.successRate, 0)}</b><span>{monteCarlo.trials} 條隨機報酬路徑可支撐到目標年齡</span><small>以目前平均報酬與配置推估波動；不是未來成功機率保證。</small></article>
+          <article><strong>假設市場波動的通過比例</strong><b>{formatPercent(monteCarlo.successRate, 0)}</b><span>{monteCarlo.trials} 次模擬中，{Math.round(monteCarlo.successRate * monteCarlo.trials)} 次可支應到目標年齡</span><small>固定退休起始資產，只模擬退休後；波動是假設值，未用歷史資料校準。此比例不能解讀為你的真實退休成功機率。</small></article>
           <article><strong>稅後第一個月</strong><b>估計稅額 {formatMoney(firstMonthTaxToday)}</b><span>使用你填的有效稅率，投資費用已從報酬扣除</span><small>這是簡化估算，不是報稅結果。</small></article>
           <article><strong>勞退一次領／月領比較</strong><b>{pensionBreakevenAge ? `約 ${pensionBreakevenAge.toFixed(1)} 歲累計月領追平` : "規劃期間內未追平"}</b><span>以月領累計金額和一次領專戶金額比較</span><small>未計入一次領再投資報酬與個人稅務。</small></article>
         </div>

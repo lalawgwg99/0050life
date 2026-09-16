@@ -49,7 +49,7 @@ export function projectPlan(input: PlanningInput, options?: { retirementReturnPa
   const requiredInvestmentAtRetirement = solveRequiredInvestment(input, laborInsurance, nationalPension, laborPension);
   const requiredRetirementAssetsAtRetirement = requiredInvestmentAtRetirement + lumpPensionAmountAtRetirement;
   const simulation = simulateRetirement(input, laborInsurance, nationalPension, laborPension, projectedInvestmentAtRetirement, options?.retirementReturnPath);
-  const investmentGapAtRetirement = Math.max(0, requiredInvestmentAtRetirement - projectedInvestmentAtRetirement);
+  const investmentGapAtRetirement = Math.max(0, requiredRetirementAssetsAtRetirement - projectedRetirementAssetsAtRetirement);
   const readiness = requiredInvestmentAtRetirement === 0
     ? 1
     : Math.min(1, projectedRetirementAssetsAtRetirement / requiredRetirementAssetsAtRetirement);
