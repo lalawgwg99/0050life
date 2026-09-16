@@ -34,6 +34,9 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
     : 0;
   const recurringIncomeToday = retirementRecord ? toToday(recurringIncomeNominal, retirementRecord.month) : 0;
   const monthlyCashflowGapToday = Math.max(0, retirementExpenseToday - recurringIncomeToday);
+  const monthlyCashflowGapNominal = Math.max(0, (retirementRecord?.expenseNominal ?? 0) - recurringIncomeNominal);
+  const yearsToRetirement = Math.max(0, retirementOffset / 12);
+  const readinessPercent = Math.round(result.readiness * 100);
   const depletedRecord = result.depletedMonth === null ? null : result.records.find((record) => record.month === result.depletedMonth) ?? null;
   const chartData = result.records
     .filter((_, index) => index % 12 === 0 || index === result.records.length - 1)
@@ -56,6 +59,29 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
   const affordableSpending = useMemo(() => estimateAffordableMonthlySpending(input, result), [input, result]);
   const roundedExtraMonthly = Math.ceil(extraMonthly / 100) * 100;
   const roundedAffordableSpending = Math.floor(affordableSpending / 100) * 100;
+  const timelineItems = [
+    { id: "retirement", month: retirementMonth, title: "開始退休", detail: `${input.profile.retirementAge} 歲`, kind: "retirement" },
+    { id: "labor-pension", month: result.laborPension.claimMonth, title: input.laborPension.mode === "monthly" ? "開始領勞退" : "勞退一次領", detail: `${input.laborPension.claimAge} 歲`, kind: "pension" },
+    { id: "labor-insurance", month: result.laborInsurance.claimMonth, title: "開始領勞保", detail: `${input.laborInsurance.claimAge} 歲`, kind: "labor" },
+    ...(result.nationalPension.enabled ? [{ id: "national", month: result.nationalPension.claimMonth, title: "開始領國保", detail: "65 歲", kind: "national" }] : []),
+    ...(input.partTime.enabled ? [{ id: "part-time", month: partTimeStartMonth, title: "開始兼職", detail: `${input.partTime.startAge} 歲`, kind: "work" }] : []),
+    { id: "end", month: monthAtAge(birth, input.profile.longevityAge), title: "規劃終點", detail: `${input.profile.longevityAge} 歲`, kind: "end" }
+  ].sort((left, right) => left.month - right.month || left.id.localeCompare(right.id));
+  const timelineIcon = (kind: string) => {
+    if (kind === "pension") return <PiggyBank aria-hidden="true" />;
+    if (kind === "labor") return <Landmark aria-hidden="true" />;
+    if (kind === "national") return <ShieldCheck aria-hidden="true" />;
+    if (kind === "work") return <BriefcaseBusiness aria-hidden="true" />;
+    if (kind === "end") return <Check aria-hidden="true" />;
+    return <CalendarClock aria-hidden="true" />;
+  };
+  const relativeTime = (month: number) => {
+    const offset = month - retirementMonth;
+    if (offset === 0) return "退休同月";
+    if (offset < 0) return `退休前 ${Math.max(1, Math.round(Math.abs(offset) / 12))} 年`;
+    if (offset < 12) return `退休後 ${offset} 個月`;
+    return `退休後約 ${(offset / 12).toFixed(offset % 12 === 0 ? 0 : 1)} 年`;
+  };
   const applyExtraMonthly = () => {
     const firstHolding = input.investment.holdings[0];
     if (firstHolding) {
@@ -83,14 +109,26 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
       </section>
 
       <div className="metric-grid">
-        <article className="metric-card primary"><span>退休時預計投資資產</span><strong>{formatMoney(projectedToday)}</strong><small>包含現在資產與退休前持續投入</small></article>
-        <article className="metric-card"><span>建議準備的投資資產</span><strong>{formatMoney(requiredToday)}</strong><small>已把{includedIncome.join("、")}算進去</small></article>
-        <article className="metric-card"><span>第一年從投資拿出的比例</span><strong>{formatPercent(result.initialRetirementWithdrawalRate)}</strong><small>這是結果，不是預設套用 4% 法則</small></article>
+        <article className="metric-card primary"><span>退休時預計投資資產</span><strong>{formatMoney(projectedToday)}</strong><small>今天購買力｜退休當年帳面約 {formatMoney(result.projectedInvestmentAtRetirement)}</small></article>
+        <article className="metric-card"><span>建議準備的投資資產</span><strong>{formatMoney(requiredToday)}</strong><small>今天購買力｜退休當年帳面約 {formatMoney(result.requiredInvestmentAtRetirement)}</small></article>
+        <article className="metric-card"><span>退休第一年，生活費要靠投資補多少</span><strong>{formatPercent(result.initialRetirementWithdrawalRate)}</strong><small>代表第一年生活費中，需要由投資資產補上的比例；每個人的結果都不同，不是固定套用 4% 法則</small></article>
       </div>
 
-      <section className="readiness-band" aria-label={`退休準備完成 ${Math.round(result.readiness * 100)}%`}>
-        <div><span>目前準備程度</span><strong>{Math.round(result.readiness * 100)}%</strong></div>
+      <section className="money-basis" aria-label="今天物價與退休物價說明">
+        <div><strong>今天的物價</strong><span>用現在熟悉的購買力比較，較容易判斷夠不夠。</span></div>
+        <ArrowRight aria-hidden="true" />
+        <div><strong>退休當年金額</strong><span>若每年物價上漲 {formatPercent(input.economy.inflationRate)}，今天每月 {formatMoney(input.spending.monthlyToday)}，退休當年約是 {formatMoney(retirementRecord?.expenseNominal ?? 0)}。</span></div>
+      </section>
+
+      <section className="readiness-band" aria-label={`退休準備完成 ${readinessPercent}%`}>
+        <div className="readiness-heading"><div><span>退休準備進度</span><small>距離退休約 {yearsToRetirement.toFixed(1)} 年</small></div><strong>{readinessPercent}%</strong></div>
         <div className="progress-track"><span style={{ width: `${result.readiness * 100}%` }} /></div>
+        <div className="progress-scale"><span>0%</span><span>目前 {readinessPercent}%</span><span>目標 100%</span></div>
+        <div className="readiness-detail">
+          <div><span>預計準備</span><strong>{formatMoney(projectedToday)}</strong></div>
+          <div><span>需要目標</span><strong>{formatMoney(requiredToday)}</strong></div>
+          <div className={gapToday > 1 ? "attention" : "good"}><span>{gapToday > 1 ? "還差" : "超過目標"}</span><strong>{formatMoney(gapToday > 1 ? gapToday : Math.max(0, projectedToday - requiredToday))}</strong></div>
+        </div>
       </section>
 
       {gapToday > 1 && (
@@ -114,9 +152,9 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
       <section className="result-section cashflow-section">
         <div className="result-heading"><div><span>先看每個月</span><h2>退休第一個月，錢夠不夠用</h2></div><small>換算成今天的物價</small></div>
         <div className="cashflow-grid">
-          <article className="cashflow-card"><span>每月生活費</span><strong>{formatMoney(retirementExpenseToday)}</strong><small>退休後第一個月的預估支出</small></article>
-          <article className="cashflow-card"><span>每月收入</span><strong>{formatMoney(recurringIncomeToday)}</strong><small>只算按月進來的勞保、國保、勞退與兼職</small></article>
-          <article className={`cashflow-card ${monthlyCashflowGapToday > 0 ? "attention" : "covered"}`}><span>{monthlyCashflowGapToday > 0 ? "每月還要補" : "固定收入狀態"}</span><strong>{monthlyCashflowGapToday > 0 ? formatMoney(monthlyCashflowGapToday) : "已足夠"}</strong><small>{monthlyCashflowGapToday > 0 ? "需要從投資資產補上的金額" : "固定收入已蓋過第一個月生活費"}</small></article>
+          <article className="cashflow-card"><span>每月生活費</span><strong>{formatMoney(retirementExpenseToday)}</strong><small>今天購買力</small><em>退休當年約 {formatMoney(retirementRecord?.expenseNominal ?? 0)}</em></article>
+          <article className="cashflow-card"><span>每月收入</span><strong>{formatMoney(recurringIncomeToday)}</strong><small>今天購買力，只算每月進來的收入</small><em>退休當年約 {formatMoney(recurringIncomeNominal)}</em></article>
+          <article className={`cashflow-card ${monthlyCashflowGapToday > 0 ? "attention" : "covered"}`}><span>{monthlyCashflowGapToday > 0 ? "每月還要補" : "固定收入狀態"}</span><strong>{monthlyCashflowGapToday > 0 ? formatMoney(monthlyCashflowGapToday) : "已足夠"}</strong><small>{monthlyCashflowGapToday > 0 ? "今天購買力，需要從投資補上" : "固定收入已蓋過生活費"}</small>{monthlyCashflowGapToday > 0 && <em>退休當年約 {formatMoney(monthlyCashflowGapNominal)}</em>}</article>
         </div>
         <p className="section-footnote">一次領的勞保或勞退會放進退休資產，不會被誤算成每月固定收入。</p>
       </section>
@@ -153,18 +191,16 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
             })}</tbody>
           </table>
         </div>
-        <p className="section-footnote">這三種情況只是把投資報酬上下調整 2%，不是成功機率。</p>
+        <p className="section-footnote">這三種情況只是把退休前後的投資報酬上下調整 2%，用來看差距，不是成功機率或保證。</p>
       </section>
 
       <section className="result-section timeline-section">
-        <div className="result-heading"><div><span>重要時間</span><h2>退休收入何時進來</h2></div></div>
-        <div className="timeline">
-          <div><CalendarClock aria-hidden="true" /><span>{formatMonth(retirementMonth)}</span><strong>開始退休</strong></div>
-          <div><PiggyBank aria-hidden="true" /><span>{formatMonth(result.laborPension.claimMonth)}</span><strong>開始領勞退</strong></div>
-          <div><Landmark aria-hidden="true" /><span>{formatMonth(result.laborInsurance.claimMonth)}</span><strong>開始領勞保</strong></div>
-          {result.nationalPension.enabled && <div><ShieldCheck aria-hidden="true" /><span>{formatMonth(result.nationalPension.claimMonth)}</span><strong>開始領國保</strong></div>}
-          {input.partTime.enabled && <div><BriefcaseBusiness aria-hidden="true" /><span>{formatMonth(partTimeStartMonth)}</span><strong>開始兼職</strong></div>}
-          <div><Check aria-hidden="true" /><span>{input.profile.longevityAge} 歲</span><strong>規劃終點</strong></div>
+        <div className="result-heading"><div><span>重要時間</span><h2>退休後，收入什麼時候進來</h2></div><small>依日期排列</small></div>
+        <div className="timeline timeline-detailed">
+          {timelineItems.map((item) => <article key={item.id} className={item.kind === "retirement" ? "current" : ""}>
+            <div className="timeline-marker">{timelineIcon(item.kind)}</div>
+            <div className="timeline-copy"><span>{relativeTime(item.month)}</span><strong>{item.title}</strong><small>{formatMonth(item.month)}・{item.detail}</small></div>
+          </article>)}
         </div>
       </section>
 

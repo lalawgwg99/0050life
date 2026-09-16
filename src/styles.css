@@ -129,6 +129,10 @@ details summary svg { width: 14px; height: 14px; }
 .source-link { display: inline-block; margin-top: 16px; color: var(--teal); font-size: 11px; font-weight: 700; text-underline-offset: 3px; }
 .brand-note { margin: -5px 0 17px; padding: 10px 12px; border-left: 3px solid #84bd8d; background: #f1f8f2; color: #4b6250; font-size: 12px; line-height: 1.5; }
 .brand-note strong { color: #327043; }
+.brand-note a { display: inline-block; margin-left: 5px; color: #087d86; font-weight: 750; text-underline-offset: 2px; }
+.assumption-help { margin-bottom: 15px; padding: 11px 12px; border-left: 3px solid #84bd8d; background: #f1f8f2; }
+.assumption-help strong { color: #327043; font-size: 11.5px; }
+.assumption-help p { margin: 4px 0 0; color: #536059; font-size: 10.5px; line-height: 1.55; }
 .error-box { margin: 18px 0 5px; padding: 13px 14px; border: 1px solid #ecc1b8; border-radius: 8px; color: #7b3327; background: var(--coral-soft); font-size: 12px; }
 .error-box strong { display: block; margin-bottom: 5px; }
 .error-box ul { margin: 0; padding-left: 17px; line-height: 1.6; }
@@ -145,8 +149,9 @@ details summary svg { width: 14px; height: 14px; }
 .add-holding { min-height: 40px; display: flex; align-items: center; justify-content: center; gap: 7px; border: 1px dashed #8bcbd0; border-radius: 7px; color: #087d86; background: transparent; font-size: 12px; font-weight: 750; }
 .add-holding:hover { background: var(--teal-soft); }
 .holding-empty { margin: 0; padding: 13px; color: var(--muted); background: var(--soft); font-size: 11px; line-height: 1.5; text-align: center; }
-.investment-total { display: flex; justify-content: space-between; gap: 12px; margin-top: 12px; padding: 11px 3px 0; color: var(--muted); font-size: 10.5px; }
+.investment-total { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; padding: 11px 3px 0; color: var(--muted); font-size: 10.5px; }
 .investment-total span { display: grid; gap: 3px; }
+.investment-total span:nth-child(2) { text-align: center; }
 .investment-total span:last-child { text-align: right; }
 .investment-total strong { color: var(--ink); font-size: 13px; font-variant-numeric: tabular-nums; }
 .subsection-label { margin: 17px 0 9px; padding-top: 15px; border-top: 1px solid var(--line); color: #39433c; font-size: 12px; font-weight: 750; }
@@ -175,11 +180,25 @@ details summary svg { width: 14px; height: 14px; }
 .metric-card > span { color: var(--muted); font-size: 12px; }
 .metric-card strong { margin: 12px 0 6px; font-size: clamp(20px, 2.5vw, 28px); line-height: 1.15; font-weight: 760; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .metric-card small { margin-top: auto; color: var(--muted); font-size: 10.5px; line-height: 1.45; }
-.readiness-band { margin-top: 13px; padding: 16px 18px; border: 1px solid #b9e1e4; border-radius: 8px; color: var(--ink); background: var(--teal-soft); }
-.readiness-band > div:first-child { display: flex; align-items: center; justify-content: space-between; font-size: 12px; }
+.money-basis { display: grid; grid-template-columns: 1fr 24px 1fr; align-items: center; gap: 12px; margin-top: 13px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 8px; background: #fafbfb; }
+.money-basis > div { display: grid; gap: 3px; }
+.money-basis strong { font-size: 12px; }
+.money-basis span { color: var(--muted); font-size: 10.5px; line-height: 1.45; }
+.money-basis > svg { width: 18px; color: #8a959d; }
+.readiness-band { margin-top: 13px; padding: 18px; border: 1px solid #b9e1e4; border-radius: 8px; color: var(--ink); background: var(--teal-soft); }
+.readiness-heading { display: flex; align-items: center; justify-content: space-between; font-size: 12px; }
+.readiness-heading > div { display: grid; gap: 2px; }
+.readiness-heading small { color: var(--muted); font-size: 10.5px; font-weight: 500; }
 .readiness-band strong { font-size: 18px; font-variant-numeric: tabular-nums; }
 .progress-track { height: 7px; margin-top: 12px; overflow: hidden; border-radius: 4px; background: #cce9eb; }
 .progress-track span { display: block; height: 100%; max-width: 100%; border-radius: inherit; background: var(--teal); transition: width 240ms ease; }
+.progress-scale { display: flex; justify-content: space-between; margin-top: 5px; color: var(--muted); font-size: 9px; }
+.readiness-detail { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 14px; padding-top: 13px; border-top: 1px solid #cce9eb; }
+.readiness-detail > div { display: grid; gap: 3px; }
+.readiness-detail span { color: var(--muted); font-size: 10px; }
+.readiness-detail strong { font-size: 13px; }
+.readiness-detail .attention strong { color: var(--coral); }
+.readiness-detail .good strong { color: #087d86; }
 .action-plan { margin-top: 18px; padding: 18px; border: 1px solid #e8c98c; border-radius: 8px; background: var(--gold-soft); }
 .action-plan-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
 .action-plan-heading div { display: grid; gap: 4px; }
@@ -202,6 +221,7 @@ details summary svg { width: 14px; height: 14px; }
 .cashflow-card > span { color: var(--muted); font-size: 12px; }
 .cashflow-card strong { margin: 10px 0 5px; color: var(--ink); font-size: 23px; line-height: 1.15; font-weight: 760; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .cashflow-card small { margin-top: auto; color: var(--muted); font-size: 10.5px; line-height: 1.45; }
+.cashflow-card em { margin-top: 7px; color: #536059; font-size: 10.5px; font-style: normal; font-weight: 700; }
 .cashflow-card.attention { border-color: #e6c5bf; background: #fffafa; }
 .cashflow-card.attention strong { color: #a64037; }
 .cashflow-card.covered { border-color: #b9e1e4; background: #f7fcfc; }
@@ -241,12 +261,16 @@ details summary svg { width: 14px; height: 14px; }
 .scenario-table .ok { color: var(--green); font-weight: 750; }
 .scenario-table .not-ok { color: var(--coral); font-weight: 750; }
 .section-footnote { margin: 11px 0 0; color: var(--muted); font-size: 10.5px; }
-.timeline { position: relative; display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 18px; }
-.timeline::before { content: ""; position: absolute; top: 18px; left: 18px; right: 18px; height: 2px; background: var(--line); }
-.timeline > div { position: relative; display: grid; justify-items: start; gap: 5px; }
-.timeline svg { z-index: 1; width: 36px; height: 36px; padding: 9px; border-radius: 50%; color: var(--teal); background: var(--teal-soft); }
-.timeline span { margin-top: 5px; color: var(--muted); font-size: 10.5px; }
-.timeline strong { font-size: 12px; }
+.timeline { display: grid; gap: 0; }
+.timeline-detailed article { position: relative; display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 12px; min-height: 78px; }
+.timeline-detailed article:not(:last-child)::before { content: ""; position: absolute; top: 36px; bottom: 0; left: 17px; width: 2px; background: var(--line); }
+.timeline-marker { z-index: 1; }
+.timeline-marker svg { width: 36px; height: 36px; padding: 9px; border-radius: 50%; color: var(--teal); background: var(--teal-soft); }
+.timeline-detailed article.current .timeline-marker svg { color: white; background: var(--teal); }
+.timeline-copy { display: grid; align-content: start; gap: 3px; padding: 3px 0 17px; }
+.timeline-copy span { color: var(--teal); font-size: 10px; font-weight: 750; }
+.timeline-copy strong { font-size: 13px; }
+.timeline-copy small { color: var(--muted); font-size: 10.5px; }
 .calculation-notes { margin-top: 38px; padding: 18px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .calculation-notes summary { color: var(--ink); font-size: 13px; }
 .calculation-notes > div { max-width: 760px; padding-top: 10px; color: var(--muted); font-size: 12px; line-height: 1.65; }
@@ -298,8 +322,10 @@ details summary svg { width: 14px; height: 14px; }
   .chart-wrap { height: 260px; }
   .source-row { grid-template-columns: 40px minmax(94px, 1fr) minmax(115px, auto); gap: 9px; }
   .source-value strong { font-size: 14px; }
-  .timeline { grid-template-columns: 1fr 1fr; row-gap: 22px; }
-  .timeline::before { display: none; }
+  .money-basis { grid-template-columns: 1fr; }
+  .money-basis > svg { transform: rotate(90deg); }
+  .readiness-detail { grid-template-columns: 1fr 1fr; }
+  .readiness-detail > div:last-child { grid-column: 1 / -1; }
   .allocation-options { grid-template-columns: 1fr; }
 }
 

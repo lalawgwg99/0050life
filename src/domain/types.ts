@@ -153,7 +153,7 @@ export interface ProjectionResult {
 }
 
 export interface ScenarioResult {
-  name: "壓力" | "基準" | "成長";
+  name: "報酬較低" | "照目前填寫" | "報酬較高";
   retirementReturnRate: number;
   result: ProjectionResult;
 }

@@ -85,9 +85,9 @@ export function projectPlan(input: PlanningInput): ProjectionResult {
 
 export function projectScenarios(input: PlanningInput): ScenarioResult[] {
   const cases: Array<{ name: ScenarioResult["name"]; delta: number }> = [
-    { name: "壓力", delta: -0.02 },
-    { name: "基準", delta: 0 },
-    { name: "成長", delta: 0.02 }
+    { name: "報酬較低", delta: -0.02 },
+    { name: "照目前填寫", delta: 0 },
+    { name: "報酬較高", delta: 0.02 }
   ];
   return cases.map(({ name, delta }) => {
     const retirementReturnRate = Math.max(-0.99, input.investment.retirementGrossReturnRate + delta);

@@ -52,7 +52,7 @@ test("adds separate investments and offers a simple retirement allocation", asyn
   await page.getByLabel("第 2 筆投資名稱").fill("006208");
   await page.getByLabel("目前市值").nth(1).fill("300000");
   await page.locator(".holding-item").nth(1).getByLabel("每月投入").fill("5000");
-  await page.getByText("更多投資假設", { exact: true }).click();
+  await page.getByText("進階設定：報酬、費用與退休後配置", { exact: true }).click();
   await page.getByRole("radio", { name: /穩健/ }).click();
 
   await expect(page.getByRole("radio", { name: /穩健/ })).toHaveAttribute("aria-checked", "true");

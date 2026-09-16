@@ -14,7 +14,7 @@ interface InputPanelProps {
 const allocationOptions: Array<{ id: RetirementAllocation; name: string; mix: string; rate?: number }> = [
   { id: "steady", name: "穩健", mix: "股票 30%・債券 60%・現金 10%", rate: 0.04 },
   { id: "balanced", name: "平衡", mix: "股票 60%・債券 35%・現金 5%", rate: 0.05 },
-  { id: "growth", name: "成長", mix: "股票 80%・債券 20%", rate: 0.06 },
+  { id: "growth", name: "股票較多", mix: "股票 80%・債券 20%", rate: 0.06 },
   { id: "custom", name: "自己設定", mix: "自行填寫報酬與費用" }
 ];
 
@@ -135,8 +135,8 @@ export function InputPanel({ input, errors, onChange }: InputPanelProps) {
             <label className="select-field">
               <span>領取後的物價調整</span>
               <select value={input.laborInsurance.indexation} onChange={(event) => update("laborInsurance", "indexation", event.target.value)}>
-                <option value="threshold">累計物價達 5% 時調整</option>
-                <option value="none">先不估未來調整</option>
+                <option value="threshold">物價累計漲 5% 時跟著調整</option>
+                <option value="none">先不估物價調整</option>
               </select>
             </label>
           </div>
@@ -224,7 +224,7 @@ export function InputPanel({ input, errors, onChange }: InputPanelProps) {
           <BriefcaseBusiness aria-hidden="true" />
           <div><span>第五步</span><h2>自己的投資</h2></div>
         </div>
-        <p className="brand-note"><strong>0050 Life</strong> 可以從 0050 開始；有其他股票或基金，再逐筆加入。</p>
+        <p className="brand-note"><strong>0050 Life</strong> 可以從 0050 開始；有其他股票或基金，再逐筆加入。每一筆會用自己的報酬與費用分開複利，退休時才加總。<a href="/blog/investment-calculator-guide.html" target="_blank" rel="noreferrer">不知道怎麼填？看白話教學</a></p>
         <div className="holding-list">
           {input.investment.holdings.map((holding, index) => (
             <article className="holding-item" key={holding.id}>
@@ -240,10 +240,10 @@ export function InputPanel({ input, errors, onChange }: InputPanelProps) {
                 <Field label="每月投入" value={holding.monthlyContributionToday} onChange={(value) => updateHolding(holding.id, "monthlyContributionToday", value)} suffix="元" step={1000} />
               </div>
               <details className="holding-assumptions">
-                <summary>報酬與費用：{(holding.grossReturnRate * 100).toFixed(1)}%／{(holding.feeRate * 100).toFixed(2)}%</summary>
+                <summary>預估報酬（含股息）{(holding.grossReturnRate * 100).toFixed(1)}%・投資成本 {(holding.feeRate * 100).toFixed(2)}%</summary>
                 <div className="details-body field-grid two">
-                  <Field label="每年總報酬" value={holding.grossReturnRate * 100} onChange={(value) => updateHolding(holding.id, "grossReturnRate", value / 100)} suffix="%" step={0.1} hint="包含股息再投入" />
-                  <Field label="每年費用" value={holding.feeRate * 100} onChange={(value) => updateHolding(holding.id, "feeRate", value / 100)} suffix="%" step={0.01} />
+                  <Field label="每年總報酬（含股息）" value={holding.grossReturnRate * 100} onChange={(value) => updateHolding(holding.id, "grossReturnRate", value / 100)} suffix="%" step={0.1} hint="股價漲跌加上股息再投入；不確定可先保留預設值" />
+                  <Field label="每年投資成本" value={holding.feeRate * 100} onChange={(value) => updateHolding(holding.id, "feeRate", value / 100)} suffix="%" step={0.01} hint="管理費、保管費、交易手續費與交易稅的長期平均" />
                 </div>
               </details>
             </article>
@@ -252,25 +252,27 @@ export function InputPanel({ input, errors, onChange }: InputPanelProps) {
           <button type="button" className="add-holding" onClick={addHolding}><Plus aria-hidden="true" />新增一筆投資</button>
         </div>
         <div className="investment-total">
-          <span>目前合計 <strong>{formatMoney(investmentTotal)}</strong></span>
-          <span>每月投入 <strong>{formatMoney(monthlyInvestmentTotal)}</strong></span>
+          <span>投資筆數 <strong>{input.investment.holdings.length} 筆</strong></span>
+          <span>目前總市值 <strong>{formatMoney(investmentTotal)}</strong></span>
+          <span>每月總投入 <strong>{formatMoney(monthlyInvestmentTotal)}</strong></span>
         </div>
         <details>
-          <summary><SlidersHorizontal aria-hidden="true" /> 更多投資假設</summary>
+          <summary><SlidersHorizontal aria-hidden="true" /> 進階設定：報酬、費用與退休後配置</summary>
           <div className="details-body">
+            <div className="assumption-help"><strong>不知道怎麼填也沒關係</strong><p>預設值是用來做長期規劃的中性假設，不代表保證報酬。費用是管理費、保管費、手續費與交易稅平均成每年的成本，不是每年另外扣一次手續費。</p></div>
             <Field label="每月投入每年增加" value={input.investment.contributionGrowthRate * 100} onChange={(value) => update("investment", "contributionGrowthRate", value / 100)} suffix="%" step={0.1} hint="若希望投入金額跟著物價提高，可填和物價相同" />
-            <div className="subsection-label">退休後資產配置</div>
+            <div className="subsection-label">退休後怎麼放這筆錢</div>
             <div className="allocation-options" role="radiogroup" aria-label="退休後資產配置">
               {allocationOptions.map((option) => (
                 <button type="button" role="radio" aria-checked={input.investment.retirementAllocation === option.id} className={input.investment.retirementAllocation === option.id ? "active" : ""} onClick={() => setAllocation(option.id)} key={option.id}>
-                  <strong>{option.name}</strong><span>{option.mix}</span>{option.rate !== undefined && <small>預估總報酬 {(option.rate * 100).toFixed(0)}%</small>}
+                <strong>{option.name}</strong><span>{option.mix}</span>{option.rate !== undefined && <small>用來試算的年報酬 {(option.rate * 100).toFixed(0)}%</small>}
                 </button>
               ))}
             </div>
             {input.investment.retirementAllocation === "custom" && (
               <div className="field-grid two allocation-custom">
-                <Field label="退休後每年總報酬" value={input.investment.retirementGrossReturnRate * 100} onChange={(value) => update("investment", "retirementGrossReturnRate", value / 100)} suffix="%" step={0.1} />
-                <Field label="退休後每年費用" value={input.investment.retirementFeeRate * 100} onChange={(value) => update("investment", "retirementFeeRate", value / 100)} suffix="%" step={0.01} />
+                <Field label="退休後每年總報酬（含股息）" value={input.investment.retirementGrossReturnRate * 100} onChange={(value) => update("investment", "retirementGrossReturnRate", value / 100)} suffix="%" step={0.1} hint="退休後整體股票、債券與現金的平均報酬" />
+                <Field label="退休後每年投資成本" value={input.investment.retirementFeeRate * 100} onChange={(value) => update("investment", "retirementFeeRate", value / 100)} suffix="%" step={0.01} hint="所有商品費用與交易成本平均成一年" />
               </div>
             )}
           </div>
