@@ -1,0 +1,16 @@
+{
+  "name": "0050 Life｜退休現金流規劃",
+  "short_name": "0050 Life",
+  "description": "分開計算勞保、國保、勞退與自己的投資，找出退休準備缺口。",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#f7faf7",
+  "theme_color": "#173f3f",
+  "lang": "zh-Hant",
+  "icons": [
+    { "src": "/icons/0050life-icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icons/0050life-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/0050life-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
