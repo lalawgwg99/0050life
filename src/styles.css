@@ -94,6 +94,11 @@ svg { flex: 0 0 auto; }
 .mode-control { display: grid; grid-template-columns: 1fr 1fr; gap: 3px; padding: 3px; margin-bottom: 17px; border-radius: 8px; background: var(--soft); }
 .mode-control button { height: 38px; border: 0; border-radius: 6px; color: var(--muted); background: transparent; font-size: 13px; font-weight: 700; }
 .mode-control button.active { color: #087d86; background: var(--surface); box-shadow: 0 1px 3px rgba(27, 43, 52, 0.12); }
+.lump-reinvest-control { margin: -3px 0 17px; padding: 12px; border: 1px solid #d7e8d9; border-radius: 8px; background: #f7fbf7; }
+.lump-reinvest-control .field { margin-bottom: 0; }
+.quick-rate { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; margin-top: 10px; }
+.quick-rate button { min-height: 34px; border: 1px solid #c9ddd0; border-radius: 6px; color: #4b6250; background: var(--surface); font-size: 11px; font-weight: 700; }
+.quick-rate button.active { border-color: #77af82; color: #327043; background: #edf7ee; }
 details { margin-top: 15px; }
 details summary { display: flex; align-items: center; gap: 7px; color: var(--muted); font-size: 12px; font-weight: 650; list-style: none; }
 details summary::-webkit-details-marker { display: none; }

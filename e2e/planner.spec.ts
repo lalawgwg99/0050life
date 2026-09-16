@@ -37,6 +37,15 @@ test("updates the combined result when investment and pension choices change", a
   await expect(page.getByText("開始時每月估算", { exact: true })).toBeVisible();
 });
 
+test("offers a clear choice for reinvesting a lump-sum labor pension", async ({ page }) => {
+  await page.getByRole("button", { name: "一次領" }).click();
+  const reinvestField = page.locator(".lump-reinvest-control").locator("input[type=number]");
+  await expect(reinvestField).toHaveValue("100");
+  await page.getByRole("button", { name: "投入一半" }).click();
+  await expect(reinvestField).toHaveValue("50");
+  await expect(page.getByText("未投入的部分會先當退休現金，有需要時再拿來支付生活費")).toBeVisible();
+});
+
 test("adds separate investments and offers a simple retirement allocation", async ({ page }) => {
   await expect(page.locator(".brand-note")).toContainText("0050 Life");
   await page.getByRole("button", { name: "新增一筆投資" }).click();

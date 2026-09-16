@@ -44,7 +44,9 @@ function loadSavedInput(): PlanningInput {
         laborPension: {
           ...defaultInput.laborPension,
           ...saved.input.laborPension,
-          futureYearsMode: saved.input.laborPension.futureYearsMode ?? "custom"
+          futureYearsMode: saved.input.laborPension.futureYearsMode ?? "custom",
+          mode: saved.input.laborPension.mode ?? defaultInput.laborPension.mode,
+          lumpReinvestRate: saved.input.laborPension.lumpReinvestRate ?? defaultInput.laborPension.lumpReinvestRate
         },
         investment: { ...defaultInput.investment, ...oldInvestment, holdings }
       };

@@ -151,4 +151,21 @@ describe("integrated monthly projection", () => {
     expect(allocation).toEqual([1_700, 1_000, 700]);
     expect(allocation.reduce((sum, value) => sum + value, 0)).toBe(3_400);
   });
+
+  it("treats the non-reinvested lump pension as cash before investments", () => {
+    const base = makeInput({
+      profile: { retirementAge: 65, longevityAge: 66 },
+      economy: { inflationRate: 0 },
+      spending: { monthlyToday: 100_000 },
+      laborInsurance: { insuredYearsNow: 0, insuredYearsFuture: 0, averageSalaryToday: 0, salaryGrowthRate: 0, claimAge: 65, indexation: "none" },
+      laborPension: { balanceNow: 1_200_000, seniorityYearsNow: 20, seniorityYearsFuture: 0, monthlyWageToday: 0, wageGrowthRate: 0, employerRate: 0, voluntaryRate: 0, returnRate: 0, claimAge: 65, mode: "lump" },
+      investment: { holdings: [], contributionGrowthRate: 0, retirementAllocation: "custom", retirementGrossReturnRate: 0, retirementFeeRate: 0 },
+      partTime: { monthlyToday: 0, startAge: 65, endAge: 65, growthRate: 0 }
+    });
+    const allInvested = projectPlan({ ...base, laborPension: { ...base.laborPension, lumpReinvestRate: 1 } });
+    const allCash = projectPlan({ ...base, laborPension: { ...base.laborPension, lumpReinvestRate: 0 } });
+    expect(allInvested.records[0].portfolioNominal).toBe(1_100_000);
+    expect(allCash.records[0].portfolioNominal).toBe(0);
+    expect(allCash.depletedMonth).toBeNull();
+  });
 });

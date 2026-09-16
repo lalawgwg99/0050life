@@ -28,6 +28,7 @@ export function simulateRetirement(
   const partTimeEnd = monthAtAge(birth, input.partTime.endAge);
   const records: MonthlyRecord[] = [];
   let portfolio = investmentAtRetirement;
+  let cashReserve = 0;
   let depletedMonth: number | null = null;
   let firstYearWithdrawals = 0;
 
@@ -38,15 +39,23 @@ export function simulateRetirement(
     const expenseNominal = input.spending.monthlyToday * growthFactor(input.economy.inflationRate, monthsFromAsOf);
     const laborInsuranceNominal = laborInsurance.events.get(month) ?? 0;
     const nationalPensionNominal = nationalPension.events.get(month) ?? 0;
-    const laborPensionNominal = laborPension.events.get(month) ?? 0;
+    const laborPensionEventNominal = laborPension.events.get(month) ?? 0;
+    const isLumpPension = input.laborPension.mode === "lump";
+    const lumpReinvestNominal = isLumpPension ? laborPensionEventNominal * (input.laborPension.lumpReinvestRate ?? 1) : 0;
+    const lumpCashNominal = isLumpPension ? laborPensionEventNominal - lumpReinvestNominal : 0;
+    if (lumpCashNominal > 0) cashReserve += lumpCashNominal;
+    const laborPensionNominal = isLumpPension ? lumpReinvestNominal : laborPensionEventNominal;
     const partTimeNominal = input.partTime.enabled && month >= partTimeStart && month < partTimeEnd
       ? input.partTime.monthlyToday * growthFactor(input.partTime.growthRate, monthsFromAsOf)
       : 0;
     const income = laborInsuranceNominal + nationalPensionNominal + laborPensionNominal + partTimeNominal;
     const need = Math.max(0, expenseNominal - income);
     const surplus = Math.max(0, income - expenseNominal);
-    const portfolioWithdrawalNominal = Math.min(portfolio, need);
-    const unmetNeedNominal = Math.max(0, need - portfolioWithdrawalNominal);
+    const cashWithdrawalNominal = Math.min(cashReserve, need);
+    cashReserve = Math.max(0, cashReserve - cashWithdrawalNominal);
+    const remainingNeed = Math.max(0, need - cashWithdrawalNominal);
+    const portfolioWithdrawalNominal = Math.min(portfolio, remainingNeed);
+    const unmetNeedNominal = Math.max(0, remainingNeed - portfolioWithdrawalNominal);
     portfolio = Math.max(0, portfolio - portfolioWithdrawalNominal + surplus);
 
     if (month < retirementMonth + 12) firstYearWithdrawals += portfolioWithdrawalNominal;

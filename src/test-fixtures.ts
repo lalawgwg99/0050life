@@ -36,7 +36,8 @@ export function makeInput(overrides: DeepPartial<PlanningInput> = {}): PlanningI
       voluntaryRate: 0.06,
       returnRate: 0.03,
       claimAge: 65,
-      mode: "lump"
+      mode: "lump",
+      lumpReinvestRate: 1
     },
     investment: {
       holdings: [{

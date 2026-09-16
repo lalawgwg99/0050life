@@ -24,6 +24,7 @@ export function validateInput(input: PlanningInput): string[] {
     [input.laborPension.voluntaryRate, "自願提繳比例"],
     [input.laborPension.returnRate, "勞退專戶成長率"],
     [input.laborPension.claimAge, "勞退請領年齡"],
+    [input.laborPension.lumpReinvestRate ?? 1, "勞退一次領投入比例"],
     [input.investment.contributionGrowthRate, "每月投入成長率"],
     [input.investment.retirementGrossReturnRate, "退休後投資報酬率"],
     [input.investment.retirementFeeRate, "退休後投資費用率"]
@@ -75,6 +76,8 @@ export function validateInput(input: PlanningInput): string[] {
   if (investmentFees.some((fee) => fee < 0 || fee >= 1)) errors.push("投資費用率必須介於 0% 與 100% 之間。");
   if (input.laborPension.employerRate < 0 || input.laborPension.employerRate > 1) errors.push("雇主提繳比例請填 0% 至 100%。");
   if (input.laborPension.voluntaryRate < 0 || input.laborPension.voluntaryRate > 0.06) errors.push("自己加碼提繳最多為 6%。");
+  const lumpReinvestRate = input.laborPension.lumpReinvestRate ?? 1;
+  if (lumpReinvestRate < 0 || lumpReinvestRate > 1) errors.push("勞退一次領投入比例請填 0% 至 100%。");
   if (input.partTime.enabled) {
     if (input.partTime.startAge < input.profile.retirementAge) errors.push("兼職開始年齡不可早於退休年齡。");
     if (input.partTime.endAge < input.partTime.startAge) errors.push("兼職結束年齡必須晚於或等於開始年齡。");

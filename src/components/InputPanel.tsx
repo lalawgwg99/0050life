@@ -184,9 +184,15 @@ export function InputPanel({ input, errors, onChange }: InputPanelProps) {
           <div><span>第四步</span><h2>勞退個人專戶</h2></div>
         </div>
         <div className="mode-control" role="group" aria-label="勞退領取方式">
-          <button type="button" className={input.laborPension.mode === "lump" ? "active" : ""} onClick={() => update("laborPension", "mode", "lump")}>一次領</button>
+          <button type="button" className={(input.laborPension.mode ?? "lump") === "lump" ? "active" : ""} onClick={() => update("laborPension", "mode", "lump")}>一次領</button>
           <button type="button" className={input.laborPension.mode === "monthly" ? "active" : ""} onClick={() => update("laborPension", "mode", "monthly")}>按月領</button>
         </div>
+        {(input.laborPension.mode ?? "lump") === "lump" && <div className="lump-reinvest-control">
+          <Field label="一次領後投入股票的比例" value={(input.laborPension.lumpReinvestRate ?? 1) * 100} onChange={(value) => update("laborPension", "lumpReinvestRate", value / 100)} suffix="%" min={0} max={100} step={10} hint="未投入的部分會先當退休現金，有需要時再拿來支付生活費" />
+          <div className="quick-rate" role="group" aria-label="一次領投入比例快速選擇">
+            {[{ label: "全部投入", value: 100 }, { label: "投入一半", value: 50 }, { label: "先留現金", value: 0 }].map((option) => <button type="button" className={Math.round((input.laborPension.lumpReinvestRate ?? 1) * 100) === option.value ? "active" : ""} onClick={() => update("laborPension", "lumpReinvestRate", option.value / 100)} key={option.value}>{option.label}</button>)}
+          </div>
+        </div>}
         <div className="field-grid two">
           <Field label="目前專戶餘額" value={input.laborPension.balanceNow} onChange={(value) => update("laborPension", "balanceNow", value)} suffix="元" step={10_000} />
           <Field label="目前提繳工資" value={input.laborPension.monthlyWageToday} onChange={(value) => update("laborPension", "monthlyWageToday", value)} suffix="元" step={100} />

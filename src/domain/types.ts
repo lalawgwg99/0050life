@@ -59,6 +59,7 @@ export interface PlanningInput {
     returnRate: number;
     claimAge: number;
     mode: PensionMode;
+    lumpReinvestRate?: number;
   };
   investment: {
     holdings: InvestmentHolding[];
