@@ -119,7 +119,7 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
       <div className="metric-grid">
         <article className="metric-card primary"><span>退休時預計投資資產</span><strong>{formatMoney(projectedToday)}</strong><small>今天購買力｜退休當年帳面約 {formatMoney(result.projectedInvestmentAtRetirement)}</small></article>
         <article className="metric-card"><span>建議準備的投資資產</span><strong>{formatMoney(requiredToday)}</strong><small>今天購買力｜退休當年帳面約 {formatMoney(result.requiredInvestmentAtRetirement)}</small></article>
-        <article className="metric-card"><span>退休後每月還要補</span><strong>{monthlyCashflowGapToday > 0 ? formatMoney(monthlyCashflowGapToday) : "已足夠"}</strong><small>以今天購買力計算，從投資拿來補生活費的金額</small></article>
+        <article className="metric-card"><span>退休後每月由投資支付</span><strong>{monthlyCashflowGapToday > 0 ? formatMoney(monthlyCashflowGapToday) : "不需要"}</strong><small>年金收入不夠支付生活費時，由自己的投資資產支付；不代表資產不夠</small></article>
       </div>
 
       <section className="money-basis" aria-label="今天物價與退休物價說明">
@@ -162,7 +162,7 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
         <div className="cashflow-grid">
           <article className="cashflow-card"><span>每月生活費</span><strong>{formatMoney(retirementExpenseToday)}</strong><small>今天購買力</small><em>退休當年約 {formatMoney(retirementRecord?.expenseNominal ?? 0)}</em></article>
           <article className="cashflow-card"><span>每月收入</span><strong>{formatMoney(recurringIncomeToday)}</strong><small>今天購買力，只算每月進來的收入</small><em>退休當年約 {formatMoney(recurringIncomeNominal)}</em></article>
-          <article className={`cashflow-card ${monthlyCashflowGapToday > 0 ? "attention" : "covered"}`}><span>{monthlyCashflowGapToday > 0 ? "每月還要補" : "固定收入狀態"}</span><strong>{monthlyCashflowGapToday > 0 ? formatMoney(monthlyCashflowGapToday) : "已足夠"}</strong><small>{monthlyCashflowGapToday > 0 ? "今天購買力，需要從投資補上" : "固定收入已蓋過生活費"}</small>{monthlyCashflowGapToday > 0 && <em>退休當年約 {formatMoney(monthlyCashflowGapNominal)}</em>}</article>
+          <article className={`cashflow-card ${monthlyCashflowGapToday > 0 ? "attention" : "covered"}`}><span>{monthlyCashflowGapToday > 0 ? "每月由投資支付" : "固定收入狀態"}</span><strong>{monthlyCashflowGapToday > 0 ? formatMoney(monthlyCashflowGapToday) : "不需要"}</strong><small>{monthlyCashflowGapToday > 0 ? "今天購買力，從自己的投資資產支付；不是代表資產不夠" : "固定收入已蓋過生活費"}</small>{monthlyCashflowGapToday > 0 && <em>退休當年約 {formatMoney(monthlyCashflowGapNominal)}</em>}</article>
         </div>
         <p className="section-footnote">一次領的勞保或勞退會放進退休資產，不會被誤算成每月固定收入。</p>
       </section>

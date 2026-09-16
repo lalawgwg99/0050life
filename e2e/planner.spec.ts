@@ -19,6 +19,7 @@ test("shows a complete result without page overflow", async ({ page, isMobile })
   await expect(page.locator(".cashflow-card").nth(0)).toContainText("$50,000");
   await expect(page.locator(".cashflow-card").nth(1)).toContainText("$28,100");
   await expect(page.locator(".cashflow-card").nth(2)).toContainText("$21,900");
+  await expect(page.getByText("每月由投資支付", { exact: true }).first()).toBeVisible();
   await expect(page.getByRole("heading", { name: "退休準備分開看" })).toBeVisible();
   await expect(page.locator(".chart-line")).toHaveAttribute("d", /^M/);
 
