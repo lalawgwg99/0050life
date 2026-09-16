@@ -201,6 +201,7 @@ details summary svg { width: 14px; height: 14px; }
 .stress-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
 .stress-grid article { display: grid; gap: 5px; padding: 15px; border: 1px solid #e2d9c4; border-radius: 8px; background: #fffdf8; }
 .stress-grid strong { font-size: 12px; }.stress-grid span { color: var(--muted); font-size: 10.5px; }.stress-grid b { color: #7a5c20; font-size: 14px; }
+.professional-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }.professional-grid article { display: grid; gap: 5px; padding: 15px; border: 1px solid var(--line); border-radius: 8px; }.professional-grid strong { font-size: 11px; }.professional-grid b { color: var(--teal); font-size: 16px; }.professional-grid span,.professional-grid small { color: var(--muted); font-size: 10px; line-height: 1.45; }.historical-range,.pledge-risk-summary { display: grid; gap: 4px; margin-top: 12px; padding: 12px; background: #f5f8f5; border-radius: 8px; }.historical-range span,.pledge-risk-summary span { color: var(--muted); font-size: 10.5px; }.pledge-bars { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-top: 10px; }.pledge-bars div { display: grid; gap: 3px; padding: 10px; border-radius: 7px; background: #edf6ee; }.pledge-bars div.danger { background: #fff0ec; color: #a44b38; }.pledge-bars span { font-size: 10px; }.pledge-bars b { font-size: 11px; }
 .readiness-band { margin-top: 13px; padding: 18px; border: 1px solid #b9e1e4; border-radius: 8px; color: var(--ink); background: var(--teal-soft); }
 .readiness-heading { display: flex; align-items: center; justify-content: space-between; font-size: 12px; }
 .readiness-heading > div { display: grid; gap: 2px; }
@@ -346,6 +347,7 @@ details summary svg { width: 14px; height: 14px; }
   .analysis-grid { grid-template-columns: 1fr; }
   .stress-grid { grid-template-columns: 1fr; }
   .balance-milestones { grid-template-columns: 1fr 1fr; }
+  .professional-grid,.pledge-bars { grid-template-columns: 1fr; }
 }
 
 @media print {

@@ -11,10 +11,10 @@ interface InputPanelProps {
   onChange: (input: PlanningInput) => void;
 }
 
-const allocationOptions: Array<{ id: RetirementAllocation; name: string; mix: string; rate?: number }> = [
-  { id: "steady", name: "穩健", mix: "股票 30%・債券 60%・現金 10%", rate: 0.04 },
-  { id: "balanced", name: "平衡", mix: "股票 60%・債券 35%・現金 5%", rate: 0.05 },
-  { id: "growth", name: "股票較多", mix: "股票 80%・債券 20%", rate: 0.06 },
+const allocationOptions: Array<{ id: RetirementAllocation; name: string; mix: string; rate?: number; weights?: [number, number, number] }> = [
+  { id: "steady", name: "穩健", mix: "股票 30%・債券 60%・現金 10%", rate: 0.04, weights: [0.3, 0.6, 0.1] },
+  { id: "balanced", name: "平衡", mix: "股票 60%・債券 35%・現金 5%", rate: 0.05, weights: [0.6, 0.35, 0.05] },
+  { id: "growth", name: "股票較多", mix: "股票 80%・債券 20%", rate: 0.06, weights: [0.8, 0.2, 0] },
   { id: "custom", name: "自己設定", mix: "自行填寫報酬與費用" }
 ];
 
@@ -50,6 +50,7 @@ export function InputPanel({ input, errors, onChange }: InputPanelProps) {
     const option = allocationOptions.find((item) => item.id === allocation);
     updateInvestment({
       retirementAllocation: allocation,
+      ...(option?.weights ? { assetAllocation: { ...(input.investment.assetAllocation ?? { glidePathEnabled: false, targetStockRate: 0.4 }), stockRate: option.weights[0], bondRate: option.weights[1], cashRate: option.weights[2] } } : {}),
       ...(option?.rate === undefined ? {} : { retirementGrossReturnRate: option.rate, retirementFeeRate: 0.003 })
     });
   };
@@ -291,8 +292,14 @@ export function InputPanel({ input, errors, onChange }: InputPanelProps) {
               <div className="field-grid two allocation-custom">
                 <Field label="退休後每年總報酬（含股息）" value={input.investment.retirementGrossReturnRate * 100} onChange={(value) => update("investment", "retirementGrossReturnRate", value / 100)} suffix="%" step={0.1} hint="退休後整體股票、債券與現金的平均報酬" />
                 <Field label="退休後每年投資成本" value={input.investment.retirementFeeRate * 100} onChange={(value) => update("investment", "retirementFeeRate", value / 100)} suffix="%" step={0.01} hint="所有商品費用與交易成本平均成一年" />
+                <Field label="股票比例" value={(input.investment.assetAllocation?.stockRate ?? 0.6) * 100} onChange={(value) => updateInvestment({ assetAllocation: { ...(input.investment.assetAllocation ?? { bondRate: 0.35, cashRate: 0.05, glidePathEnabled: false, targetStockRate: 0.4 }), stockRate: value / 100 } })} suffix="%" />
+                <Field label="債券比例" value={(input.investment.assetAllocation?.bondRate ?? 0.35) * 100} onChange={(value) => updateInvestment({ assetAllocation: { ...(input.investment.assetAllocation ?? { stockRate: 0.6, cashRate: 0.05, glidePathEnabled: false, targetStockRate: 0.4 }), bondRate: value / 100 } })} suffix="%" />
+                <Field label="現金比例" value={(input.investment.assetAllocation?.cashRate ?? 0.05) * 100} onChange={(value) => updateInvestment({ assetAllocation: { ...(input.investment.assetAllocation ?? { stockRate: 0.6, bondRate: 0.35, glidePathEnabled: false, targetStockRate: 0.4 }), cashRate: value / 100 } })} suffix="%" />
               </div>
             )}
+            <label className="toggle-field compact-toggle"><input type="checkbox" role="switch" checked={input.investment.assetAllocation?.glidePathEnabled ?? false} onChange={(event) => updateInvestment({ assetAllocation: { ...(input.investment.assetAllocation ?? { stockRate: 0.6, bondRate: 0.35, cashRate: 0.05, targetStockRate: 0.4 }), glidePathEnabled: event.target.checked } })} /><span className="toggle-control" aria-hidden="true" /><span>退休後逐年降低股票比例</span></label>
+            {input.investment.assetAllocation?.glidePathEnabled && <Field label="最後降到股票比例" value={(input.investment.assetAllocation.targetStockRate ?? 0.4) * 100} onChange={(value) => updateInvestment({ assetAllocation: { ...input.investment.assetAllocation!, targetStockRate: value / 100 } })} suffix="%" min={0} max={100} hint="從退休時配置，逐年調整到規劃終點" />}
+            <Field label="退休後有效稅率" value={(input.investment.retirementEffectiveTaxRate ?? 0) * 100} onChange={(value) => updateInvestment({ retirementEffectiveTaxRate: value / 100 })} suffix="%" min={0} max={50} step={0.5} hint="用一個平均比例估算稅後現金流；不是報稅結果" />
             <div className="analysis-options">
               <div className="subsection-label">退休後提領方式（選填）</div>
               <label className="toggle-field compact-toggle">
@@ -302,13 +309,13 @@ export function InputPanel({ input, errors, onChange }: InputPanelProps) {
               {input.investment.withdrawalRule?.enabled && <Field label="每年固定提領比例" value={(input.investment.withdrawalRule.annualRate ?? 0.04) * 100} onChange={(value) => updateInvestment({ withdrawalRule: { ...(input.investment.withdrawalRule ?? { enabled: true }), annualRate: value / 100 } })} suffix="%" min={0.1} max={20} step={0.1} hint="常見參考值是 4%，只是情境比較，不代表本金一定不會減少。" />}
               <div className="subsection-label">股票質押（選填）</div>
               <label className="toggle-field compact-toggle">
-                <input type="checkbox" role="switch" checked={input.investment.stockPledge?.enabled ?? false} onChange={(event) => updateInvestment({ stockPledge: { ...(input.investment.stockPledge ?? { loanToValue: 0.3, annualInterestRate: 0.025, maintenanceRate: 0.13 }), enabled: event.target.checked } })} />
+                <input type="checkbox" role="switch" checked={input.investment.stockPledge?.enabled ?? false} onChange={(event) => updateInvestment({ stockPledge: { ...(input.investment.stockPledge ?? { loanToValue: 0.3, annualInterestRate: 0.025, maintenanceRate: 1.3 }), enabled: event.target.checked } })} />
                 <span className="toggle-control" aria-hidden="true" /><span>我想看看股票質押能借多少</span>
               </label>
               {input.investment.stockPledge?.enabled && <div className="field-grid two allocation-custom">
-                <Field label="借款占股票市值" value={(input.investment.stockPledge.loanToValue ?? 0.3) * 100} onChange={(value) => updateInvestment({ stockPledge: { ...(input.investment.stockPledge ?? { enabled: true, annualInterestRate: 0.025, maintenanceRate: 0.13 }), loanToValue: value / 100 } })} suffix="%" min={0} max={80} step={5} />
-                <Field label="借款年利率" value={(input.investment.stockPledge.annualInterestRate ?? 0.025) * 100} onChange={(value) => updateInvestment({ stockPledge: { ...(input.investment.stockPledge ?? { enabled: true, loanToValue: 0.3, maintenanceRate: 0.13 }), annualInterestRate: value / 100 } })} suffix="%" step={0.1} />
-                <Field label="維持率警戒線" value={(input.investment.stockPledge.maintenanceRate ?? 0.13) * 100} onChange={(value) => updateInvestment({ stockPledge: { ...(input.investment.stockPledge ?? { enabled: true, loanToValue: 0.3, annualInterestRate: 0.025 }), maintenanceRate: value / 100 } })} suffix="%" step={1} hint="股票下跌時可能被要求補錢或賣出；這筆借款不算退休資產。" />
+                <Field label="借款占股票市值" value={(input.investment.stockPledge.loanToValue ?? 0.3) * 100} onChange={(value) => updateInvestment({ stockPledge: { ...(input.investment.stockPledge ?? { enabled: true, annualInterestRate: 0.025, maintenanceRate: 1.3 }), loanToValue: value / 100 } })} suffix="%" min={0} max={80} step={5} />
+                <Field label="借款年利率" value={(input.investment.stockPledge.annualInterestRate ?? 0.025) * 100} onChange={(value) => updateInvestment({ stockPledge: { ...(input.investment.stockPledge ?? { enabled: true, loanToValue: 0.3, maintenanceRate: 1.3 }), annualInterestRate: value / 100 } })} suffix="%" step={0.1} />
+                <Field label="維持率警戒線" value={(input.investment.stockPledge.maintenanceRate ?? 1.3) * 100} onChange={(value) => updateInvestment({ stockPledge: { ...(input.investment.stockPledge ?? { enabled: true, loanToValue: 0.3, annualInterestRate: 0.025 }), maintenanceRate: value / 100 } })} suffix="%" min={100} max={1000} step={10} hint="例如 130%；股價下跌時可能被要求補錢或賣出。" />
               </div>}
             </div>
           </div>

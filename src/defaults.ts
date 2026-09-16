@@ -50,7 +50,9 @@ export const defaultInput: PlanningInput = {
     retirementGrossReturnRate: 0.05,
     retirementFeeRate: 0.003,
     withdrawalRule: { enabled: false, annualRate: 0.04 },
-    stockPledge: { enabled: false, loanToValue: 0.3, annualInterestRate: 0.025, maintenanceRate: 0.13 }
+    stockPledge: { enabled: false, loanToValue: 0.3, annualInterestRate: 0.025, maintenanceRate: 1.3 },
+    assetAllocation: { stockRate: 0.6, bondRate: 0.35, cashRate: 0.05, glidePathEnabled: false, targetStockRate: 0.4 },
+    retirementEffectiveTaxRate: 0
   },
   partTime: { enabled: false, monthlyToday: 0, startAge: 65, endAge: 70, growthRate: 0.02 }
 };

@@ -21,10 +21,11 @@ export function simulateRetirement(
   const birth = birthSerial(input.profile.birthYearROC, input.profile.birthMonth);
   const retirementMonth = monthAtAge(birth, input.profile.retirementAge);
   const endMonth = monthAtAge(birth, input.profile.longevityAge);
-  const monthlyReturn = effectiveMonthlyRate(netAnnualReturn(
+  const baseAnnualReturn = netAnnualReturn(
     input.investment.retirementGrossReturnRate,
     input.investment.retirementFeeRate
-  ));
+  );
+  const monthlyReturn = effectiveMonthlyRate(baseAnnualReturn);
   const partTimeStart = monthAtAge(birth, input.partTime.startAge);
   const partTimeEnd = monthAtAge(birth, input.partTime.endAge);
   const records: MonthlyRecord[] = [];
@@ -53,7 +54,19 @@ export function simulateRetirement(
     }
     const laborInsuranceLumpNominal = laborInsurance.eligibleForAnnuity ? 0 : laborInsuranceNominal;
     if (laborInsuranceLumpNominal > 0) cashReserve += laborInsuranceLumpNominal;
-    const appliedMonthlyReturn = monthlyReturnPath?.(month - retirementMonth, monthlyReturn) ?? monthlyReturn;
+    const monthIndex = month - retirementMonth;
+    let normalMonthlyReturn = monthlyReturn;
+    const mix = input.investment.assetAllocation;
+    if (mix?.glidePathEnabled) {
+      const progress = Math.min(1, monthIndex / Math.max(1, endMonth - retirementMonth));
+      const stockRate = mix.stockRate + (mix.targetStockRate - mix.stockRate) * progress;
+      const nonStock = 1 - stockRate;
+      const originalNonStock = Math.max(0.0001, mix.bondRate + mix.cashRate);
+      const bondRate = nonStock * mix.bondRate / originalNonStock;
+      const cashRate = nonStock * mix.cashRate / originalNonStock;
+      normalMonthlyReturn = effectiveMonthlyRate(netAnnualReturn(stockRate * 0.07 + bondRate * 0.03 + cashRate * 0.015, input.investment.retirementFeeRate));
+    }
+    const appliedMonthlyReturn = monthlyReturnPath?.(monthIndex, normalMonthlyReturn) ?? normalMonthlyReturn;
     const portfolioReturnNominal = portfolio * appliedMonthlyReturn;
     portfolio += portfolioReturnNominal;
     const laborPensionNominal = isLumpPension ? 0 : laborPensionEventNominal;
@@ -61,7 +74,9 @@ export function simulateRetirement(
     const partTimeNominal = input.partTime.enabled && month >= partTimeStart && month < partTimeEnd
       ? input.partTime.monthlyToday * growthFactor(input.partTime.growthRate, monthsFromAsOf)
       : 0;
-    const income = laborInsuranceIncomeNominal + nationalPensionNominal + laborPensionNominal + partTimeNominal;
+    const grossIncome = laborInsuranceIncomeNominal + nationalPensionNominal + laborPensionNominal + partTimeNominal;
+    const taxNominal = grossIncome * (input.investment.retirementEffectiveTaxRate ?? 0);
+    const income = grossIncome - taxNominal;
     const need = Math.max(0, expenseNominal - income);
     const surplus = Math.max(0, income - expenseNominal);
     const cashWithdrawalNominal = Math.min(cashReserve, need);
@@ -81,6 +96,7 @@ export function simulateRetirement(
       livingExpenseNominal,
       medicalExpenseNominal,
       longTermCareExpenseNominal,
+      taxNominal,
       laborInsuranceNominal: laborInsuranceIncomeNominal,
       nationalPensionNominal,
       laborPensionNominal,

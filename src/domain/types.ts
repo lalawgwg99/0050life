@@ -15,6 +15,14 @@ export interface StockPledgeAssumption {
   maintenanceRate: number;
 }
 
+export interface AssetAllocationAssumption {
+  stockRate: number;
+  bondRate: number;
+  cashRate: number;
+  glidePathEnabled: boolean;
+  targetStockRate: number;
+}
+
 export interface InvestmentHolding {
   id: string;
   name: string;
@@ -86,6 +94,8 @@ export interface PlanningInput {
     retirementFeeRate: number;
     withdrawalRule?: WithdrawalRule;
     stockPledge?: StockPledgeAssumption;
+    assetAllocation?: AssetAllocationAssumption;
+    retirementEffectiveTaxRate?: number;
   };
   partTime: {
     enabled: boolean;
@@ -152,6 +162,7 @@ export interface MonthlyRecord {
   livingExpenseNominal: number;
   medicalExpenseNominal: number;
   longTermCareExpenseNominal: number;
+  taxNominal: number;
   portfolioNominal: number;
   portfolioReal: number;
   pensionAccountNominal: number;

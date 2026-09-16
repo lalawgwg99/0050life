@@ -54,7 +54,8 @@ function loadSavedInput(): PlanningInput {
           ...oldInvestment,
           holdings,
           withdrawalRule: { enabled: oldInvestment.withdrawalRule?.enabled ?? defaultInput.investment.withdrawalRule!.enabled, annualRate: oldInvestment.withdrawalRule?.annualRate ?? defaultInput.investment.withdrawalRule!.annualRate },
-          stockPledge: { enabled: oldInvestment.stockPledge?.enabled ?? defaultInput.investment.stockPledge!.enabled, loanToValue: oldInvestment.stockPledge?.loanToValue ?? defaultInput.investment.stockPledge!.loanToValue, annualInterestRate: oldInvestment.stockPledge?.annualInterestRate ?? defaultInput.investment.stockPledge!.annualInterestRate, maintenanceRate: oldInvestment.stockPledge?.maintenanceRate ?? defaultInput.investment.stockPledge!.maintenanceRate }
+          stockPledge: { enabled: oldInvestment.stockPledge?.enabled ?? defaultInput.investment.stockPledge!.enabled, loanToValue: oldInvestment.stockPledge?.loanToValue ?? defaultInput.investment.stockPledge!.loanToValue, annualInterestRate: oldInvestment.stockPledge?.annualInterestRate ?? defaultInput.investment.stockPledge!.annualInterestRate, maintenanceRate: oldInvestment.stockPledge?.maintenanceRate && oldInvestment.stockPledge.maintenanceRate < 1 ? oldInvestment.stockPledge.maintenanceRate * 10 : oldInvestment.stockPledge?.maintenanceRate ?? defaultInput.investment.stockPledge!.maintenanceRate },
+          assetAllocation: { ...defaultInput.investment.assetAllocation!, ...oldInvestment.assetAllocation }
         }
       };
     }

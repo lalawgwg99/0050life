@@ -8,6 +8,8 @@ import { TAIWAN_RULES_2026 } from "../rules/taiwan-2026";
 import { BalanceChart } from "./BalanceChart";
 import { additionalContributionWeights, allocateMonthlyAmount, estimateAdditionalMonthlyInvestment, estimateAffordableMonthlySpending } from "../engine/actions";
 import { projectPlan } from "../engine/project";
+import { runMonteCarlo } from "../engine/monte-carlo";
+import { projectLaborPension } from "../modules/labor-pension";
 
 interface ResultsPanelProps {
   result: ProjectionResult;
@@ -45,6 +47,7 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
   const pledge = input.investment.stockPledge;
   const pledgeLoanToday = pledge?.enabled ? projectedToday * (pledge.loanToValue ?? 0) : 0;
   const pledgeInterestMonthlyToday = pledgeLoanToday * (pledge?.annualInterestRate ?? 0) / 12;
+  const pledgeCallDrop = pledge?.enabled && pledge.loanToValue > 0 ? Math.max(0, 1 - pledge.maintenanceRate * pledge.loanToValue) : 0;
   const yearsToRetirement = Math.max(0, retirementOffset / 12);
   const readinessPercent = Math.round(result.readiness * 100);
   const depletedRecord = result.depletedMonth === null ? null : result.records.find((record) => record.month === result.depletedMonth) ?? null;
@@ -77,6 +80,19 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
     return Math.abs(years / 5 - Math.round(years / 5)) < 1 / 24;
   });
   const outcomeText = (depletedMonth: number | null, targetAge: number) => depletedMonth === null ? `可支撐到 ${targetAge} 歲` : `約 ${ageAtMonth(birth, depletedMonth).toFixed(0)} 歲用完`;
+  const monteCarlo = useMemo(() => runMonteCarlo(result), [result]);
+  const pensionBreakevenAge = useMemo(() => {
+    const endMonth = monthAtAge(birth, input.profile.longevityAge);
+    const monthly = projectLaborPension({ ...input, laborPension: { ...input.laborPension, mode: "monthly" } }, endMonth);
+    if (!monthly.eligibleForMonthly || monthly.initialMonthlyNominal <= 0) return null;
+    let total = 0;
+    for (let month = monthly.claimMonth; month < endMonth; month += 1) {
+      total += monthly.events.get(month) ?? 0;
+      if (total >= monthly.balanceAtClaim) return ageAtMonth(birth, month);
+    }
+    return null;
+  }, [birth, input]);
+  const firstMonthTaxToday = retirementRecord ? toToday(retirementRecord.taxNominal, retirementRecord.month) : 0;
   const timelineItems = [
     { id: "retirement", month: retirementMonth, title: "開始退休", detail: `${input.profile.retirementAge} 歲`, kind: "retirement" },
     { id: "labor-pension", month: result.laborPension.claimMonth, title: input.laborPension.mode === "monthly" ? "開始領勞退" : "勞退一次領", detail: `${input.laborPension.claimAge} 歲`, kind: "pension" },
@@ -209,6 +225,18 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
       </section>
 
       {(withdrawalRule?.enabled || pledge?.enabled) && <section className="result-section optional-analysis"><div className="result-heading"><div><span>選用比較</span><h2>提領與借款試算</h2></div><small>不會改變主要結果</small></div><div className="analysis-grid">{withdrawalRule?.enabled && <article><strong>固定比例提領參考</strong><span>每年 {formatPercent(withdrawalRule.annualRate)}</span><b>{formatMoney(fourPercentMonthly)}／月</b><small>以退休時預計投資資產估算；只是提領情境，不代表本金不會減少，也不是保證。</small></article>}{pledge?.enabled && <article><strong>股票質押估算</strong><span>約可借 {formatMoney(pledgeLoanToday)}</span><b>每月利息約 {formatMoney(pledgeInterestMonthlyToday)}</b><small>以退休時投資市值、借款 {formatPercent(pledge.loanToValue)}、年利率 {formatPercent(pledge.annualInterestRate)} 估算；股價下跌可能被追繳或賣出。</small></article>}</div></section>}
+
+      <section className="result-section professional-section">
+        <div className="result-heading"><div><span>進階風險</span><h2>不要只看平均報酬</h2></div><small>規劃工具，不是預測</small></div>
+        <div className="professional-grid">
+          <article><strong>隨機市場模擬</strong><b>{formatPercent(monteCarlo.successRate, 0)}</b><span>{monteCarlo.trials} 條隨機報酬路徑可支撐到目標年齡</span><small>以目前平均報酬與配置推估波動；不是未來成功機率保證。</small></article>
+          <article><strong>稅後第一個月</strong><b>估計稅額 {formatMoney(firstMonthTaxToday)}</b><span>使用你填的有效稅率，投資費用已從報酬扣除</span><small>這是簡化估算，不是報稅結果。</small></article>
+          <article><strong>勞退一次領／月領比較</strong><b>{pensionBreakevenAge ? `約 ${pensionBreakevenAge.toFixed(1)} 歲累計月領追平` : "規劃期間內未追平"}</b><span>以月領累計金額和一次領專戶金額比較</span><small>未計入一次領再投資報酬與個人稅務。</small></article>
+        </div>
+        <div className="historical-range"><strong>長期報酬不要只填一個數字</strong><span>規劃可同時查看較低、目前、較高三種報酬；歷史表現只適合用來設定範圍，不代表未來會重演。</span></div>
+      </section>
+
+      {pledge?.enabled && <section className="result-section pledge-risk"><div className="result-heading"><div><span>負債風險</span><h2>股票質押追繳距離</h2></div><small>借款不是資產</small></div><div className="pledge-risk-summary"><strong>股價約下跌 {formatPercent(pledgeCallDrop, 0)} 會碰到 {formatPercent(pledge.maintenanceRate, 0)} 警戒線</strong><span>未計利息滾入本金、券商提前調整擔保品或個別股票折扣。</span></div><div className="pledge-bars">{[0.1, 0.2, 0.3, 0.4].map((drop) => { const ratio = pledge.loanToValue > 0 ? (1 - drop) / pledge.loanToValue : 99; return <div key={drop} className={ratio <= pledge.maintenanceRate ? "danger" : "safe"}><span>下跌 {formatPercent(drop, 0)}</span><b>維持率 {formatPercent(ratio, 0)}</b></div>; })}</div></section>}
 
       <section className="result-section">
         <div className="result-heading"><div><span>不同市場狀況</span><h2>結果可能差多少</h2></div></div>

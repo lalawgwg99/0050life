@@ -4,6 +4,7 @@ import { makeInput } from "../test-fixtures";
 import { projectPlan, projectScenarios } from "./project";
 import { yearsUntilRetirement } from "../domain/coverage";
 import { additionalContributionWeights, allocateMonthlyAmount, estimateAdditionalMonthlyInvestment } from "./actions";
+import { runMonteCarlo } from "./monte-carlo";
 
 describe("integrated monthly projection", () => {
   it("does not use future pension income before its claim month", () => {
@@ -210,5 +211,17 @@ describe("integrated monthly projection", () => {
     const normal = projectPlan(input);
     const crash = projectPlan(input, { retirementReturnPath: (monthIndex, normalRate) => monthIndex < 12 ? Math.pow(0.6, 1 / 12) - 1 : normalRate });
     expect(crash.endingPortfolioReal).toBeLessThan(normal.endingPortfolioReal);
+  });
+
+  it("deducts the selected effective tax rate from retirement income", () => {
+    const untaxed = projectPlan(makeInput({ investment: { retirementEffectiveTaxRate: 0 } }));
+    const taxed = projectPlan(makeInput({ investment: { retirementEffectiveTaxRate: 0.1 } }));
+    expect(taxed.records[0].taxNominal).toBeGreaterThan(0);
+    expect(taxed.endingPortfolioReal).toBeLessThan(untaxed.endingPortfolioReal);
+  });
+
+  it("runs deterministic Monte Carlo paths for an auditable result", () => {
+    const result = projectPlan(makeInput());
+    expect(runMonteCarlo(result, 30, 50)).toEqual(runMonteCarlo(result, 30, 50));
   });
 });

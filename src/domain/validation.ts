@@ -87,8 +87,11 @@ export function validateInput(input: PlanningInput): string[] {
     const pledge = input.investment.stockPledge;
     if (pledge.loanToValue < 0 || pledge.loanToValue > 0.8) errors.push("股票質押借款比例請填 0% 至 80%。");
     if (pledge.annualInterestRate < 0 || pledge.annualInterestRate >= 1) errors.push("股票質押年利率請填 0% 至 100% 之間。");
-    if (pledge.maintenanceRate <= 0 || pledge.maintenanceRate >= 1) errors.push("股票質押維持率請填 0% 至 100% 之間。");
+    if (pledge.maintenanceRate < 1 || pledge.maintenanceRate > 10) errors.push("股票質押維持率警戒線請填 100% 至 1000%。");
   }
+  const mix = input.investment.assetAllocation;
+  if (mix && Math.abs(mix.stockRate + mix.bondRate + mix.cashRate - 1) > 0.001) errors.push("股票、債券與現金比例加總必須是 100%。");
+  if ((input.investment.retirementEffectiveTaxRate ?? 0) < 0 || (input.investment.retirementEffectiveTaxRate ?? 0) > 0.5) errors.push("退休後有效稅率請填 0% 至 50%。");
   const lumpReinvestRate = input.laborPension.lumpReinvestRate ?? 1;
   if (lumpReinvestRate < 0 || lumpReinvestRate > 1) errors.push("勞退一次領投入比例請填 0% 至 100%。");
   if (input.partTime.enabled) {
