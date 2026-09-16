@@ -5,7 +5,7 @@ const today = new Date();
 export const defaultInput: PlanningInput = {
   asOf: { year: today.getFullYear(), month: today.getMonth() + 1 },
   profile: { birthYearROC: 80, birthMonth: 4, retirementAge: 65, longevityAge: 90 },
-  spending: { monthlyToday: 50_000 },
+  spending: { monthlyToday: 50_000, medicalMonthlyToday: 0, medicalInflationRate: 0.03, longTermCareEnabled: false, longTermCareStartAge: 80, longTermCareMonthlyToday: 0 },
   economy: { inflationRate: 0.02 },
   laborInsurance: {
     insuredYearsNow: 10,

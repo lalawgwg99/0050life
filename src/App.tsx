@@ -34,6 +34,7 @@ function loadSavedInput(): PlanningInput {
       return {
         ...saved.input,
         asOf: defaultInput.asOf,
+        spending: { ...defaultInput.spending, ...saved.input.spending },
         partTime: { ...defaultInput.partTime, ...saved.input.partTime },
         nationalPension: { ...defaultInput.nationalPension, ...saved.input.nationalPension },
         laborInsurance: {

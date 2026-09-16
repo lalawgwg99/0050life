@@ -190,4 +190,25 @@ describe("integrated monthly projection", () => {
     expect(result.records[0].portfolioReturnNominal).toBeGreaterThan(0);
     expect(result.records[0].portfolioNominal).toBeGreaterThan(1_200_000);
   });
+
+  it("adds medical and long-term care budgets to retirement expenses", () => {
+    const input = makeInput({
+      profile: { retirementAge: 65, longevityAge: 90 },
+      economy: { inflationRate: 0 },
+      spending: { monthlyToday: 30_000, medicalMonthlyToday: 5_000, medicalInflationRate: 0, longTermCareEnabled: true, longTermCareStartAge: 80, longTermCareMonthlyToday: 20_000 }
+    });
+    const result = projectPlan(input);
+    const age65 = result.records.find((record) => Math.abs(record.age - 65) < 0.01)!;
+    const age80 = result.records.find((record) => Math.abs(record.age - 80) < 0.01)!;
+    expect(age65.expenseNominal).toBe(35_000);
+    expect(age80.expenseNominal).toBe(55_000);
+    expect(age80.longTermCareExpenseNominal).toBe(20_000);
+  });
+
+  it("supports an early-retirement crash return path", () => {
+    const input = makeInput({ spending: { monthlyToday: 80_000 } });
+    const normal = projectPlan(input);
+    const crash = projectPlan(input, { retirementReturnPath: (monthIndex, normalRate) => monthIndex < 12 ? Math.pow(0.6, 1 / 12) - 1 : normalRate });
+    expect(crash.endingPortfolioReal).toBeLessThan(normal.endingPortfolioReal);
+  });
 });

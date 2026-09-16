@@ -29,7 +29,7 @@ function solveRequiredInvestment(
   return high;
 }
 
-export function projectPlan(input: PlanningInput): ProjectionResult {
+export function projectPlan(input: PlanningInput, options?: { retirementReturnPath?: (monthIndex: number, normalMonthlyReturn: number) => number }): ProjectionResult {
   const errors = validateInput(input);
   if (errors.length > 0) throw new Error(errors.join("\n"));
 
@@ -47,7 +47,7 @@ export function projectPlan(input: PlanningInput): ProjectionResult {
   const lumpPensionCashAtRetirement = lumpPensionAmountAtRetirement - lumpPensionReinvestedAtRetirement;
   const projectedRetirementAssetsAtRetirement = projectedInvestmentAtRetirement + lumpPensionAmountAtRetirement;
   const requiredInvestmentAtRetirement = solveRequiredInvestment(input, laborInsurance, nationalPension, laborPension);
-  const simulation = simulateRetirement(input, laborInsurance, nationalPension, laborPension, projectedInvestmentAtRetirement);
+  const simulation = simulateRetirement(input, laborInsurance, nationalPension, laborPension, projectedInvestmentAtRetirement, options?.retirementReturnPath);
   const investmentGapAtRetirement = Math.max(0, requiredInvestmentAtRetirement - projectedInvestmentAtRetirement);
   const readiness = requiredInvestmentAtRetirement === 0
     ? 1

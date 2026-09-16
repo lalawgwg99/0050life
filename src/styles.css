@@ -194,6 +194,13 @@ details summary svg { width: 14px; height: 14px; }
 .analysis-grid span { color: var(--muted); font-size: 11px; }
 .analysis-grid b { color: var(--teal); font-size: 18px; }
 .analysis-grid small { color: var(--muted); font-size: 10.5px; line-height: 1.5; }
+.balance-milestones { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 14px; }
+.balance-milestones div { display: grid; gap: 3px; padding: 10px; border: 1px solid var(--line); border-radius: 7px; background: #fafbfa; }
+.balance-milestones span { color: var(--muted); font-size: 10px; }
+.balance-milestones strong { font-size: 12px; }
+.stress-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.stress-grid article { display: grid; gap: 5px; padding: 15px; border: 1px solid #e2d9c4; border-radius: 8px; background: #fffdf8; }
+.stress-grid strong { font-size: 12px; }.stress-grid span { color: var(--muted); font-size: 10.5px; }.stress-grid b { color: #7a5c20; font-size: 14px; }
 .readiness-band { margin-top: 13px; padding: 18px; border: 1px solid #b9e1e4; border-radius: 8px; color: var(--ink); background: var(--teal-soft); }
 .readiness-heading { display: flex; align-items: center; justify-content: space-between; font-size: 12px; }
 .readiness-heading > div { display: grid; gap: 2px; }
@@ -337,6 +344,8 @@ details summary svg { width: 14px; height: 14px; }
   .readiness-detail > div:last-child { grid-column: 1 / -1; }
   .allocation-options { grid-template-columns: 1fr; }
   .analysis-grid { grid-template-columns: 1fr; }
+  .stress-grid { grid-template-columns: 1fr; }
+  .balance-milestones { grid-template-columns: 1fr 1fr; }
 }
 
 @media print {

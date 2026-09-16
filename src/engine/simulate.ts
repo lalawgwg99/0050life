@@ -14,7 +14,8 @@ export function simulateRetirement(
   laborInsurance: LaborInsuranceProjection,
   nationalPension: NationalPensionProjection,
   laborPension: LaborPensionProjection,
-  investmentAtRetirement: number
+  investmentAtRetirement: number,
+  monthlyReturnPath?: (monthIndex: number, normalMonthlyReturn: number) => number
 ): RetirementSimulationResult {
   const asOf = toSerial(input.asOf.year, input.asOf.month);
   const birth = birthSerial(input.profile.birthYearROC, input.profile.birthMonth);
@@ -34,7 +35,12 @@ export function simulateRetirement(
 
   for (let month = retirementMonth; month < endMonth; month += 1) {
     const monthsFromAsOf = month - asOf;
-    const expenseNominal = input.spending.monthlyToday * growthFactor(input.economy.inflationRate, monthsFromAsOf);
+    const livingExpenseNominal = input.spending.monthlyToday * growthFactor(input.economy.inflationRate, monthsFromAsOf);
+    const medicalExpenseNominal = (input.spending.medicalMonthlyToday ?? 0) * growthFactor(input.spending.medicalInflationRate ?? input.economy.inflationRate, monthsFromAsOf);
+    const longTermCareExpenseNominal = input.spending.longTermCareEnabled && ageAtMonth(birth, month) >= (input.spending.longTermCareStartAge ?? 80)
+      ? (input.spending.longTermCareMonthlyToday ?? 0) * growthFactor(input.economy.inflationRate, monthsFromAsOf)
+      : 0;
+    const expenseNominal = livingExpenseNominal + medicalExpenseNominal + longTermCareExpenseNominal;
     const laborInsuranceNominal = laborInsurance.events.get(month) ?? 0;
     const nationalPensionNominal = nationalPension.events.get(month) ?? 0;
     const laborPensionEventNominal = laborPension.events.get(month) ?? 0;
@@ -47,7 +53,8 @@ export function simulateRetirement(
     }
     const laborInsuranceLumpNominal = laborInsurance.eligibleForAnnuity ? 0 : laborInsuranceNominal;
     if (laborInsuranceLumpNominal > 0) cashReserve += laborInsuranceLumpNominal;
-    const portfolioReturnNominal = portfolio * monthlyReturn;
+    const appliedMonthlyReturn = monthlyReturnPath?.(month - retirementMonth, monthlyReturn) ?? monthlyReturn;
+    const portfolioReturnNominal = portfolio * appliedMonthlyReturn;
     portfolio += portfolioReturnNominal;
     const laborPensionNominal = isLumpPension ? 0 : laborPensionEventNominal;
     const laborInsuranceIncomeNominal = laborInsurance.eligibleForAnnuity ? laborInsuranceNominal : 0;
@@ -71,6 +78,9 @@ export function simulateRetirement(
       month,
       age: ageAtMonth(birth, month),
       expenseNominal,
+      livingExpenseNominal,
+      medicalExpenseNominal,
+      longTermCareExpenseNominal,
       laborInsuranceNominal: laborInsuranceIncomeNominal,
       nationalPensionNominal,
       laborPensionNominal,

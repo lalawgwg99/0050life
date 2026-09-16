@@ -11,6 +11,8 @@ export function validateInput(input: PlanningInput): string[] {
     [input.profile.retirementAge, "退休年齡"],
     [input.profile.longevityAge, "規劃年齡"],
     [input.spending.monthlyToday, "每月生活費"],
+    [input.spending.medicalMonthlyToday ?? 0, "每月醫療預算"],
+    [input.spending.medicalInflationRate ?? input.economy.inflationRate, "醫療費成長率"],
     [input.economy.inflationRate, "物價上漲率"],
     [input.laborInsurance.insuredYearsNow, "目前勞保年資"],
     [input.laborInsurance.averageSalaryToday, "勞保平均薪資"],
@@ -48,6 +50,7 @@ export function validateInput(input: PlanningInput): string[] {
       [input.partTime.growthRate, "兼職收入成長率"]
     );
   }
+  if (input.spending.longTermCareEnabled) values.push([input.spending.longTermCareStartAge ?? 80, "長照開始年齡"], [input.spending.longTermCareMonthlyToday ?? 0, "每月長照預算"]);
   if (input.nationalPension.enabled) values.push([input.nationalPension.insuredYears, "國保年資"]);
   for (const [value, label] of values) {
     if (!Number.isFinite(value)) errors.push(`${label}需要填入數字。`);
@@ -64,6 +67,9 @@ export function validateInput(input: PlanningInput): string[] {
   if (!Number.isInteger(input.profile.birthYearROC) || !Number.isInteger(input.profile.birthMonth) || ages.some((age) => !Number.isInteger(age))) errors.push("出生年月與各項年齡請填整數。");
   if (input.profile.longevityAge <= input.profile.retirementAge) errors.push("規劃年齡必須晚於退休年齡。");
   if (input.spending.monthlyToday < 0) errors.push("生活費不可為負數。");
+  if ((input.spending.medicalMonthlyToday ?? 0) < 0 || (input.spending.longTermCareMonthlyToday ?? 0) < 0) errors.push("醫療與長照預算不可為負數。");
+  if (input.spending.longTermCareEnabled && (input.spending.longTermCareStartAge ?? 80) < input.profile.retirementAge) errors.push("長照開始年齡不可早於退休年齡。");
+  if (input.spending.longTermCareEnabled && (input.spending.longTermCareStartAge ?? 80) > input.profile.longevityAge) errors.push("長照開始年齡不可晚於規劃年齡。");
   if (input.investment.holdings.some((holding) => holding.valueNow < 0 || holding.monthlyContributionToday < 0)) errors.push("投資市值與每月投入不可為負數。");
   if (input.partTime.enabled && input.partTime.monthlyToday < 0) errors.push("兼職收入不可為負數。");
   if (input.laborInsurance.insuredYearsNow < 0 || laborInsuranceFutureYears(input) < 0 || input.laborInsurance.averageSalaryToday < 0) errors.push("勞保年資與平均薪資不可為負數。");

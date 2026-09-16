@@ -1,12 +1,13 @@
 import { useMemo } from "react";
 import { ArrowRight, BriefcaseBusiness, CalendarClock, Check, CircleAlert, Landmark, PiggyBank, ShieldCheck, TrendingUp } from "lucide-react";
 import { growthFactor, realValue } from "../domain/rates";
-import { birthSerial, monthAtAge, toSerial } from "../domain/time";
+import { ageAtMonth, birthSerial, monthAtAge, toSerial } from "../domain/time";
 import type { ProjectionResult, ScenarioResult } from "../domain/types";
 import { formatCompactMoney, formatMoney, formatMonth, formatPercent } from "../lib/format";
 import { TAIWAN_RULES_2026 } from "../rules/taiwan-2026";
 import { BalanceChart } from "./BalanceChart";
 import { additionalContributionWeights, allocateMonthlyAmount, estimateAdditionalMonthlyInvestment, estimateAffordableMonthlySpending } from "../engine/actions";
+import { projectPlan } from "../engine/project";
 
 interface ResultsPanelProps {
   result: ProjectionResult;
@@ -68,6 +69,14 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
   const affordableSpending = useMemo(() => estimateAffordableMonthlySpending(input, result), [input, result]);
   const roundedExtraMonthly = Math.ceil(extraMonthly / 100) * 100;
   const roundedAffordableSpending = Math.floor(affordableSpending / 100) * 100;
+  const earlyCrashResult = useMemo(() => projectPlan(input, { retirementReturnPath: (monthIndex, normalRate) => monthIndex < 12 ? Math.pow(0.7, 1 / 12) - 1 : monthIndex < 24 ? Math.pow(0.9, 1 / 12) - 1 : normalRate }).depletedMonth, [input]);
+  const longevity95 = useMemo(() => input.profile.longevityAge >= 95 ? result : projectPlan({ ...input, profile: { ...input.profile, longevityAge: 95 } }), [input, result]);
+  const longevity100 = useMemo(() => input.profile.longevityAge >= 100 ? result : projectPlan({ ...input, profile: { ...input.profile, longevityAge: 100 } }), [input, result]);
+  const fiveYearBalances = result.records.filter((record) => {
+    const years = record.age - input.profile.retirementAge;
+    return Math.abs(years / 5 - Math.round(years / 5)) < 1 / 24;
+  });
+  const outcomeText = (depletedMonth: number | null, targetAge: number) => depletedMonth === null ? `可支撐到 ${targetAge} 歲` : `約 ${ageAtMonth(birth, depletedMonth).toFixed(0)} 歲用完`;
   const timelineItems = [
     { id: "retirement", month: retirementMonth, title: "開始退休", detail: `${input.profile.retirementAge} 歲`, kind: "retirement" },
     { id: "labor-pension", month: result.laborPension.claimMonth, title: input.laborPension.mode === "monthly" ? "開始領勞退" : "勞退一次領", detail: `${input.laborPension.claimAge} 歲`, kind: "pension" },
@@ -171,6 +180,17 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
       <section className="result-section chart-section">
         <div className="result-heading"><div><span>退休以後</span><h2>投資資產還剩多少</h2></div><small>今天的物價</small></div>
         <BalanceChart data={chartData} />
+        <div className="balance-milestones">{fiveYearBalances.map((record) => <div key={record.month}><span>{record.age.toFixed(0)} 歲</span><strong>{formatMoney(record.portfolioReal + toToday(record.cashReserveNominal, record.month))}</strong></div>)}</div>
+      </section>
+
+      <section className="result-section stress-section">
+        <div className="result-heading"><div><span>先看不順利的情況</span><h2>退休壓力測試</h2></div><small>不是成功機率</small></div>
+        <div className="stress-grid">
+          <article><strong>退休前兩年遇到大跌</strong><span>第 1 年 -30%、第 2 年 -10%</span><b>{outcomeText(earlyCrashResult, input.profile.longevityAge)}</b></article>
+          <article><strong>如果活到 95 歲</strong><span>沿用目前收入、支出與報酬假設</span><b>{outcomeText(longevity95.depletedMonth, 95)}</b></article>
+          <article><strong>如果活到 100 歲</strong><span>沿用目前收入、支出與報酬假設</span><b>{outcomeText(longevity100.depletedMonth, 100)}</b></article>
+        </div>
+        <p className="section-footnote">壓力測試是用不利條件檢查承受力，不代表未來一定發生；若顯示資產用完，會列出大約年齡。</p>
       </section>
 
       <section className="result-section">

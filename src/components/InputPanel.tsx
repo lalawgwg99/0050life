@@ -92,6 +92,19 @@ export function InputPanel({ input, errors, onChange }: InputPanelProps) {
           <summary><SlidersHorizontal aria-hidden="true" /> 更多生活假設</summary>
           <div className="details-body">
             <Field label="每年物價上漲" value={input.economy.inflationRate * 100} onChange={(value) => update("economy", "inflationRate", value / 100)} suffix="%" step={0.1} />
+            <div className="subsection-label">醫療與長照（選填）</div>
+            <div className="field-grid two">
+              <Field label="每月醫療預算" value={input.spending.medicalMonthlyToday ?? 0} onChange={(value) => update("spending", "medicalMonthlyToday", value)} suffix="元" step={500} hint="慢性病、看診與自費項目，可先填 0" />
+              <Field label="醫療費每年增加" value={(input.spending.medicalInflationRate ?? 0.03) * 100} onChange={(value) => update("spending", "medicalInflationRate", value / 100)} suffix="%" step={0.1} />
+            </div>
+            <label className="toggle-field">
+              <input type="checkbox" role="switch" checked={input.spending.longTermCareEnabled ?? false} onChange={(event) => update("spending", "longTermCareEnabled", event.target.checked)} />
+              <span className="toggle-control" aria-hidden="true" /><span>預留長照費用</span>
+            </label>
+            {input.spending.longTermCareEnabled && <div className="field-grid two optional-fields">
+              <Field label="從幾歲開始預留" value={input.spending.longTermCareStartAge ?? 80} onChange={(value) => update("spending", "longTermCareStartAge", value)} suffix="歲" />
+              <Field label="每月長照預算" value={input.spending.longTermCareMonthlyToday ?? 0} onChange={(value) => update("spending", "longTermCareMonthlyToday", value)} suffix="元" step={1000} hint="請填今天物價下的金額" />
+            </div>}
             <label className="toggle-field">
               <input type="checkbox" role="switch" checked={input.partTime.enabled} onChange={(event) => update("partTime", "enabled", event.target.checked)} />
               <span className="toggle-control" aria-hidden="true" />
