@@ -72,6 +72,27 @@ test("keeps part-time income optional", async ({ page, isMobile }) => {
   await expect(page.getByText("65 至 70 歲")).toBeVisible();
 });
 
+test("keeps voluntary labor-pension contribution optional", async ({ page }) => {
+  const selfContribution = page.getByRole("switch", { name: "我有自己加碼提繳（沒有就不用勾）" });
+  await expect(selfContribution).not.toBeChecked();
+  await expect(page.getByLabel("自提比例")).toBeHidden();
+  await page.getByText("我有自己加碼提繳（沒有就不用勾）", { exact: true }).click();
+  await expect(page.getByLabel("自提比例")).toBeVisible();
+  await page.getByText("我有自己加碼提繳（沒有就不用勾）", { exact: true }).click();
+  await expect(page.getByLabel("自提比例")).toBeHidden();
+});
+
+test("keeps optional withdrawal and pledge comparisons out of the main result", async ({ page, isMobile }) => {
+  await page.getByText("進階設定：報酬、費用與退休後配置", { exact: true }).click();
+  await page.getByText("我想參考「每年固定比例提領」", { exact: true }).click();
+  await page.getByText("我想看看股票質押能借多少", { exact: true }).click();
+  if (isMobile) await page.getByRole("tab", { name: "查看結果" }).click();
+  await expect(page.getByRole("heading", { name: "提領與借款試算" })).toBeVisible();
+  await expect(page.getByText("不會改變主要結果", { exact: true })).toBeVisible();
+  await expect(page.getByText("固定比例提領", { exact: true })).toBeVisible();
+  await expect(page.getByText("股票質押估算", { exact: true })).toBeVisible();
+});
+
 test("keeps national pension separate and points to the official account", async ({ page, isMobile }) => {
   await expect(page.getByText("已繳費的國保年資")).toBeHidden();
   await page.getByText("曾經參加國民年金", { exact: true }).click();

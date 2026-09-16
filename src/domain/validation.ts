@@ -76,6 +76,13 @@ export function validateInput(input: PlanningInput): string[] {
   if (investmentFees.some((fee) => fee < 0 || fee >= 1)) errors.push("投資費用率必須介於 0% 與 100% 之間。");
   if (input.laborPension.employerRate < 0 || input.laborPension.employerRate > 1) errors.push("雇主提繳比例請填 0% 至 100%。");
   if (input.laborPension.voluntaryRate < 0 || input.laborPension.voluntaryRate > 0.06) errors.push("自己加碼提繳最多為 6%。");
+  if (input.investment.withdrawalRule?.enabled && (input.investment.withdrawalRule.annualRate <= 0 || input.investment.withdrawalRule.annualRate >= 1)) errors.push("本金維持試算比例請填 0% 至 100% 之間。");
+  if (input.investment.stockPledge?.enabled) {
+    const pledge = input.investment.stockPledge;
+    if (pledge.loanToValue < 0 || pledge.loanToValue > 0.8) errors.push("股票質押借款比例請填 0% 至 80%。");
+    if (pledge.annualInterestRate < 0 || pledge.annualInterestRate >= 1) errors.push("股票質押年利率請填 0% 至 100% 之間。");
+    if (pledge.maintenanceRate <= 0 || pledge.maintenanceRate >= 1) errors.push("股票質押維持率請填 0% 至 100% 之間。");
+  }
   const lumpReinvestRate = input.laborPension.lumpReinvestRate ?? 1;
   if (lumpReinvestRate < 0 || lumpReinvestRate > 1) errors.push("勞退一次領投入比例請填 0% 至 100%。");
   if (input.partTime.enabled) {

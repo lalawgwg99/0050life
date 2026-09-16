@@ -35,6 +35,14 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
   const recurringIncomeToday = retirementRecord ? toToday(recurringIncomeNominal, retirementRecord.month) : 0;
   const monthlyCashflowGapToday = Math.max(0, retirementExpenseToday - recurringIncomeToday);
   const monthlyCashflowGapNominal = Math.max(0, (retirementRecord?.expenseNominal ?? 0) - recurringIncomeNominal);
+  const withdrawalRule = input.investment.withdrawalRule;
+  const fourPercentMonthly = projectedToday * (withdrawalRule?.annualRate ?? 0.04) / 12;
+  const lumpAmountToday = toToday(result.laborPension.balanceAtClaim, result.laborPension.claimMonth);
+  const lumpInvestedToday = lumpAmountToday * (input.laborPension.lumpReinvestRate ?? 1);
+  const lumpCashToday = lumpAmountToday - lumpInvestedToday;
+  const pledge = input.investment.stockPledge;
+  const pledgeLoanToday = pledge?.enabled ? projectedToday * (pledge.loanToValue ?? 0) : 0;
+  const pledgeInterestMonthlyToday = pledgeLoanToday * (pledge?.annualInterestRate ?? 0) / 12;
   const yearsToRetirement = Math.max(0, retirementOffset / 12);
   const readinessPercent = Math.round(result.readiness * 100);
   const depletedRecord = result.depletedMonth === null ? null : result.records.find((record) => record.month === result.depletedMonth) ?? null;
@@ -111,13 +119,13 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
       <div className="metric-grid">
         <article className="metric-card primary"><span>退休時預計投資資產</span><strong>{formatMoney(projectedToday)}</strong><small>今天購買力｜退休當年帳面約 {formatMoney(result.projectedInvestmentAtRetirement)}</small></article>
         <article className="metric-card"><span>建議準備的投資資產</span><strong>{formatMoney(requiredToday)}</strong><small>今天購買力｜退休當年帳面約 {formatMoney(result.requiredInvestmentAtRetirement)}</small></article>
-        <article className="metric-card"><span>退休第一年，生活費要靠投資補多少</span><strong>{formatPercent(result.initialRetirementWithdrawalRate)}</strong><small>代表第一年生活費中，需要由投資資產補上的比例；每個人的結果都不同，不是固定套用 4% 法則</small></article>
+        <article className="metric-card"><span>退休後每月還要補</span><strong>{monthlyCashflowGapToday > 0 ? formatMoney(monthlyCashflowGapToday) : "已足夠"}</strong><small>以今天購買力計算，從投資拿來補生活費的金額</small></article>
       </div>
 
       <section className="money-basis" aria-label="今天物價與退休物價說明">
-        <div><strong>今天的物價</strong><span>用現在熟悉的購買力比較，較容易判斷夠不夠。</span></div>
+        <div><strong>結果先看「今天購買力」</strong><span>這樣比較不會被未來物價變大的數字嚇到。</span></div>
         <ArrowRight aria-hidden="true" />
-        <div><strong>退休當年金額</strong><span>若每年物價上漲 {formatPercent(input.economy.inflationRate)}，今天每月 {formatMoney(input.spending.monthlyToday)}，退休當年約是 {formatMoney(retirementRecord?.expenseNominal ?? 0)}。</span></div>
+        <div><strong>退休當年帳面金額</strong><span>若每年物價上漲 {formatPercent(input.economy.inflationRate)}，今天每月 {formatMoney(input.spending.monthlyToday)}，退休當年約需 {formatMoney(retirementRecord?.expenseNominal ?? 0)}。</span></div>
       </section>
 
       <section className="readiness-band" aria-label={`退休準備完成 ${readinessPercent}%`}>
@@ -169,7 +177,7 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
         <div className="source-list">
           <article className="source-row"><span className="source-icon labor"><Landmark aria-hidden="true" /></span><div><h3>勞保</h3><p>{formatMonth(result.laborInsurance.claimMonth)} 開始</p></div><div className="source-value"><strong>{formatMoney(laborValue)}</strong><span>{result.laborInsurance.eligibleByCombinedYears ? "勞保＋國保合計後每月" : result.laborInsurance.eligibleForAnnuity ? "開始時每月金額" : "一次領估算"}</span></div></article>
           {result.nationalPension.enabled && <article className="source-row"><span className="source-icon national"><ShieldCheck aria-hidden="true" /></span><div><h3>國民年金</h3><p>{formatMonth(result.nationalPension.claimMonth)} 開始</p></div><div className="source-value"><strong>{formatMoney(nationalPensionValue)}</strong><span>{result.nationalPension.formulaUsed} 式每月估算</span></div></article>}
-          <article className="source-row"><span className="source-icon pension"><PiggyBank aria-hidden="true" /></span><div><h3>勞退</h3><p>{formatMonth(result.laborPension.claimMonth)} 開始</p></div><div className="source-value"><strong>{formatMoney(pensionValue)}</strong><span>{input.laborPension.mode === "monthly" ? "開始時每月估算" : "一次領估算"}</span></div></article>
+          <article className="source-row"><span className="source-icon pension"><PiggyBank aria-hidden="true" /></span><div><h3>勞退</h3><p>{formatMonth(result.laborPension.claimMonth)} 開始</p>{input.laborPension.mode === "lump" && <small className="source-note">一次領約 {formatMoney(lumpAmountToday)}；投入 {formatMoney(lumpInvestedToday)}，保留現金 {formatMoney(lumpCashToday)}</small>}</div><div className="source-value"><strong>{formatMoney(pensionValue)}</strong><span>{input.laborPension.mode === "monthly" ? "開始時每月估算" : "一次領估算"}</span></div></article>
           <article className="source-row"><span className="source-icon invest"><TrendingUp aria-hidden="true" /></span><div><h3>自己的投資</h3><p>{formatMonth(retirementMonth)} 退休時</p></div><div className="source-value"><strong>{formatMoney(projectedToday)}</strong><span>退休時預計金額</span></div></article>
           {input.partTime.enabled && <article className="source-row"><span className="source-icon work"><BriefcaseBusiness aria-hidden="true" /></span><div><h3>兼職收入</h3><p>{input.partTime.startAge} 至 {input.partTime.endAge} 歲</p></div><div className="source-value"><strong>{formatMoney(partTimeValue)}</strong><span>開始時每月金額</span></div></article>}
         </div>
@@ -178,6 +186,8 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
           <div>{result.investmentHoldings.map((holding) => <div className="holding-result-row" key={holding.id}><span>{holding.name}</span><strong>{formatMoney(toToday(holding.projectedValueNominal, retirementMonth))}</strong></div>)}</div>
         </details>}
       </section>
+
+      {(withdrawalRule?.enabled || pledge?.enabled) && <section className="result-section optional-analysis"><div className="result-heading"><div><span>選用比較</span><h2>提領與借款試算</h2></div><small>不會改變主要結果</small></div><div className="analysis-grid">{withdrawalRule?.enabled && <article><strong>固定比例提領</strong><span>每年 {formatPercent(withdrawalRule.annualRate)}</span><b>{formatMoney(fourPercentMonthly)}／月</b><small>以退休時預計資產估算；比例越高，本金越容易下降。</small></article>}{pledge?.enabled && <article><strong>股票質押估算</strong><span>約可借 {formatMoney(pledgeLoanToday)}</span><b>每月利息約 {formatMoney(pledgeInterestMonthlyToday)}</b><small>以退休時投資市值、借款 {formatPercent(pledge.loanToValue)}、年利率 {formatPercent(pledge.annualInterestRate)} 估算；股價下跌可能被追繳或賣出。</small></article>}</div></section>}
 
       <section className="result-section">
         <div className="result-heading"><div><span>不同市場狀況</span><h2>結果可能差多少</h2></div></div>

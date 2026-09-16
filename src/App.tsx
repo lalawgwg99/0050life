@@ -48,7 +48,13 @@ function loadSavedInput(): PlanningInput {
           mode: saved.input.laborPension.mode ?? defaultInput.laborPension.mode,
           lumpReinvestRate: saved.input.laborPension.lumpReinvestRate ?? defaultInput.laborPension.lumpReinvestRate
         },
-        investment: { ...defaultInput.investment, ...oldInvestment, holdings }
+        investment: {
+          ...defaultInput.investment,
+          ...oldInvestment,
+          holdings,
+          withdrawalRule: { enabled: oldInvestment.withdrawalRule?.enabled ?? defaultInput.investment.withdrawalRule!.enabled, annualRate: oldInvestment.withdrawalRule?.annualRate ?? defaultInput.investment.withdrawalRule!.annualRate },
+          stockPledge: { enabled: oldInvestment.stockPledge?.enabled ?? defaultInput.investment.stockPledge!.enabled, loanToValue: oldInvestment.stockPledge?.loanToValue ?? defaultInput.investment.stockPledge!.loanToValue, annualInterestRate: oldInvestment.stockPledge?.annualInterestRate ?? defaultInput.investment.stockPledge!.annualInterestRate, maintenanceRate: oldInvestment.stockPledge?.maintenanceRate ?? defaultInput.investment.stockPledge!.maintenanceRate }
+        }
       };
     }
   } catch {

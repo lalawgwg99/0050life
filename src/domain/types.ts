@@ -3,6 +3,18 @@ export type LaborIndexation = "threshold" | "none";
 export type RetirementAllocation = "steady" | "balanced" | "growth" | "custom";
 export type FutureYearsMode = "until-retirement" | "custom";
 
+export interface WithdrawalRule {
+  enabled: boolean;
+  annualRate: number;
+}
+
+export interface StockPledgeAssumption {
+  enabled: boolean;
+  loanToValue: number;
+  annualInterestRate: number;
+  maintenanceRate: number;
+}
+
 export interface InvestmentHolding {
   id: string;
   name: string;
@@ -67,6 +79,8 @@ export interface PlanningInput {
     retirementAllocation: RetirementAllocation;
     retirementGrossReturnRate: number;
     retirementFeeRate: number;
+    withdrawalRule?: WithdrawalRule;
+    stockPledge?: StockPledgeAssumption;
   };
   partTime: {
     enabled: boolean;

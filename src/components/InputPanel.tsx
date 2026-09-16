@@ -198,8 +198,13 @@ export function InputPanel({ input, errors, onChange }: InputPanelProps) {
           <Field label="目前提繳工資" value={input.laborPension.monthlyWageToday} onChange={(value) => update("laborPension", "monthlyWageToday", value)} suffix="元" step={100} />
           <Field label="目前勞退年資" value={input.laborPension.seniorityYearsNow} onChange={(value) => update("laborPension", "seniorityYearsNow", value)} suffix="年" step={0.1} />
           <Field label="預計開始領取" value={input.laborPension.claimAge} onChange={(value) => update("laborPension", "claimAge", value)} suffix="歲" min={60} />
-          <Field label="自己加碼提繳" value={input.laborPension.voluntaryRate * 100} onChange={(value) => update("laborPension", "voluntaryRate", value / 100)} suffix="%" min={0} max={6} step={1} />
         </div>
+        <label className="toggle-field compact-toggle self-contribution-toggle">
+          <input type="checkbox" role="switch" checked={input.laborPension.voluntaryRate > 0} onChange={(event) => update("laborPension", "voluntaryRate", event.target.checked ? 0.06 : 0)} />
+          <span className="toggle-control" aria-hidden="true" />
+          <span>我有自己加碼提繳（沒有就不用勾）</span>
+        </label>
+        {input.laborPension.voluntaryRate > 0 && <Field label="自提比例" value={input.laborPension.voluntaryRate * 100} onChange={(value) => update("laborPension", "voluntaryRate", value / 100)} suffix="%" min={0} max={6} step={1} hint="可填 1%～6%；沒有自提就保持未勾選。" />}
         <label className="toggle-field compact-toggle">
           <input type="checkbox" role="switch" checked={input.laborPension.futureYearsMode === "until-retirement"} onChange={(event) => update("laborPension", "futureYearsMode", event.target.checked ? "until-retirement" : "custom")} />
           <span className="toggle-control" aria-hidden="true" />
@@ -224,7 +229,7 @@ export function InputPanel({ input, errors, onChange }: InputPanelProps) {
           <BriefcaseBusiness aria-hidden="true" />
           <div><span>第五步</span><h2>自己的投資</h2></div>
         </div>
-        <p className="brand-note"><strong>0050 Life</strong> 可以從 0050 開始；有其他股票或基金，再逐筆加入。每一筆會用自己的報酬與費用分開複利，退休時才加總。<a href="/blog/investment-calculator-guide.html" target="_blank" rel="noreferrer">不知道怎麼填？看白話教學</a></p>
+        <p className="brand-note"><strong>0050 Life</strong> 可以從 0050 開始；有其他股票或基金，再逐筆加入。每一筆會用自己的報酬與費用分開複利，退休時才加總。<a href="/blog/investment-calculator-guide.html" target="_blank" rel="noreferrer">教學</a></p>
         <div className="holding-list">
           {input.investment.holdings.map((holding, index) => (
             <article className="holding-item" key={holding.id}>
@@ -275,6 +280,24 @@ export function InputPanel({ input, errors, onChange }: InputPanelProps) {
                 <Field label="退休後每年投資成本" value={input.investment.retirementFeeRate * 100} onChange={(value) => update("investment", "retirementFeeRate", value / 100)} suffix="%" step={0.01} hint="所有商品費用與交易成本平均成一年" />
               </div>
             )}
+            <div className="analysis-options">
+              <div className="subsection-label">退休後提領方式（選填）</div>
+              <label className="toggle-field compact-toggle">
+                <input type="checkbox" role="switch" checked={input.investment.withdrawalRule?.enabled ?? false} onChange={(event) => updateInvestment({ withdrawalRule: { ...(input.investment.withdrawalRule ?? { annualRate: 0.04 }), enabled: event.target.checked } })} />
+                <span className="toggle-control" aria-hidden="true" /><span>我想參考「每年固定比例提領」</span>
+              </label>
+              {input.investment.withdrawalRule?.enabled && <Field label="每年提領比例" value={(input.investment.withdrawalRule.annualRate ?? 0.04) * 100} onChange={(value) => updateInvestment({ withdrawalRule: { ...(input.investment.withdrawalRule ?? { enabled: true }), annualRate: value / 100 } })} suffix="%" min={0.1} max={20} step={0.1} hint="常見參考值是 4%，只是情境比較，不會改變上面的主要結果。" />}
+              <div className="subsection-label">股票質押（選填）</div>
+              <label className="toggle-field compact-toggle">
+                <input type="checkbox" role="switch" checked={input.investment.stockPledge?.enabled ?? false} onChange={(event) => updateInvestment({ stockPledge: { ...(input.investment.stockPledge ?? { loanToValue: 0.3, annualInterestRate: 0.025, maintenanceRate: 0.13 }), enabled: event.target.checked } })} />
+                <span className="toggle-control" aria-hidden="true" /><span>我想看看股票質押能借多少</span>
+              </label>
+              {input.investment.stockPledge?.enabled && <div className="field-grid two allocation-custom">
+                <Field label="借款占股票市值" value={(input.investment.stockPledge.loanToValue ?? 0.3) * 100} onChange={(value) => updateInvestment({ stockPledge: { ...(input.investment.stockPledge ?? { enabled: true, annualInterestRate: 0.025, maintenanceRate: 0.13 }), loanToValue: value / 100 } })} suffix="%" min={0} max={80} step={5} />
+                <Field label="借款年利率" value={(input.investment.stockPledge.annualInterestRate ?? 0.025) * 100} onChange={(value) => updateInvestment({ stockPledge: { ...(input.investment.stockPledge ?? { enabled: true, loanToValue: 0.3, maintenanceRate: 0.13 }), annualInterestRate: value / 100 } })} suffix="%" step={0.1} />
+                <Field label="維持率警戒線" value={(input.investment.stockPledge.maintenanceRate ?? 0.13) * 100} onChange={(value) => updateInvestment({ stockPledge: { ...(input.investment.stockPledge ?? { enabled: true, loanToValue: 0.3, annualInterestRate: 0.025 }), maintenanceRate: value / 100 } })} suffix="%" step={1} hint="股票下跌時可能被要求補錢或賣出；這筆借款不算退休資產。" />
+              </div>}
+            </div>
           </div>
         </details>
       </section>

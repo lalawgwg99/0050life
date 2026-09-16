@@ -30,7 +30,7 @@ export const defaultInput: PlanningInput = {
     monthlyWageToday: 45_800,
     wageGrowthRate: 0.02,
     employerRate: 0.06,
-    voluntaryRate: 0.06,
+    voluntaryRate: 0,
     returnRate: 0.03,
     claimAge: 65,
     mode: "lump",
@@ -48,7 +48,9 @@ export const defaultInput: PlanningInput = {
     contributionGrowthRate: 0.02,
     retirementAllocation: "balanced",
     retirementGrossReturnRate: 0.05,
-    retirementFeeRate: 0.003
+    retirementFeeRate: 0.003,
+    withdrawalRule: { enabled: false, annualRate: 0.04 },
+    stockPledge: { enabled: false, loanToValue: 0.3, annualInterestRate: 0.025, maintenanceRate: 0.13 }
   },
   partTime: { enabled: false, monthlyToday: 0, startAge: 65, endAge: 70, growthRate: 0.02 }
 };
