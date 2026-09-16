@@ -47,11 +47,12 @@ export function projectPlan(input: PlanningInput, options?: { retirementReturnPa
   const lumpPensionCashAtRetirement = lumpPensionAmountAtRetirement - lumpPensionReinvestedAtRetirement;
   const projectedRetirementAssetsAtRetirement = projectedInvestmentAtRetirement + lumpPensionAmountAtRetirement;
   const requiredInvestmentAtRetirement = solveRequiredInvestment(input, laborInsurance, nationalPension, laborPension);
+  const requiredRetirementAssetsAtRetirement = requiredInvestmentAtRetirement + lumpPensionAmountAtRetirement;
   const simulation = simulateRetirement(input, laborInsurance, nationalPension, laborPension, projectedInvestmentAtRetirement, options?.retirementReturnPath);
   const investmentGapAtRetirement = Math.max(0, requiredInvestmentAtRetirement - projectedInvestmentAtRetirement);
   const readiness = requiredInvestmentAtRetirement === 0
     ? 1
-    : Math.min(1, (projectedInvestmentAtRetirement + lumpPensionAmountAtRetirement) / requiredInvestmentAtRetirement);
+    : Math.min(1, projectedRetirementAssetsAtRetirement / requiredRetirementAssetsAtRetirement);
   const warnings = [
     "未來規定、物價與投資表現可能改變；這是依目前資料做的規劃，不是給付保證。"
   ];
@@ -78,6 +79,7 @@ export function projectPlan(input: PlanningInput, options?: { retirementReturnPa
     lumpPensionCashAtRetirement,
     projectedRetirementAssetsAtRetirement,
     requiredInvestmentAtRetirement,
+    requiredRetirementAssetsAtRetirement,
     investmentGapAtRetirement,
     readiness,
     laborInsurance,

@@ -179,6 +179,7 @@ export interface ProjectionResult {
   lumpPensionCashAtRetirement: number;
   projectedRetirementAssetsAtRetirement: number;
   requiredInvestmentAtRetirement: number;
+  requiredRetirementAssetsAtRetirement: number;
   investmentGapAtRetirement: number;
   readiness: number;
   laborInsurance: LaborInsuranceProjection;

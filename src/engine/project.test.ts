@@ -173,6 +173,7 @@ describe("integrated monthly projection", () => {
     expect(allCash.records[0].cashReserveNominal).toBe(1_100_000);
     expect(allCash.records[0].totalRetirementAssetsNominal).toBe(1_100_000);
     expect(allInvested.projectedRetirementAssetsAtRetirement).toBe(1_200_000);
+    expect(allInvested.requiredRetirementAssetsAtRetirement).toBe(1_200_000);
     expect(allInvested.lumpPensionReinvestedAtRetirement).toBe(1_200_000);
     expect(allCash.depletedMonth).toBeNull();
   });

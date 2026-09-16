@@ -26,7 +26,7 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
   const toToday = (amount: number, month: number) => realValue(amount, input.economy.inflationRate, month - asOf);
   const projectedToday = toToday(result.projectedInvestmentAtRetirement, retirementMonth);
   const projectedTotalToday = toToday(result.projectedRetirementAssetsAtRetirement, retirementMonth);
-  const requiredToday = toToday(result.requiredInvestmentAtRetirement, retirementMonth);
+  const requiredToday = toToday(result.requiredRetirementAssetsAtRetirement, retirementMonth);
   const gapToday = Math.max(0, requiredToday - projectedToday);
   const retirementRecord = result.records[0];
   const retirementExpenseToday = retirementRecord ? toToday(retirementRecord.expenseNominal, retirementRecord.month) : 0;
