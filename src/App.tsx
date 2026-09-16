@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState } from "react";
 import { BookOpen, ChartNoAxesCombined, Printer, RotateCcw, SlidersHorizontal } from "lucide-react";
 import { InputPanel } from "./components/InputPanel";
 import { ResultsPanel } from "./components/ResultsPanel";
+import { PlanComparison } from "./components/PlanComparison";
 import { defaultInput } from "./defaults";
-import type { PlanningInput } from "./domain/types";
+import type { PlanningInput, ProjectionResult } from "./domain/types";
 import { validateInput } from "./domain/validation";
 import { projectPlan, projectScenarios } from "./engine/project";
 
@@ -67,6 +68,7 @@ function loadSavedInput(): PlanningInput {
 
 export default function App() {
   const [input, setInput] = useState<PlanningInput>(loadSavedInput);
+  const [comparison, setComparison] = useState<ProjectionResult | null>(null);
   const [mobileView, setMobileView] = useState<"inputs" | "results">("inputs");
   const errors = useMemo(() => validateInput(input), [input]);
   const calculation = useMemo(() => {
@@ -85,6 +87,7 @@ export default function App() {
   const reset = () => {
     localStorage.removeItem(STORAGE_KEY);
     setInput(defaultInput);
+    setComparison(null);
   };
   const showMobileView = (view: "inputs" | "results") => {
     setMobileView(view);
@@ -118,7 +121,8 @@ export default function App() {
           ) : calculation && "error" in calculation ? (
             <div className="empty-state" role="alert"><EmptyIcon /><h1>這次沒有算完</h1><p>{calculation.error}</p></div>
           ) : calculation && "result" in calculation ? (
-            <ResultsPanel result={calculation.result} scenarios={calculation.scenarios} onChange={setInput} />
+            <ResultsPanel result={calculation.result} scenarios={calculation.scenarios} onChange={setInput}
+              comparison={<PlanComparison current={calculation.result} saved={comparison} onSave={() => setComparison(calculation.result)} onRestore={() => comparison && setInput(comparison.input)} onClear={() => setComparison(null)} />} />
           ) : null}
         </div>
       </main>

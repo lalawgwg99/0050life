@@ -1,4 +1,5 @@
 import { useMemo } from "react";
+import type { ReactNode } from "react";
 import { ArrowRight, BriefcaseBusiness, CalendarClock, Check, CircleAlert, Landmark, PiggyBank, ShieldCheck, TrendingUp } from "lucide-react";
 import { growthFactor, realValue } from "../domain/rates";
 import { ageAtMonth, birthSerial, monthAtAge, toSerial } from "../domain/time";
@@ -11,14 +12,16 @@ import { projectPlan } from "../engine/project";
 import { runMonteCarlo } from "../engine/monte-carlo";
 import { projectLaborPension } from "../modules/labor-pension";
 import { summarizeResult } from "../engine/result-summary";
+import { IncomeRelay } from "./IncomeRelay";
 
 interface ResultsPanelProps {
   result: ProjectionResult;
   scenarios: ScenarioResult[];
   onChange: (input: ProjectionResult["input"]) => void;
+  comparison?: ReactNode;
 }
 
-export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps) {
+export function ResultsPanel({ result, scenarios, onChange, comparison }: ResultsPanelProps) {
   const { input } = result;
   const asOf = toSerial(input.asOf.year, input.asOf.month);
   const birth = birthSerial(input.profile.birthYearROC, input.profile.birthMonth);
@@ -52,7 +55,6 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
   const pledgeInterestMonthlyToday = pledgeLoanToday * (pledge?.annualInterestRate ?? 0) / 12;
   const pledgeCallDrop = pledge?.enabled && pledge.loanToValue > 0 ? Math.max(0, 1 - pledge.maintenanceRate * pledge.loanToValue) : 0;
   const yearsToRetirement = Math.max(0, retirementOffset / 12);
-  const readinessPercent = Math.floor(summary.progress * 100);
   const depletedRecord = result.depletedMonth === null ? null : result.records.find((record) => record.month === result.depletedMonth) ?? null;
   const chartData = result.records
     .filter((_, index) => index % 12 === 0 || index === result.records.length - 1)
@@ -148,27 +150,26 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
       <div className="metric-grid">
         <article className="metric-card primary"><span>退休時可運用資產</span><strong>{formatMoney(projectedTotalToday)}</strong><small>自己的投資 {formatMoney(projectedToday)} ＋勞退一次領 {formatMoney(toToday(result.lumpPensionAmountAtRetirement, retirementMonth))}</small></article>
         <article className="metric-card"><span>依目前計畫需要的資產</span><strong>{formatMoney(requiredToday)}</strong><small>保留既定勞退領取方式與現金分配後的目標；與左側使用相同範圍</small></article>
-        <article className="metric-card"><span>退休後每月由投資支付</span><strong>{monthlyCashflowGapToday > 0 ? formatMoney(monthlyCashflowGapToday) : "不需要"}</strong><small>年金收入不夠支付生活費時，由自己的投資資產支付；不代表資產不夠</small></article>
+        <article className="metric-card"><span>{statusGood ? "超過目標" : "距離目標還差"}</span><strong>{formatMoney(statusGood ? summary.surplus : gapToday)}</strong><small>{statusGood ? "超過的金額越少，應付支出增加或報酬下降的空間越小。" : "依目前收入、支出與報酬假設估算。"}</small></article>
       </div>
 
-      <section className="money-basis" aria-label="今天物價與退休物價說明">
-        <div><strong>結果先看「今天購買力」</strong><span>這樣比較不會被未來物價變大的數字嚇到。</span></div>
-        <ArrowRight aria-hidden="true" />
-        <div><strong>退休當年帳面金額</strong><span>若每年物價上漲 {formatPercent(input.economy.inflationRate)}，今天每月 {formatMoney(input.spending.monthlyToday)}，退休當年約需 {formatMoney(retirementRecord?.expenseNominal ?? 0)}。</span></div>
+      <p className="section-footnote">距離退休約 {yearsToRetirement.toFixed(1)} 年。以上依固定報酬估算，請一起查看下方壓力測試。</p>
+      <details className="result-details money-explanation">
+        <summary>今天的錢與退休當年的金額，有什麼不同？</summary>
+        <p>畫面用今天的購買力比較。依各項費用的物價假設，退休第一個月的總支出，換算今天約 {formatMoney(retirementExpenseToday)}，當時帳面約 {formatMoney(retirementRecord?.expenseNominal ?? 0)}。</p>
+      </details>
+
+      <section className="result-section cashflow-section">
+        <div className="result-heading"><div><span>先看每個月</span><h2>退休第一個月，錢夠不夠用</h2></div><small>換算成今天的物價</small></div>
+        <div className="cashflow-grid">
+          <article className="cashflow-card"><span>每月生活費</span><strong>{formatMoney(retirementExpenseToday)}</strong><small>今天購買力</small><em>退休當年約 {formatMoney(retirementRecord?.expenseNominal ?? 0)}</em></article>
+          <article className="cashflow-card"><span>每月可用收入</span><strong>{formatMoney(recurringIncomeToday)}</strong><small>今天購買力，已扣除你設定的估計稅額</small><em>退休當年約 {formatMoney(netRecurringIncomeNominal)}</em></article>
+          <article className="cashflow-card covered"><span>{monthlyCashflowGapToday > 0 ? "每月由投資支付" : "固定收入狀態"}</span><strong>{monthlyCashflowGapToday > 0 ? formatMoney(monthlyCashflowGapToday) : "不需要"}</strong><small>{monthlyCashflowGapToday > 0 ? "由投資或保留現金支付，是生活費的來源之一" : "固定收入已蓋過生活費"}</small>{monthlyCashflowGapToday > 0 && <em>退休當年約 {formatMoney(monthlyCashflowGapNominal)}</em>}</article>
+        </div>
+        <p className="section-footnote">一次領的勞保或勞退會放進退休資產，不會被誤算成每月固定收入。</p>
       </section>
 
-      <section className="readiness-band" aria-label={`退休準備完成 ${readinessPercent}%`}>
-        <div className="readiness-heading"><div><span>退休準備進度</span><small>距離退休約 {yearsToRetirement.toFixed(1)} 年</small></div><strong>{statusGood ? `超過目標 ${formatMoney(summary.surplus)}` : `還差 ${formatMoney(gapToday)}`}</strong></div>
-        <div className="progress-track"><span style={{ width: `${summary.progress * 100}%` }} /></div>
-        <div className="progress-scale"><span>0%</span><span>{statusGood ? "固定報酬試算達標" : `目前 ${readinessPercent}%`}</span><span>目標</span></div>
-        <div className="readiness-detail">
-          <div><span>預計準備（合計）</span><strong>{formatMoney(projectedTotalToday)}</strong></div>
-          <div><span>需要目標</span><strong>{formatMoney(requiredToday)}</strong></div>
-          <div className={statusGood ? "good" : "attention"}><span>{statusGood ? "超過目標" : "還差"}</span><strong>{formatMoney(statusGood ? summary.surplus : gapToday)}</strong></div>
-        </div>
-        <p className="section-footnote">達標僅代表目前固定報酬假設下收支可支應到規劃年齡。超過目標的金額越少，對支出增加或報酬下降的緩衝越有限。</p>
-        <p className="section-footnote">市場波動測試：{monteCarlo.trials} 次模擬中，{Math.round(monteCarlo.successRate * monteCarlo.trials)} 次可支應到規劃年齡。固定報酬達標與波動下不足可能同時發生，請一起查看下方壓力測試。</p>
-      </section>
+      {comparison}
 
       {!statusGood && gapToday > 0 && (
         <section className="action-plan" aria-label="改善建議">
@@ -188,15 +189,7 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
         </section>
       )}
 
-      <section className="result-section cashflow-section">
-        <div className="result-heading"><div><span>先看每個月</span><h2>退休第一個月，錢夠不夠用</h2></div><small>換算成今天的物價</small></div>
-        <div className="cashflow-grid">
-          <article className="cashflow-card"><span>每月生活費</span><strong>{formatMoney(retirementExpenseToday)}</strong><small>今天購買力</small><em>退休當年約 {formatMoney(retirementRecord?.expenseNominal ?? 0)}</em></article>
-          <article className="cashflow-card"><span>每月可用收入</span><strong>{formatMoney(recurringIncomeToday)}</strong><small>今天購買力，已扣除你設定的估計稅額</small><em>退休當年約 {formatMoney(netRecurringIncomeNominal)}</em></article>
-          <article className={`cashflow-card ${monthlyCashflowGapToday > 0 ? "attention" : "covered"}`}><span>{monthlyCashflowGapToday > 0 ? "每月由投資支付" : "固定收入狀態"}</span><strong>{monthlyCashflowGapToday > 0 ? formatMoney(monthlyCashflowGapToday) : "不需要"}</strong><small>{monthlyCashflowGapToday > 0 ? "今天購買力，從自己的投資資產支付；不是代表資產不夠" : "固定收入已蓋過生活費"}</small>{monthlyCashflowGapToday > 0 && <em>退休當年約 {formatMoney(monthlyCashflowGapNominal)}</em>}</article>
-        </div>
-        <p className="section-footnote">一次領的勞保或勞退會放進退休資產，不會被誤算成每月固定收入。</p>
-      </section>
+      <IncomeRelay result={result} />
 
       <section className="result-section chart-section">
         <div className="result-heading"><div><span>退休以後</span><h2>投資與保留現金還剩多少</h2></div><small>今天的物價・每月收支後</small></div>
@@ -207,7 +200,7 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
       <section className="result-section stress-section">
         <div className="result-heading"><div><span>先看不順利的情況</span><h2>退休壓力測試</h2></div><small>不是成功機率</small></div>
         <div className="stress-grid">
-          <article><strong>退休前兩年遇到大跌</strong><span>第 1 年 -30%、第 2 年 -10%</span><b>{outcomeText(earlyCrashResult, input.profile.longevityAge)}</b></article>
+          <article><strong>退休後頭兩年遇到大跌</strong><span>第 1 年 -30%、第 2 年 -10%</span><b>{outcomeText(earlyCrashResult, input.profile.longevityAge)}</b></article>
           <article><strong>如果活到 95 歲</strong><span>沿用目前收入、支出與報酬假設</span><b>{outcomeText(longevity95.depletedMonth, 95)}</b></article>
           <article><strong>如果活到 100 歲</strong><span>沿用目前收入、支出與報酬假設</span><b>{outcomeText(longevity100.depletedMonth, 100)}</b></article>
         </div>
@@ -231,6 +224,7 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
 
       {(withdrawalRule?.enabled || pledge?.enabled) && <section className="result-section optional-analysis"><div className="result-heading"><div><span>選用比較</span><h2>提領與借款試算</h2></div><small>不會改變主要結果</small></div><div className="analysis-grid">{withdrawalRule?.enabled && <article><strong>固定比例提領參考</strong><span>每年 {formatPercent(withdrawalRule.annualRate)}</span><b>{formatMoney(fourPercentMonthly)}／月</b><small>以退休時預計投資資產估算；只是提領情境，不代表本金不會減少，也不是保證。</small></article>}{pledge?.enabled && <article><strong>股票質押估算</strong><span>約可借 {formatMoney(pledgeLoanToday)}</span><b>每月利息約 {formatMoney(pledgeInterestMonthlyToday)}</b><small>以退休時投資市值、借款 {formatPercent(pledge.loanToValue)}、年利率 {formatPercent(pledge.annualInterestRate)} 估算；股價下跌可能被追繳或賣出。</small></article>}</div></section>}
 
+      <details className="result-details"><summary>進階分析：市場波動、稅額與勞退領法</summary>
       <section className="result-section professional-section">
         <div className="result-heading"><div><span>進階風險</span><h2>不要只看平均報酬</h2></div><small>規劃工具，不是預測</small></div>
         <div className="professional-grid">
@@ -241,13 +235,16 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
         <div className="historical-range"><strong>長期報酬不要只填一個數字</strong><span>規劃可同時查看較低、目前、較高三種報酬；歷史表現只適合用來設定範圍，不代表未來會重演。</span></div>
       </section>
 
+      </details>
+
       {pledge?.enabled && <section className="result-section pledge-risk"><div className="result-heading"><div><span>負債風險</span><h2>股票質押追繳距離</h2></div><small>借款不是資產</small></div><div className="pledge-risk-summary"><strong>股價約下跌 {formatPercent(pledgeCallDrop, 0)} 會碰到 {formatPercent(pledge.maintenanceRate, 0)} 警戒線</strong><span>未計利息滾入本金、券商提前調整擔保品或個別股票折扣。</span></div><div className="pledge-bars">{[0.1, 0.2, 0.3, 0.4].map((drop) => { const ratio = pledge.loanToValue > 0 ? (1 - drop) / pledge.loanToValue : 99; return <div key={drop} className={ratio <= pledge.maintenanceRate ? "danger" : "safe"}><span>下跌 {formatPercent(drop, 0)}</span><b>維持率 {formatPercent(ratio, 0)}</b></div>; })}</div></section>}
 
+      <details className="result-details"><summary>比較不同報酬假設</summary>
       <section className="result-section">
         <div className="result-heading"><div><span>不同市場狀況</span><h2>結果可能差多少</h2></div></div>
         <div className="scenario-table-wrap">
           <table className="scenario-table">
-            <thead><tr><th>情況</th><th>退休後報酬</th><th>退休時投資</th><th>能否撐到目標</th></tr></thead>
+            <thead><tr><th>情況</th><th>退休後報酬</th><th>退休可用資產</th><th>能否撐到目標</th></tr></thead>
             <tbody>{scenarios.map((scenario) => {
               const scenarioProjected = toToday(scenario.result.projectedRetirementAssetsAtRetirement, retirementMonth);
               const depletedAge = scenario.result.records.find((record) => record.month === scenario.result.depletedMonth)?.age;
@@ -258,6 +255,9 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
         <p className="section-footnote">這三種情況只是把退休前後的投資報酬上下調整 2%，用來看差距，不是成功機率或保證。</p>
       </section>
 
+      </details>
+
+      <details className="result-details"><summary>查看所有領取日期</summary>
       <section className="result-section timeline-section">
         <div className="result-heading"><div><span>重要時間</span><h2>退休後，收入什麼時候進來</h2></div><small>依日期排列</small></div>
         <div className="timeline timeline-detailed">
@@ -267,6 +267,8 @@ export function ResultsPanel({ result, scenarios, onChange }: ResultsPanelProps)
           </article>)}
         </div>
       </section>
+
+      </details>
 
       <details className="calculation-notes">
         <summary>這份結果怎麼算的</summary>

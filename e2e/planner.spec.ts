@@ -5,6 +5,31 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/");
 });
 
+test("compares changes and restores the complete original plan", async ({ page, isMobile }) => {
+  if (isMobile) await page.getByRole("tab", { name: "查看結果" }).click();
+  const comparison = page.getByRole("region", { name: "調整前後比較" });
+  await comparison.getByRole("button", { name: "保留目前方案來比較" }).click();
+  if (isMobile) await page.getByRole("tab", { name: "填寫資料" }).click();
+  await page.getByLabel("退休後每月生活費").fill("60000");
+  await page.getByLabel("目前市值").fill("2000000");
+  if (isMobile) await page.getByRole("tab", { name: "查看結果" }).click();
+  const spending = comparison.getByRole("row", { name: /每月生活費/ });
+  await expect(spending).toContainText("$50,000");
+  await expect(spending).toContainText("$60,000");
+  await expect(page.getByRole("region", { name: "收入接力表" })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)).toBe(false);
+  await comparison.getByRole("button", { name: "還原原方案", exact: true }).click();
+  await expect(spending).not.toContainText("$60,000");
+  const assets = comparison.getByRole("row", { name: /退休可用資產/ }).getByRole("cell");
+  await expect(assets.nth(0)).toHaveText(await assets.nth(1).innerText());
+  if (isMobile) await page.getByRole("tab", { name: "填寫資料" }).click();
+  await expect(page.getByLabel("退休後每月生活費")).toHaveValue("50000");
+  await expect(page.getByLabel("目前市值")).toHaveValue("1000000");
+  if (isMobile) await page.getByRole("tab", { name: "查看結果" }).click();
+  await comparison.getByRole("button", { name: "結束比較" }).click();
+  await expect(comparison.getByRole("table")).toHaveCount(0);
+});
+
 test("shows a complete result without page overflow", async ({ page, isMobile }) => {
   const browserErrors: string[] = [];
   page.on("pageerror", (error) => browserErrors.push(error.message));

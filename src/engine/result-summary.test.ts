@@ -22,8 +22,8 @@ describe("consistent asset comparisons", () => {
     expect(summarizeResult(result)).toMatchObject({ gap: 0, surplus: 611, meetsPlan: true });
     expect(estimateAdditionalMonthlyInvestment(result.input, result)).toBe(0);
     const html = renderToStaticMarkup(createElement(ResultsPanel, { result, scenarios: [], onChange: () => {} }));
-    expect(html).toContain("超過目標 $611");
-    expect(html).toContain("預計準備（合計）</span><strong>$5,350,505");
+    expect(html).toContain("超過目標</span><strong>$611");
+    expect(html).toContain("退休時可運用資產</span><strong>$5,350,505");
     expect(html).not.toContain("退休準備還差");
     expect(html).not.toContain('aria-label="改善建議"');
   });

@@ -302,6 +302,38 @@ details summary svg { width: 14px; height: 14px; }
 .empty-state p { margin: 0; color: var(--muted); font-size: 13px; }
 .mobile-tabs { display: none; }
 
+.result-details { margin-top: 24px; border-top: 1px solid var(--line); padding-top: 16px; }
+.result-details > summary { font-size: 14px; color: var(--ink); min-height: 44px; display: list-item; cursor: pointer; line-height: 1.6; padding: 10px 0; }
+.result-details > p { font-size: 13px; color: var(--muted); line-height: 1.7; }
+.result-details .result-section { margin-top: 12px; }
+.money-explanation { margin-top: 10px; padding-top: 0; border: 0; }
+.plan-comparison { margin: 28px 0; padding: 20px; border: 1px solid #cadcd0; border-radius: 12px; background: #f6faf6; }
+.comparison-heading { display: flex; align-items: center; gap: 18px; justify-content: space-between; }
+.comparison-heading strong { font-size: 17px; }
+.comparison-heading p { margin: 6px 0 0; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.plan-comparison button { border: 1px solid #b2c9b9; border-radius: 8px; min-height: 44px; padding: 10px 14px; background: white; color: #245740; font-weight: 650; cursor: pointer; }
+.comparison-heading > button { flex-shrink: 0; background: #245740; color: white; }
+.comparison-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.plan-comparison .scenario-table-wrap { margin-top: 16px; }
+.plan-comparison .scenario-table { min-width: 0; width: 100%; table-layout: fixed; }
+.plan-comparison th,.plan-comparison td { white-space: normal; overflow-wrap: anywhere; }
+.relay-list { list-style: none; margin: 18px 0 0; padding: 0; display: grid; gap: 12px; }
+.relay-list > li { border: 1px solid var(--line); border-radius: 10px; padding: 18px; }
+.relay-stage { display: flex; align-items: flex-start; gap: 12px; }
+.relay-number { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #edf4ee; color: #245740; flex-shrink: 0; font-size: 13px; }
+.relay-stage strong { font-size: 15px; }
+.relay-stage p,.relay-stage small { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+.relay-list dl { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); margin: 16px 0 0; gap: 12px; }
+.relay-list dt { font-size: 12px; color: var(--muted); }
+.relay-list dd { font-size: 16px; font-weight: 650; margin: 5px 0 0; }
+@media (max-width: 820px) {
+  .comparison-heading { flex-direction: column; align-items: stretch; }
+  .plan-comparison { padding: 16px; }
+  .relay-list dl { grid-template-columns: 1fr; gap: 8px; }
+  .relay-list dl > div { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+  .plan-comparison th,.plan-comparison td { padding: 10px 5px; font-size: 12px; }
+}
+
 @media (max-width: 1100px) {
   .workspace { grid-template-columns: 370px minmax(0, 1fr); }
   .input-panel { padding-left: 20px; padding-right: 20px; }
