@@ -44,7 +44,6 @@ export function ResultsPanel({ result, scenarios, onChange, comparison }: Result
   const netRecurringIncomeNominal = Math.max(0, recurringIncomeNominal - (retirementRecord?.taxNominal ?? 0));
   const recurringIncomeToday = retirementRecord ? toToday(netRecurringIncomeNominal, retirementRecord.month) : 0;
   const monthlyCashflowGapToday = Math.max(0, retirementExpenseToday - recurringIncomeToday);
-  const monthlyCashflowGapNominal = Math.max(0, (retirementRecord?.expenseNominal ?? 0) - netRecurringIncomeNominal);
   const withdrawalRule = input.investment.withdrawalRule;
   const fourPercentMonthly = projectedToday * (withdrawalRule?.annualRate ?? 0.04) / 12;
   const lumpAmountToday = toToday(result.laborPension.balanceAtClaim, result.laborPension.claimMonth);
@@ -138,36 +137,37 @@ export function ResultsPanel({ result, scenarios, onChange, comparison }: Result
       <section className="result-overview">
         <div className="overview-copy">
           <span className="eyebrow">全部換成今天的物價</span>
-          <h1>{statusGood ? "目前準備符合固定報酬假設" : `退休準備還差 ${formatCompactMoney(gapToday)} 元`}</h1>
-          <p>{statusGood ? `照目前填寫的條件，投資資產可支撐到 ${input.profile.longevityAge} 歲。` : `照目前填寫的條件，大約在 ${depletedRecord?.age.toFixed(1)} 歲開始不夠支付生活費。`}</p>
+          <h1>{statusGood ? `目前準備可支應到 ${input.profile.longevityAge} 歲` : `退休準備還差 ${formatCompactMoney(gapToday)} 元`}</h1>
+          <p>{input.profile.retirementAge} 歲退休・規劃到 {input.profile.longevityAge} 歲・距離退休約 {yearsToRetirement.toFixed(1)} 年</p>
         </div>
         <div className={`status-mark ${statusGood ? "good" : "attention"}`}>
           {statusGood ? <Check aria-hidden="true" /> : <CircleAlert aria-hidden="true" />}
-          <span>{statusGood ? "固定報酬試算達標" : "需要調整"}</span>
+          <span>{statusGood ? "依目前條件估算" : "需要調整"}</span>
         </div>
       </section>
 
       <div className="metric-grid">
         <article className="metric-card primary"><span>退休時可運用資產</span><strong>{formatMoney(projectedTotalToday)}</strong><small>自己的投資 {formatMoney(projectedToday)} ＋勞退一次領 {formatMoney(toToday(result.lumpPensionAmountAtRetirement, retirementMonth))}</small></article>
-        <article className="metric-card"><span>依目前計畫需要的資產</span><strong>{formatMoney(requiredToday)}</strong><small>保留既定勞退領取方式與現金分配後的目標；與左側使用相同範圍</small></article>
-        <article className="metric-card"><span>{statusGood ? "超過目標" : "距離目標還差"}</span><strong>{formatMoney(statusGood ? summary.surplus : gapToday)}</strong><small>{statusGood ? "超過的金額越少，應付支出增加或報酬下降的空間越小。" : "依目前收入、支出與報酬假設估算。"}</small></article>
+        <article className="metric-card"><span>依目前計畫需要的資產</span><strong>{formatMoney(requiredToday)}</strong></article>
+        <article className="metric-card"><span>{statusGood ? "超過目標" : "距離目標還差"}</span><strong>{formatMoney(statusGood ? summary.surplus : gapToday)}</strong></article>
       </div>
 
-      <p className="section-footnote">距離退休約 {yearsToRetirement.toFixed(1)} 年。以上依固定報酬估算，請一起查看下方壓力測試。</p>
-      <details className="result-details money-explanation">
-        <summary>今天的錢與退休當年的金額，有什麼不同？</summary>
-        <p>畫面用今天的購買力比較。依各項費用的物價假設，退休第一個月的總支出，換算今天約 {formatMoney(retirementExpenseToday)}，當時帳面約 {formatMoney(retirementRecord?.expenseNominal ?? 0)}。</p>
-      </details>
+      <p className="result-caution">{statusGood ? "這是每年照設定報酬計算的結果，不保證市場下跌時也足夠。" : `約 ${depletedRecord?.age.toFixed(1)} 歲開始不足，可先比較下方的調整建議。`} <a href="#retirement-stress">查看不利情況 ↓</a></p>
 
       <section className="result-section cashflow-section">
         <div className="result-heading"><div><span>先看每個月</span><h2>退休第一個月，錢夠不夠用</h2></div><small>換算成今天的物價</small></div>
         <div className="cashflow-grid">
-          <article className="cashflow-card"><span>每月生活費</span><strong>{formatMoney(retirementExpenseToday)}</strong><small>今天購買力</small><em>退休當年約 {formatMoney(retirementRecord?.expenseNominal ?? 0)}</em></article>
-          <article className="cashflow-card"><span>每月可用收入</span><strong>{formatMoney(recurringIncomeToday)}</strong><small>今天購買力，已扣除你設定的估計稅額</small><em>退休當年約 {formatMoney(netRecurringIncomeNominal)}</em></article>
-          <article className="cashflow-card covered"><span>{monthlyCashflowGapToday > 0 ? "每月由投資支付" : "固定收入狀態"}</span><strong>{monthlyCashflowGapToday > 0 ? formatMoney(monthlyCashflowGapToday) : "不需要"}</strong><small>{monthlyCashflowGapToday > 0 ? "由投資或保留現金支付，是生活費的來源之一" : "固定收入已蓋過生活費"}</small>{monthlyCashflowGapToday > 0 && <em>退休當年約 {formatMoney(monthlyCashflowGapNominal)}</em>}</article>
+          <article className="cashflow-card"><span>每月生活費</span><strong>{formatMoney(retirementExpenseToday)}</strong><small>包含已設定的醫療與長照費</small></article>
+          <article className="cashflow-card"><span>每月可用收入</span><strong>{formatMoney(recurringIncomeToday)}</strong><small>每月領取的收入，已扣估計稅額</small></article>
+          <article className="cashflow-card covered"><span>{monthlyCashflowGapToday > 0 ? "每月由投資支付" : "需動用投資"}</span><strong>{monthlyCashflowGapToday > 0 ? formatMoney(monthlyCashflowGapToday) : "$0"}</strong><small>{monthlyCashflowGapToday > 0 ? "從投資或保留現金支付，不是另外要存的錢" : "每月收入已足夠支付生活費"}</small></article>
         </div>
         <p className="section-footnote">一次領的勞保或勞退會放進退休資產，不會被誤算成每月固定收入。</p>
       </section>
+
+      <details className="result-details money-explanation">
+        <summary>想看退休當年的金額？</summary>
+        <p>主要結果統一換算今天的物價，方便比較。退休第一個月支出約 {formatMoney(retirementRecord?.expenseNominal ?? 0)}，每月可用收入約 {formatMoney(netRecurringIncomeNominal)}；這裡才是未扣除物價上漲的當年金額。</p>
+      </details>
 
       {comparison}
 
@@ -197,7 +197,7 @@ export function ResultsPanel({ result, scenarios, onChange, comparison }: Result
         <div className="balance-milestones">{fiveYearBalances.map((record) => <div key={record.month}><span>{record.age.toFixed(0)} 歲</span><strong>{formatMoney(record.portfolioReal + toToday(record.cashReserveNominal, record.month))}</strong></div>)}</div>
       </section>
 
-      <section className="result-section stress-section">
+      <section className="result-section stress-section" id="retirement-stress">
         <div className="result-heading"><div><span>先看不順利的情況</span><h2>退休壓力測試</h2></div><small>不是成功機率</small></div>
         <div className="stress-grid">
           <article><strong>退休後頭兩年遇到大跌</strong><span>第 1 年 -30%、第 2 年 -10%</span><b>{outcomeText(earlyCrashResult, input.profile.longevityAge)}</b></article>
