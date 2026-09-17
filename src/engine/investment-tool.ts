@@ -40,6 +40,12 @@ export function calculateInvestment(plan: InvestmentPlan, returnDelta = 0) {
 }
 
 /** Solve today's purchasing-power target, preserving contribution weights. */
+export function applyMonthlyInvestment(holdings: InvestmentHolding[], amount: number): InvestmentHolding[] {
+  if (!Number.isFinite(amount) || amount < 0 || holdings.length === 0) throw new Error("每月投入金額無效。");
+  const total = holdings.reduce((sum, h) => sum + h.monthlyContributionToday, 0);
+  return holdings.map((h, index) => ({ ...h, monthlyContributionToday: Math.ceil(amount * (total > 0 ? h.monthlyContributionToday / total : index === 0 ? 1 : 0)) }));
+}
+
 export function solveMonthlyInvestment(plan: InvestmentPlan, target: number): number {
   if (!Number.isFinite(target) || target < 0) throw new Error("目標金額不可小於 0。");
   const total = plan.holdings.reduce((s, h) => s + h.monthlyContributionToday, 0);

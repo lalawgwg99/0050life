@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { calculateInvestment, solveMonthlyInvestment, type InvestmentPlan } from "./investment-tool";
+import { applyMonthlyInvestment, calculateInvestment, solveMonthlyInvestment, type InvestmentPlan } from "./investment-tool";
 import { makeInput } from "../test-fixtures";
 import { projectInvestmentAtRetirement } from "../modules/investment";
 import { birthSerial, monthAtAge, toSerial } from "../domain/time";
@@ -12,6 +12,20 @@ import { formatMoney } from "../lib/format";
 
 const base: InvestmentPlan = { holdings: [{ id: "one", name: "投資", valueNow: 100000, monthlyContributionToday: 1000, grossReturnRate: 0, feeRate: 0 }], months: 12, inflation: 0, contributionGrowth: 0, lumpMonth: 6, lumpAmount: 10000, withdrawal: 0 };
 describe("independent investment tool", () => {
+  it("applies a total suggestion, preserving weights and never mutating principal", () => {
+    const holdings = [base.holdings[0], { ...base.holdings[0], id: "two", monthlyContributionToday: 3000 }];
+    const applied = applyMonthlyInvestment(holdings, 10000);
+    expect(applied.map(h => h.monthlyContributionToday)).toEqual([2500, 7500]);
+    expect(applied.map(h => h.valueNow)).toEqual([100000, 100000]);
+    expect(holdings[0].monthlyContributionToday).toBe(1000);
+    expect(applyMonthlyInvestment(holdings.map(h => ({ ...h, monthlyContributionToday: 0 })), 500).map(h => h.monthlyContributionToday)).toEqual([500, 0]);
+    expect(applyMonthlyInvestment(holdings, 0).map(h => h.monthlyContributionToday)).toEqual([0, 0]);
+  });
+  it("rounded multi-asset suggestions still achieve the solved target", () => {
+    const plan = { ...base, months: 120, inflation: 0.02, contributionGrowth: 0.02, holdings: [base.holdings[0], { ...base.holdings[0], id: "two", monthlyContributionToday: 3000, grossReturnRate: 0.06 }] };
+    const suggested = applyMonthlyInvestment(plan.holdings, solveMonthlyInvestment(plan, 2000000));
+    expect(calculateInvestment({ ...plan, holdings: suggested }).final.today).toBeGreaterThanOrEqual(2000000);
+  });
   it("has exact zero-return cash accounting", () => {
     const result = calculateInvestment(base);
     expect(result.final.nominal).toBe(122000);

@@ -432,6 +432,10 @@ details summary svg { width: 14px; height: 14px; }
 .investment-scenarios article { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; padding: 14px; border: 1px solid var(--line); border-radius: 8px; font-size: 14px; }
 .investment-scenarios small { width: 100%; color: var(--muted); }
 .investment-handoff { margin-top: 28px; border-top: 1px solid var(--line); padding-top: 14px; }
+.investment-handoff > button { margin: 0 8px 10px 0; }
+.investment-import-review { margin-top: 16px; padding: 18px; border: 1px solid #bed6d5; border-radius: 10px; background: white; overflow-wrap: anywhere; }
+.investment-import-review ul { padding-left: 20px; font-size: 14px; line-height: 1.8; }
+.investment-import-review button { margin: 4px 8px 0 0; }
 @media(max-width: 820px) { .investment-result-jump { display: block; margin-bottom: 18px; } .investment-layout { grid-template-columns: minmax(0,1fr); gap: 24px; } .investment-page { padding: 24px 18px 60px; } }
 @media print {
   .tool-navigation { display: none; }
