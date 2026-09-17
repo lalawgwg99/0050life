@@ -1,4 +1,4 @@
-import { effectiveMonthlyRate, growthFactor, netAnnualReturn } from "../domain/rates";
+import { effectiveMonthlyRate, growthFactor, netAnnualReturn, investmentMonth } from "../domain/rates";
 import { birthSerial, monthAtAge, toSerial } from "../domain/time";
 import type { InvestmentHoldingProjection, PlanningInput } from "../domain/types";
 
@@ -17,8 +17,7 @@ export function projectInvestmentHoldingsAtRetirement(input: PlanningInput): Inv
   for (let month = asOf; month < retirementMonth; month += 1) {
     const contributionGrowth = growthFactor(input.investment.contributionGrowthRate, month - asOf);
     for (const holding of balances) {
-      holding.balance *= 1 + holding.monthlyReturn;
-      holding.balance += holding.monthlyContributionToday * contributionGrowth;
+      holding.balance = investmentMonth(holding.balance, holding.monthlyReturn, holding.monthlyContributionToday * contributionGrowth);
     }
   }
 

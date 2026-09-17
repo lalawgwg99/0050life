@@ -16,3 +16,8 @@ export function growthFactor(annualRate: number, months: number): number {
 export function realValue(nominal: number, inflationRate: number, months: number): number {
   return nominal / growthFactor(inflationRate, months);
 }
+
+/** Interest first, then month-end cash flow. Shared by investment tools. */
+export function investmentMonth(balance: number, monthlyRate: number, deposit: number): number {
+  return balance * (1 + monthlyRate) + deposit;
+}

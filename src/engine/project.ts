@@ -88,8 +88,8 @@ export function projectPlan(input: PlanningInput, options?: { retirementReturnPa
     records: simulation.records,
     depletedMonth: simulation.depletedMonth,
     endingPortfolioReal: simulation.endingPortfolioReal,
-    initialRetirementWithdrawalRate: projectedInvestmentAtRetirement > 0
-      ? simulation.firstYearWithdrawals / projectedInvestmentAtRetirement
+    initialRetirementWithdrawalRate: projectedInvestmentAtRetirement + lumpPensionReinvestedAtRetirement > 0
+      ? simulation.firstYearWithdrawals / (projectedInvestmentAtRetirement + lumpPensionReinvestedAtRetirement)
       : 0,
     warnings
   };

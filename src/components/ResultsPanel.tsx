@@ -45,7 +45,8 @@ export function ResultsPanel({ result, scenarios, onChange, comparison }: Result
   const recurringIncomeToday = retirementRecord ? toToday(netRecurringIncomeNominal, retirementRecord.month) : 0;
   const monthlyCashflowGapToday = Math.max(0, retirementExpenseToday - recurringIncomeToday);
   const withdrawalRule = input.investment.withdrawalRule;
-  const fourPercentMonthly = projectedToday * (withdrawalRule?.annualRate ?? 0.04) / 12;
+  const investedAtRetirementToday = toToday(result.projectedInvestmentAtRetirement + result.lumpPensionReinvestedAtRetirement, retirementMonth);
+  const fourPercentMonthly = investedAtRetirementToday * (withdrawalRule?.annualRate ?? 0.04) / 12;
   const lumpAmountToday = toToday(result.laborPension.balanceAtClaim, result.laborPension.claimMonth);
   const lumpInvestedToday = lumpAmountToday * (input.laborPension.lumpReinvestRate ?? 1);
   const lumpCashToday = lumpAmountToday - lumpInvestedToday;
@@ -79,10 +80,7 @@ export function ResultsPanel({ result, scenarios, onChange, comparison }: Result
   const earlyCrashResult = useMemo(() => projectPlan(input, { retirementReturnPath: (monthIndex, normalRate) => monthIndex < 12 ? Math.pow(0.7, 1 / 12) - 1 : monthIndex < 24 ? Math.pow(0.9, 1 / 12) - 1 : normalRate }).depletedMonth, [input]);
   const longevity95 = useMemo(() => input.profile.longevityAge >= 95 ? result : projectPlan({ ...input, profile: { ...input.profile, longevityAge: 95 } }), [input, result]);
   const longevity100 = useMemo(() => input.profile.longevityAge >= 100 ? result : projectPlan({ ...input, profile: { ...input.profile, longevityAge: 100 } }), [input, result]);
-  const fiveYearBalances = result.records.filter((record) => {
-    const years = record.age - input.profile.retirementAge;
-    return Math.abs(years / 5 - Math.round(years / 5)) < 1 / 24;
-  });
+  const fiveYearBalances = result.records.filter(record => (record.month - retirementMonth) % 60 === 0);
   const outcomeText = (depletedMonth: number | null, targetAge: number) => depletedMonth === null ? `可支撐到 ${targetAge} 歲` : `約 ${ageAtMonth(birth, depletedMonth).toFixed(0)} 歲用完`;
   const monteCarlo = useMemo(() => runMonteCarlo(result), [result]);
   const pensionBreakevenAge = useMemo(() => {
@@ -223,6 +221,8 @@ export function ResultsPanel({ result, scenarios, onChange, comparison }: Result
       </section>
 
       {(withdrawalRule?.enabled || pledge?.enabled) && <section className="result-section optional-analysis"><div className="result-heading"><div><span>選用比較</span><h2>提領與借款試算</h2></div><small>不會改變主要結果</small></div><div className="analysis-grid">{withdrawalRule?.enabled && <article><strong>固定比例提領參考</strong><span>每年 {formatPercent(withdrawalRule.annualRate)}</span><b>{formatMoney(fourPercentMonthly)}／月</b><small>以退休時預計投資資產估算；只是提領情境，不代表本金不會減少，也不是保證。</small></article>}{pledge?.enabled && <article><strong>股票質押估算</strong><span>約可借 {formatMoney(pledgeLoanToday)}</span><b>每月利息約 {formatMoney(pledgeInterestMonthlyToday)}</b><small>以退休時投資市值、借款 {formatPercent(pledge.loanToValue)}、年利率 {formatPercent(pledge.annualInterestRate)} 估算；股價下跌可能被追繳或賣出。</small></article>}</div></section>}
+
+      {withdrawalRule?.enabled && <p className="section-footnote">提領計算本金 {formatMoney(investedAtRetirementToday)}：自己的投資加上退休當月勞退再投入部分，不含保留現金或以後才領到的款項。這是起始每月參考，不是整段退休期的固定保證收入。</p>}
 
       <details className="result-details"><summary>進階分析：市場波動、稅額與勞退領法</summary>
       <section className="result-section professional-section">

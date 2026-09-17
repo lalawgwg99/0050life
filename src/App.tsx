@@ -3,6 +3,7 @@ import { BookOpen, ChartNoAxesCombined, Printer, RotateCcw, SlidersHorizontal } 
 import { InputPanel } from "./components/InputPanel";
 import { ResultsPanel } from "./components/ResultsPanel";
 import { PlanComparison } from "./components/PlanComparison";
+import { InvestmentPage } from "./components/InvestmentPage";
 import { defaultInput } from "./defaults";
 import type { PlanningInput, ProjectionResult } from "./domain/types";
 import { validateInput } from "./domain/validation";
@@ -67,6 +68,16 @@ function loadSavedInput(): PlanningInput {
 }
 
 export default function App() {
+  const [page, setPage] = useState(() => window.location.hash === "#investment" ? "investment" : "retirement");
+  useEffect(() => {
+    const navigate = () => {
+      if (!["", "#investment", "#retirement"].includes(window.location.hash)) return;
+      setPage(window.location.hash === "#investment" ? "investment" : "retirement");
+      window.scrollTo(0, 0);
+    };
+    window.addEventListener("hashchange", navigate);
+    return () => window.removeEventListener("hashchange", navigate);
+  }, []);
   const [input, setInput] = useState<PlanningInput>(loadSavedInput);
   const [comparison, setComparison] = useState<ProjectionResult | null>(null);
   const [mobileView, setMobileView] = useState<"inputs" | "results">("inputs");
@@ -103,11 +114,18 @@ export default function App() {
         </a>
         <nav aria-label="主要功能">
           <a href="/blog/index.html"><BookOpen aria-hidden="true" />退休筆記</a>
-          <button type="button" className="icon-button" onClick={reset} aria-label="重新填寫" title="重新填寫"><RotateCcw aria-hidden="true" /></button>
+          {page === "retirement" && <button type="button" className="icon-button" onClick={reset} aria-label="重新填寫" title="重新填寫"><RotateCcw aria-hidden="true" /></button>}
           <button type="button" className="icon-button" onClick={() => window.print()} aria-label="列印結果" title="列印結果"><Printer aria-hidden="true" /></button>
         </nav>
       </header>
 
+      <nav className="tool-navigation" aria-label="試算工具"><a href="#retirement" aria-current={page === "retirement" ? "page" : undefined}>退休規劃</a><a href="#investment" aria-current={page === "investment" ? "page" : undefined}>投資成長試算</a></nav>
+      {page === "investment" ? <InvestmentPage input={input} onImport={(holdings, contributionGrowthRate) => {
+        setComparison(null);
+        setInput({ ...input, investment: { ...input.investment, holdings, contributionGrowthRate } });
+        window.location.hash = "retirement";
+        showMobileView("inputs");
+      }} /> : <>
       <div className="mobile-tabs" role="tablist" aria-label="試算頁面">
         <button type="button" role="tab" aria-selected={mobileView === "inputs"} className={mobileView === "inputs" ? "active" : ""} onClick={() => showMobileView("inputs")}><SlidersHorizontal aria-hidden="true" />填寫資料</button>
         <button type="button" role="tab" aria-selected={mobileView === "results"} className={mobileView === "results" ? "active" : ""} onClick={() => showMobileView("results")}><ChartNoAxesCombined aria-hidden="true" />查看結果</button>
@@ -126,6 +144,7 @@ export default function App() {
           ) : null}
         </div>
       </main>
+      </>}
     </div>
   );
 }
