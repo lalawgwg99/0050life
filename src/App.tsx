@@ -4,6 +4,8 @@ import { InputPanel } from "./components/InputPanel";
 import { ResultsPanel } from "./components/ResultsPanel";
 import { PlanComparison } from "./components/PlanComparison";
 import { InvestmentPage } from "./components/InvestmentPage";
+import { IncomeTool } from "./components/IncomeTool";
+import { CashflowTool } from "./components/CashflowTool";
 import { defaultInput } from "./defaults";
 import type { PlanningInput, ProjectionResult } from "./domain/types";
 import { validateInput } from "./domain/validation";
@@ -68,11 +70,14 @@ function loadSavedInput(): PlanningInput {
 }
 
 export default function App() {
-  const [page, setPage] = useState(() => window.location.hash === "#investment" ? "investment" : "retirement");
+  const [page, setPage] = useState(() => {
+    const hash = window.location.hash;
+    return hash === "#investment" ? "investment" : hash === "#income" ? "income" : hash === "#cashflow" ? "cashflow" : "retirement";
+  });
   useEffect(() => {
     const navigate = () => {
-      if (!["", "#investment", "#retirement"].includes(window.location.hash)) return;
-      setPage(window.location.hash === "#investment" ? "investment" : "retirement");
+      if (!["", "#investment", "#retirement", "#income", "#cashflow"].includes(window.location.hash)) return;
+      setPage(window.location.hash === "#investment" ? "investment" : window.location.hash === "#income" ? "income" : window.location.hash === "#cashflow" ? "cashflow" : "retirement");
       window.scrollTo(0, 0);
     };
     window.addEventListener("hashchange", navigate);
@@ -119,13 +124,13 @@ export default function App() {
         </nav>
       </header>
 
-      <nav className="tool-navigation" aria-label="試算工具"><a href="#retirement" aria-current={page === "retirement" ? "page" : undefined}>退休規劃</a><a href="#investment" aria-current={page === "investment" ? "page" : undefined}>投資成長試算</a></nav>
+      <nav className="tool-navigation" aria-label="試算工具"><a href="#retirement" aria-current={page === "retirement" ? "page" : undefined}>退休規劃</a><a href="#investment" aria-current={page === "investment" ? "page" : undefined}>投資成長</a><a href="#income" aria-current={page === "income" ? "page" : undefined}>退休收入</a><a href="#cashflow" aria-current={page === "cashflow" ? "page" : undefined}>退休現金流</a></nav>
       {page === "investment" ? <InvestmentPage input={input} onImport={(holdings, contributionGrowthRate) => {
         setComparison(null);
         setInput({ ...input, investment: { ...input.investment, holdings, contributionGrowthRate } });
         window.location.hash = "retirement";
         showMobileView("inputs");
-      }} /> : <>
+      }} /> : page === "income" ? <IncomeTool input={input} /> : page === "cashflow" ? <CashflowTool input={input} /> : <>
       <div className="mobile-tabs" role="tablist" aria-label="試算頁面">
         <button type="button" role="tab" aria-selected={mobileView === "inputs"} className={mobileView === "inputs" ? "active" : ""} onClick={() => showMobileView("inputs")}><SlidersHorizontal aria-hidden="true" />填寫資料</button>
         <button type="button" role="tab" aria-selected={mobileView === "results"} className={mobileView === "results" ? "active" : ""} onClick={() => showMobileView("results")}><ChartNoAxesCombined aria-hidden="true" />查看結果</button>
