@@ -109,6 +109,12 @@ export default function App() {
     setMobileView(view);
     if (window.matchMedia("(max-width: 820px)").matches) window.scrollTo({ top: 0, behavior: "auto" });
   };
+  const viewResults = () => {
+    showMobileView("results");
+    if (!window.matchMedia("(max-width: 820px)").matches) {
+      document.querySelector(".results-column")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
 
   return (
     <div className="app-shell">
@@ -137,7 +143,7 @@ export default function App() {
       </div>
 
       <main className="workspace">
-        <aside className={mobileView === "inputs" ? "mobile-visible" : ""}><InputPanel input={input} errors={errors} onChange={setInput} /></aside>
+        <aside className={mobileView === "inputs" ? "mobile-visible" : ""}><InputPanel input={input} errors={errors} onChange={setInput} onViewResults={viewResults} /></aside>
         <div className={`results-column ${mobileView === "results" ? "mobile-visible" : ""}`}>
           {errors.length > 0 ? (
             <div className="empty-state"><EmptyIcon /><h1>先完成左側資料</h1><p>需要調整的地方會直接標示在輸入區。</p></div>

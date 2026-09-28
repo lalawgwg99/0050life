@@ -59,10 +59,10 @@ describe("input validation", () => {
       }
     };
     const errors = validateInput(invalid);
-    expect(errors.some((error) => error.includes("規劃年齡"))).toBe(true);
-    expect(errors.some((error) => error.includes("勞保最早"))).toBe(true);
-    expect(errors.some((error) => error.includes("勞退請領年齡"))).toBe(true);
-    expect(errors.some((error) => error.includes("未滿 15 年"))).toBe(true);
+    expect(errors.some((error) => error.message.includes("規劃年齡"))).toBe(true);
+    expect(errors.some((error) => error.message.includes("勞保最早"))).toBe(true);
+    expect(errors.some((error) => error.message.includes("勞退請領年齡"))).toBe(true);
+    expect(errors.some((error) => error.message.includes("未滿 15 年"))).toBe(true);
   });
 
   it("rejects missing values before attempting date calculations", () => {
@@ -74,7 +74,7 @@ describe("input validation", () => {
         holdings: [{ ...validInput.investment.holdings[0], monthlyContributionToday: Number.NaN }]
       }
     };
-    expect(validateInput(invalid)).toEqual([
+    expect(validateInput(invalid).map((error) => error.message)).toEqual([
       "出生月份需要填入數字。",
       "0050每月投入需要填入數字。"
     ]);
@@ -88,9 +88,9 @@ describe("input validation", () => {
       partTime: { ...validInput.partTime, enabled: true, startAge: 70, endAge: 60 }
     };
     const errors = validateInput(invalid);
-    expect(errors.some((error) => error.includes("勞保年資"))).toBe(true);
-    expect(errors.some((error) => error.includes("最多為 6%"))).toBe(true);
-    expect(errors.some((error) => error.includes("兼職結束年齡"))).toBe(true);
+    expect(errors.some((error) => error.message.includes("勞保年資"))).toBe(true);
+    expect(errors.some((error) => error.message.includes("最多為 6%"))).toBe(true);
+    expect(errors.some((error) => error.message.includes("兼職結束年齡"))).toBe(true);
   });
 
   it("ignores unused part-time details when the option is off", () => {
@@ -115,7 +115,7 @@ describe("input validation", () => {
       ...validInput,
       nationalPension: { ...validInput.nationalPension, enabled: true, insuredYears: 0 }
     };
-    expect(validateInput(input).some((error) => error.includes("國保年資"))).toBe(true);
+    expect(validateInput(input).some((error) => error.message.includes("國保年資"))).toBe(true);
   });
 
   it("does not allow delayed claiming in the combined labor and national pension case", () => {
@@ -124,6 +124,6 @@ describe("input validation", () => {
       laborInsurance: { ...validInput.laborInsurance, insuredYearsNow: 10, insuredYearsFuture: 0, claimAge: 70 },
       nationalPension: { ...validInput.nationalPension, enabled: true, insuredYears: 5 }
     };
-    expect(validateInput(input).some((error) => error.includes("不能套用延後請領"))).toBe(true);
+    expect(validateInput(input).some((error) => error.message.includes("不能套用延後請領"))).toBe(true);
   });
 });

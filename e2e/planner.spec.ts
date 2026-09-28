@@ -1,4 +1,8 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
+
+async function gotoStep(page: Page, name: string) {
+  await page.locator(".step-nav").getByRole("button", { name }).click();
+}
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() => localStorage.clear());
@@ -10,7 +14,9 @@ test("compares changes and restores the complete original plan", async ({ page, 
   const comparison = page.getByRole("region", { name: "調整前後比較" });
   await comparison.getByRole("button", { name: "保留目前方案來比較" }).click();
   if (isMobile) await page.getByRole("tab", { name: "填寫資料" }).click();
+  await gotoStep(page, "你的退休時間");
   await page.getByLabel("退休後每月生活費").fill("60000");
+  await gotoStep(page, "自己的投資");
   await page.getByLabel("目前市值").fill("2000000");
   if (isMobile) await page.getByRole("tab", { name: "查看結果" }).click();
   const spending = comparison.getByRole("row", { name: /每月生活費/ });
@@ -23,7 +29,9 @@ test("compares changes and restores the complete original plan", async ({ page, 
   const assets = comparison.getByRole("row", { name: /退休可用資產/ }).getByRole("cell");
   await expect(assets.nth(0)).toHaveText(await assets.nth(1).innerText());
   if (isMobile) await page.getByRole("tab", { name: "填寫資料" }).click();
+  await gotoStep(page, "你的退休時間");
   await expect(page.getByLabel("退休後每月生活費")).toHaveValue("50000");
+  await gotoStep(page, "自己的投資");
   await expect(page.getByLabel("目前市值")).toHaveValue("1000000");
   if (isMobile) await page.getByRole("tab", { name: "查看結果" }).click();
   await comparison.getByRole("button", { name: "結束比較" }).click();
@@ -54,8 +62,10 @@ test("shows a complete result without page overflow", async ({ page, isMobile })
 });
 
 test("updates the combined result when investment and pension choices change", async ({ page, isMobile }) => {
+  await gotoStep(page, "自己的投資");
   await page.getByLabel("目前市值").fill("0");
   await page.locator(".holding-item").first().getByLabel("每月投入").fill("0");
+  await gotoStep(page, "勞退個人專戶");
   await page.getByRole("button", { name: "按月領" }).click();
   if (isMobile) await page.getByRole("tab", { name: "查看結果" }).click();
 
@@ -64,6 +74,7 @@ test("updates the combined result when investment and pension choices change", a
 });
 
 test("offers a clear choice for reinvesting a lump-sum labor pension", async ({ page }) => {
+  await gotoStep(page, "勞退個人專戶");
   await page.getByRole("button", { name: "一次領" }).click();
   const reinvestField = page.locator(".lump-reinvest-control").locator("input[type=number]");
   await expect(reinvestField).toHaveValue("100");
@@ -73,6 +84,7 @@ test("offers a clear choice for reinvesting a lump-sum labor pension", async ({ 
 });
 
 test("adds separate investments and offers a simple retirement allocation", async ({ page }) => {
+  await gotoStep(page, "自己的投資");
   await expect(page.locator(".brand-note")).toContainText("0050 Life");
   await page.getByRole("button", { name: "新增一筆投資" }).click();
   await page.getByLabel("第 2 筆投資名稱").fill("006208");
@@ -86,6 +98,7 @@ test("adds separate investments and offers a simple retirement allocation", asyn
 });
 
 test("keeps part-time income optional", async ({ page, isMobile }) => {
+  await gotoStep(page, "你的退休時間");
   await page.getByText("更多生活假設", { exact: true }).click();
   const partTimeSwitch = page.getByRole("switch", { name: "退休後有兼職收入" });
   await expect(partTimeSwitch).not.toBeChecked();
@@ -99,6 +112,7 @@ test("keeps part-time income optional", async ({ page, isMobile }) => {
 });
 
 test("keeps voluntary labor-pension contribution optional", async ({ page }) => {
+  await gotoStep(page, "勞退個人專戶");
   const selfContribution = page.getByRole("switch", { name: "我有自己加碼提繳（沒有就不用勾）" });
   await expect(selfContribution).not.toBeChecked();
   await expect(page.getByLabel("自提比例")).toBeHidden();
@@ -109,8 +123,9 @@ test("keeps voluntary labor-pension contribution optional", async ({ page }) => 
 });
 
 test("keeps optional withdrawal and pledge comparisons out of the main result", async ({ page, isMobile }) => {
+  await gotoStep(page, "自己的投資");
   await page.getByText("進階設定：報酬、費用與退休後配置", { exact: true }).click();
-  await page.getByText("我想參考「固定比例提領」", { exact: true }).click();
+  await page.getByText("我想模擬「每年固定領一個比例」", { exact: true }).click();
   await page.getByText("我想看看股票質押能借多少", { exact: true }).click();
   if (isMobile) await page.getByRole("tab", { name: "查看結果" }).click();
   await expect(page.getByRole("heading", { name: "提領與借款試算" })).toBeVisible();
@@ -121,11 +136,14 @@ test("keeps optional withdrawal and pledge comparisons out of the main result", 
 
 test("keeps national pension separate and points to the official account", async ({ page, isMobile }) => {
   await expect(page.getByText("已繳費的國保年資")).toBeHidden();
+  await gotoStep(page, "勞保老年給付");
+  await expect(page.getByRole("link", { name: "到勞保局查自己的勞保資料" })).toHaveAttribute("href", "https://edesk.bli.gov.tw/me/#/na/overview");
+  await gotoStep(page, "國民年金");
   await page.getByText("曾經參加國民年金", { exact: true }).click();
   await page.getByLabel("已繳費的國保年資").fill("5");
   await expect(page.getByText("國保會依 B 式估算")).toBeVisible();
   await expect(page.getByRole("link", { name: "到勞保局查自己的國保資料" })).toHaveAttribute("href", "https://edesk.bli.gov.tw/me/#/na/overview");
-  await expect(page.getByRole("link", { name: "到勞保局查自己的勞保資料" })).toHaveAttribute("href", "https://edesk.bli.gov.tw/me/#/na/overview");
+  await gotoStep(page, "勞退個人專戶");
   await expect(page.getByRole("link", { name: "到勞保局查自己的勞退專戶" })).toHaveAttribute("href", "https://edesk.bli.gov.tw/me/#/na/overview");
   if (isMobile) await page.getByRole("tab", { name: "查看結果" }).click();
   await expect(page.locator(".source-row h3", { hasText: "國民年金" })).toBeVisible();
@@ -133,10 +151,14 @@ test("keeps national pension separate and points to the official account", async
 });
 
 test("shows an action plan when retirement assets are not enough", async ({ page, isMobile }) => {
+  await gotoStep(page, "自己的投資");
   await page.locator(".holding-item").first().getByLabel("目前市值").fill("0");
   await page.locator(".holding-item").first().getByLabel("每月投入").fill("0");
+  await gotoStep(page, "勞退個人專戶");
   await page.getByLabel("目前專戶餘額").fill("0");
+  await gotoStep(page, "勞保老年給付");
   await page.getByLabel("目前勞保年資").fill("0");
+  await gotoStep(page, "你的退休時間");
   await page.getByLabel("退休後每月生活費").fill("100000");
   if (isMobile) await page.getByRole("tab", { name: "查看結果" }).click();
   await expect(page.getByRole("heading", { name: "先選一個改變，結果會立刻更新" })).toBeVisible();
@@ -144,9 +166,21 @@ test("shows an action plan when retirement assets are not enough", async ({ page
 });
 
 test("stops the calculation and explains an invalid value", async ({ page, isMobile }) => {
+  await gotoStep(page, "勞保老年給付");
   await page.getByText("預計持續加保到退休", { exact: true }).click();
   await page.getByLabel("未來還會加保").fill("99");
   await expect(page.getByText("未來勞保年資不可超過距退休的時間。")).toBeVisible();
   if (isMobile) await page.getByRole("tab", { name: "查看結果" }).click();
   await expect(page.getByRole("heading", { name: "先完成左側資料" })).toBeVisible();
+});
+
+test("jumps to the field when a validation error is clicked", async ({ page, isMobile }) => {
+  if (isMobile) await page.getByRole("tab", { name: "填寫資料" }).click();
+  await gotoStep(page, "勞保老年給付");
+  await page.getByText("預計持續加保到退休", { exact: true }).click();
+  await page.getByLabel("未來還會加保").fill("99");
+  await page.locator(".step-nav").getByRole("button", { name: "國民年金" }).click();
+  await page.getByRole("button", { name: "未來勞保年資不可超過距退休的時間。" }).click();
+  await expect(page.locator(".step-nav").getByRole("button", { name: "勞保老年給付" })).toHaveAttribute("aria-current", "step");
+  await expect(page.getByLabel("未來還會加保")).toBeFocused();
 });
