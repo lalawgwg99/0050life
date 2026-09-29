@@ -499,15 +499,21 @@ details summary svg { width: 14px; height: 14px; }
 
 /* Hide number-input spinners: they clash with the suffix layout and are rarely used */
 .field-control input[type="number"]::-webkit-outer-spin-button,
-.field-control input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-.field-control input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+.field-control input[type="number"]::-webkit-inner-spin-button,
+.investment-field input[type="number"]::-webkit-outer-spin-button,
+.investment-field input[type="number"]::-webkit-inner-spin-button,
+.tool-form input[type="number"]::-webkit-outer-spin-button,
+.tool-form input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.field-control input[type="number"],
+.investment-field input[type="number"],
+.tool-form input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
 
 @media (max-width: 820px) {
   .step-nav { display: flex; overflow-x: auto; padding-bottom: 4px; scrollbar-width: thin; }
   .step-nav-item { flex: 0 0 auto; }
   .input-panel { scroll-margin-top: 128px; }
   /* 16px+ prevents iOS Safari auto-zoom on focus */
-  .field-control input, .select-field select { font-size: 16px; }
+  .field-control input, .select-field select, .investment-field input, .tool-form input { font-size: 16px; }
   /* Tool tabs: scroll horizontally instead of squeezing text into two lines */
   .tool-navigation { justify-content: flex-start; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
   .tool-navigation::-webkit-scrollbar { display: none; }

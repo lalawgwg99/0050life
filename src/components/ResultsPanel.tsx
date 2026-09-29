@@ -157,7 +157,7 @@ export function ResultsPanel({ result, scenarios, onChange, comparison }: Result
         <div className="cashflow-grid">
           <article className="cashflow-card"><span>每月生活費</span><strong>{formatMoney(retirementExpenseToday)}</strong><small>包含已設定的醫療與長照費</small></article>
           <article className="cashflow-card"><span>每月可用收入</span><strong>{formatMoney(recurringIncomeToday)}</strong><small>每月領取的收入，已扣估計稅額</small></article>
-          <article className="cashflow-card covered"><span>{monthlyCashflowGapToday > 0 ? "每月由投資支付" : "需動用投資"}</span><strong>{monthlyCashflowGapToday > 0 ? formatMoney(monthlyCashflowGapToday) : "$0"}</strong><small>{monthlyCashflowGapToday > 0 ? "從投資或保留現金支付，不是另外要存的錢" : "每月收入已足夠支付生活費"}</small></article>
+          <article className="cashflow-card covered"><span>每月由投資支付</span><strong>{monthlyCashflowGapToday > 0 ? formatMoney(monthlyCashflowGapToday) : "$0"}</strong><small>{monthlyCashflowGapToday > 0 ? "從投資或保留現金支付，不是另外要存的錢" : "每月收入已足夠支付生活費"}</small></article>
         </div>
         <p className="section-footnote">一次領的勞保或勞退會放進退休資產，不會被誤算成每月固定收入。</p>
       </section>
