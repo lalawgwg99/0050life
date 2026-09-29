@@ -367,6 +367,7 @@ details summary svg { width: 14px; height: 14px; }
 
 @media (max-width: 560px) {
   .field-grid.two { grid-template-columns: 1fr; }
+  .investment-modes { display: grid; grid-template-columns: 1fr; margin: 18px 0; }
   .overview-copy h1 { font-size: 29px; }
   .chart-wrap { height: 260px; }
   .source-row { grid-template-columns: 40px minmax(94px, 1fr) minmax(115px, auto); gap: 9px; }
