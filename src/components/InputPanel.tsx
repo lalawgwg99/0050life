@@ -90,7 +90,10 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
     window.setTimeout(() => {
       const root = panelTopRef.current;
       if (!root) return;
-      const fields = Array.from(root.querySelectorAll(".step-body .field"));
+      const scope = error.holdingId
+        ? root.querySelector(`[data-holding-id="${CSS.escape(error.holdingId)}"]`)
+        : root.querySelector(".step-body");
+      const fields = Array.from((scope ?? root).querySelectorAll(".field"));
       const target = fields.find((element) => element.querySelector(".field-label")?.textContent?.trim() === error.field);
       const details = target?.closest("details");
       if (details && !details.open) details.open = true;
@@ -285,7 +288,7 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
       <p className="brand-note"><strong>0050 Life</strong> 可以從 0050 開始；有其他股票或基金，再逐筆加入。每一筆會用自己的報酬與費用分開複利，退休時才加總。<a href="/blog/investment-calculator-guide.html" target="_blank" rel="noreferrer">教學</a></p>
       <div className="holding-list">
         {input.investment.holdings.map((holding, index) => (
-          <article className="holding-item" key={holding.id}>
+          <article className="holding-item" key={holding.id} data-holding-id={holding.id}>
             <div className="holding-header">
               <label>
                 <span className="sr-only">第 {index + 1} 筆投資名稱</span>

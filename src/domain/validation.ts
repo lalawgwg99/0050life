@@ -9,14 +9,16 @@ export interface InputError {
   step: number;
   /** 對應欄位的顯示文字，點擊錯誤時會跳到該欄位 */
   field?: string;
+  /** 多筆投資時，指出是哪一筆的欄位出錯 */
+  holdingId?: string;
 }
 
 export function validateInput(input: PlanningInput): InputError[] {
   const errors: InputError[] = [];
-  const fail = (step: number, message: string, field?: string) => {
-    errors.push({ message, step, field });
+  const fail = (step: number, message: string, field?: string, holdingId?: string) => {
+    errors.push({ message, step, field, holdingId });
   };
-  const values: Array<[number, string, number, string?]> = [
+  const values: Array<[number, string, number, string?, string?]> = [
     [input.profile.birthYearROC, "出生年", 0, "民國出生年"],
     [input.profile.birthMonth, "出生月份", 0, "出生月份"],
     [input.profile.retirementAge, "退休年齡", 0, "想幾歲退休"],
@@ -47,10 +49,10 @@ export function validateInput(input: PlanningInput): InputError[] {
   input.investment.holdings.forEach((holding, index) => {
     const name = holding.name.trim() || `第 ${index + 1} 筆投資`;
     values.push(
-      [holding.valueNow, `${name}目前市值`, 4, "目前市值"],
-      [holding.monthlyContributionToday, `${name}每月投入`, 4, "每月投入"],
-      [holding.grossReturnRate, `${name}總報酬率`, 4, "每年總報酬（含股息）"],
-      [holding.feeRate, `${name}費用率`, 4, "每年投資成本"]
+      [holding.valueNow, `${name}目前市值`, 4, "目前市值", holding.id],
+      [holding.monthlyContributionToday, `${name}每月投入`, 4, "每月投入", holding.id],
+      [holding.grossReturnRate, `${name}總報酬率`, 4, "每年總報酬（含股息）", holding.id],
+      [holding.feeRate, `${name}費用率`, 4, "每年投資成本", holding.id]
     );
   });
   if (input.partTime.enabled) {
@@ -63,8 +65,8 @@ export function validateInput(input: PlanningInput): InputError[] {
   }
   if (input.spending.longTermCareEnabled) values.push([input.spending.longTermCareStartAge ?? 80, "長照開始年齡", 0, "從幾歲開始預留"], [input.spending.longTermCareMonthlyToday ?? 0, "每月長照預算", 0, "每月長照預算"]);
   if (input.nationalPension.enabled) values.push([input.nationalPension.insuredYears, "國保年資", 2, "已繳費的國保年資"]);
-  for (const [value, label, step, field] of values) {
-    if (!Number.isFinite(value)) fail(step, `${label}需要填入數字。`, field);
+  for (const [value, label, step, field, holdingId] of values) {
+    if (!Number.isFinite(value)) fail(step, `${label}需要填入數字。`, field, holdingId);
   }
   if (errors.length > 0) return errors;
   if (input.investment.holdings.some((holding) => holding.name.trim() === "")) fail(4, "每筆投資都需要填名稱。");
@@ -81,7 +83,11 @@ export function validateInput(input: PlanningInput): InputError[] {
   if ((input.spending.medicalMonthlyToday ?? 0) < 0 || (input.spending.longTermCareMonthlyToday ?? 0) < 0) fail(0, "醫療與長照預算不可為負數。", "每月醫療預算");
   if (input.spending.longTermCareEnabled && (input.spending.longTermCareStartAge ?? 80) < input.profile.retirementAge) fail(0, "長照開始年齡不可早於退休年齡。", "從幾歲開始預留");
   if (input.spending.longTermCareEnabled && (input.spending.longTermCareStartAge ?? 80) > input.profile.longevityAge) fail(0, "長照開始年齡不可晚於規劃年齡。", "從幾歲開始預留");
-  if (input.investment.holdings.some((holding) => holding.valueNow < 0 || holding.monthlyContributionToday < 0)) fail(4, "投資市值與每月投入不可為負數。", "目前市值");
+  input.investment.holdings.forEach((holding, index) => {
+    const name = holding.name.trim() || `第 ${index + 1} 筆投資`;
+    if (holding.valueNow < 0) fail(4, `${name}目前市值不可為負數。`, "目前市值", holding.id);
+    if (holding.monthlyContributionToday < 0) fail(4, `${name}每月投入不可為負數。`, "每月投入", holding.id);
+  });
   if (input.partTime.enabled && input.partTime.monthlyToday < 0) fail(0, "兼職收入不可為負數。", "每月兼職收入");
   if (input.laborInsurance.insuredYearsNow < 0 || laborInsuranceFutureYears(input) < 0 || input.laborInsurance.averageSalaryToday < 0) fail(1, "勞保年資與平均薪資不可為負數。", "目前勞保年資");
   if (input.nationalPension.enabled && (input.nationalPension.insuredYears <= 0 || input.nationalPension.insuredYears > 40)) fail(2, "國保年資請填大於 0、最多 40 年。", "已繳費的國保年資");

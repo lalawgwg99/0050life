@@ -513,7 +513,7 @@ details summary svg { width: 14px; height: 14px; }
   .step-nav-item { flex: 0 0 auto; }
   .input-panel { scroll-margin-top: 128px; }
   /* 16px+ prevents iOS Safari auto-zoom on focus */
-  .field-control input, .select-field select, .investment-field input, .tool-form input { font-size: 16px; }
+  .field-control input, .select-field select, .investment-field input, .tool-form input, .holding-name { font-size: 16px; }
   /* Tool tabs: scroll horizontally instead of squeezing text into two lines */
   .tool-navigation { justify-content: flex-start; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
   .tool-navigation::-webkit-scrollbar { display: none; }

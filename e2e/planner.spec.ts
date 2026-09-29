@@ -184,3 +184,15 @@ test("jumps to the field when a validation error is clicked", async ({ page, isM
   await expect(page.locator(".step-nav").getByRole("button", { name: "勞保老年給付" })).toHaveAttribute("aria-current", "step");
   await expect(page.getByLabel("未來還會加保")).toBeFocused();
 });
+
+test("error jump lands on the correct holding when several investments exist", async ({ page, isMobile }) => {
+  if (isMobile) await page.getByRole("tab", { name: "填寫資料" }).click();
+  await gotoStep(page, "自己的投資");
+  await page.getByRole("button", { name: "新增一筆投資" }).click();
+  const secondName = page.getByLabel("第 2 筆投資名稱");
+  await secondName.fill("第二筆");
+  const holdings = page.locator(".holding-item");
+  await holdings.nth(1).getByLabel("每月投入").fill("");
+  await page.getByRole("button", { name: "第二筆每月投入需要填入數字。" }).click();
+  await expect(holdings.nth(1).getByLabel("每月投入")).toBeFocused();
+});

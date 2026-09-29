@@ -80,6 +80,37 @@ describe("input validation", () => {
     ]);
   });
 
+  it("tags holding errors with the holding id so the error jump lands on the right holding", () => {
+    const invalid: PlanningInput = {
+      ...validInput,
+      investment: {
+        ...validInput.investment,
+        holdings: [
+          { ...validInput.investment.holdings[0] },
+          { id: "second", name: "台積電", valueNow: 0, monthlyContributionToday: Number.NaN, grossReturnRate: 0.08, feeRate: 0.003 }
+        ]
+      }
+    };
+    const errors = validateInput(invalid);
+    const missing = errors.find((error) => error.message === "台積電每月投入需要填入數字。");
+    expect(missing?.field).toBe("每月投入");
+    expect(missing?.holdingId).toBe("second");
+    expect(missing?.step).toBe(4);
+
+    const negative: PlanningInput = {
+      ...validInput,
+      investment: {
+        ...validInput.investment,
+        holdings: [
+          { ...validInput.investment.holdings[0] },
+          { id: "second", name: "台積電", valueNow: -100, monthlyContributionToday: 0, grossReturnRate: 0.08, feeRate: 0.003 }
+        ]
+      }
+    };
+    const negativeError = validateInput(negative).find((error) => error.message === "台積電目前市值不可為負數。");
+    expect(negativeError?.holdingId).toBe("second");
+  });
+
   it("rejects negative years, impossible ranges, and rates outside the rules", () => {
     const invalid: PlanningInput = {
       ...validInput,
