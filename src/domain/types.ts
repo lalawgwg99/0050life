@@ -48,6 +48,8 @@ export interface PlanningInput {
   };
   spending: {
     monthlyToday: number;
+    rentMonthlyToday?: number;
+    rentInflationRate?: number;
     medicalMonthlyToday?: number;
     medicalInflationRate?: number;
     longTermCareEnabled?: boolean;
@@ -160,6 +162,7 @@ export interface MonthlyRecord {
   portfolioWithdrawalNominal: number;
   unmetNeedNominal: number;
   livingExpenseNominal: number;
+  rentExpenseNominal: number;
   medicalExpenseNominal: number;
   longTermCareExpenseNominal: number;
   taxNominal: number;

@@ -41,7 +41,7 @@ export function BalanceChart({ data }: { data: BalancePoint[] }) {
         {xTicks.map((tick) => <text key={tick} className="chart-label" x={x(tick)} y={height - 10} textAnchor={tick === minAge ? "start" : tick === maxAge ? "end" : "middle"}>{tick.toFixed(0)} 歲</text>)}
         <path className="chart-line" d={path} />
         {data.filter((_, index) => index % Math.max(1, Math.floor(data.length / 8)) === 0 || index === data.length - 1).map((point) => (
-          <circle key={point.age} className="chart-point" cx={x(point.age)} cy={y(point.assets)} r="4"><title>{point.age.toFixed(0)} 歲：{formatMoney(point.assets)}</title></circle>
+          <circle key={point.age} className="chart-point" cx={x(point.age)} cy={y(point.assets)} r="4"><title>{`${point.age.toFixed(0)} 歲：${formatMoney(point.assets)}`}</title></circle>
         ))}
       </svg>
     </div>

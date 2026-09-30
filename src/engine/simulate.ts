@@ -37,11 +37,12 @@ export function simulateRetirement(
   for (let month = retirementMonth; month < endMonth; month += 1) {
     const monthsFromAsOf = month - asOf;
     const livingExpenseNominal = input.spending.monthlyToday * growthFactor(input.economy.inflationRate, monthsFromAsOf);
+    const rentExpenseNominal = (input.spending.rentMonthlyToday ?? 0) * growthFactor(input.spending.rentInflationRate ?? input.economy.inflationRate, monthsFromAsOf);
     const medicalExpenseNominal = (input.spending.medicalMonthlyToday ?? 0) * growthFactor(input.spending.medicalInflationRate ?? input.economy.inflationRate, monthsFromAsOf);
     const longTermCareExpenseNominal = input.spending.longTermCareEnabled && ageAtMonth(birth, month) >= (input.spending.longTermCareStartAge ?? 80)
       ? (input.spending.longTermCareMonthlyToday ?? 0) * growthFactor(input.economy.inflationRate, monthsFromAsOf)
       : 0;
-    const expenseNominal = livingExpenseNominal + medicalExpenseNominal + longTermCareExpenseNominal;
+    const expenseNominal = livingExpenseNominal + rentExpenseNominal + medicalExpenseNominal + longTermCareExpenseNominal;
     const laborInsuranceNominal = laborInsurance.events.get(month) ?? 0;
     const nationalPensionNominal = nationalPension.events.get(month) ?? 0;
     const laborPensionEventNominal = laborPension.events.get(month) ?? 0;
@@ -94,6 +95,7 @@ export function simulateRetirement(
       age: ageAtMonth(birth, month),
       expenseNominal,
       livingExpenseNominal,
+      rentExpenseNominal,
       medicalExpenseNominal,
       longTermCareExpenseNominal,
       taxNominal,

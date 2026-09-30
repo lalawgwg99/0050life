@@ -207,6 +207,31 @@ describe("integrated monthly projection", () => {
     expect(age80.longTermCareExpenseNominal).toBe(20_000);
   });
 
+  it("adds rent with its own inflation rate to retirement expenses", () => {
+    const input = makeInput({
+      profile: { retirementAge: 65, longevityAge: 90 },
+      economy: { inflationRate: 0 },
+      spending: { monthlyToday: 30_000, rentMonthlyToday: 15_000, rentInflationRate: 0 }
+    });
+    const result = projectPlan(input);
+    const age65 = result.records.find((record) => Math.abs(record.age - 65) < 0.01)!;
+    expect(age65.rentExpenseNominal).toBe(15_000);
+    expect(age65.expenseNominal).toBe(45_000);
+  });
+
+  it("grows rent by the rent inflation rate instead of general inflation", () => {
+    const input = makeInput({
+      profile: { retirementAge: 65, longevityAge: 90 },
+      economy: { inflationRate: 0 },
+      spending: { monthlyToday: 0, rentMonthlyToday: 12_000, rentInflationRate: 0.1 }
+    });
+    const result = projectPlan(input);
+    const first = result.records[0];
+    const twelfth = result.records[11];
+    expect(first.rentExpenseNominal).toBeGreaterThan(12_000);
+    expect(twelfth.rentExpenseNominal).toBeGreaterThan(first.rentExpenseNominal);
+  });
+
   it("supports an early-retirement crash return path", () => {
     const input = makeInput({ spending: { monthlyToday: 80_000 } });
     const normal = projectPlan(input);

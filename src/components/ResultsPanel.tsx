@@ -35,6 +35,7 @@ export function ResultsPanel({ result, scenarios, onChange, comparison }: Result
   const gapToday = summary.gap;
   const retirementRecord = result.records[0];
   const retirementExpenseToday = retirementRecord ? toToday(retirementRecord.expenseNominal, retirementRecord.month) : 0;
+  const retirementRentToday = retirementRecord ? toToday(retirementRecord.rentExpenseNominal, retirementRecord.month) : 0;
   const recurringIncomeNominal = retirementRecord
     ? (result.laborInsurance.eligibleForAnnuity ? retirementRecord.laborInsuranceNominal : 0)
       + (result.nationalPension.enabled ? retirementRecord.nationalPensionNominal : 0)
@@ -155,7 +156,7 @@ export function ResultsPanel({ result, scenarios, onChange, comparison }: Result
       <section className="result-section cashflow-section">
         <div className="result-heading"><div><span>先看每個月</span><h2>退休第一個月，錢夠不夠用</h2></div><small>換算成今天的物價</small></div>
         <div className="cashflow-grid">
-          <article className="cashflow-card"><span>每月生活費</span><strong>{formatMoney(retirementExpenseToday)}</strong><small>包含已設定的醫療與長照費</small></article>
+          <article className="cashflow-card"><span>每月生活費</span><strong>{formatMoney(retirementExpenseToday)}</strong><small>{retirementRentToday > 0 ? `其中房租 ${formatMoney(retirementRentToday)}・` : ""}包含已設定的醫療與長照費</small></article>
           <article className="cashflow-card"><span>每月可用收入</span><strong>{formatMoney(recurringIncomeToday)}</strong><small>每月領取的收入，已扣估計稅額</small></article>
           <article className="cashflow-card covered"><span>每月由投資支付</span><strong>{monthlyCashflowGapToday > 0 ? formatMoney(monthlyCashflowGapToday) : "$0"}</strong><small>{monthlyCashflowGapToday > 0 ? "從投資或保留現金支付，不是另外要存的錢" : "每月收入已足夠支付生活費"}</small></article>
         </div>

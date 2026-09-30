@@ -88,6 +88,13 @@ svg { flex: 0 0 auto; }
 .field-control input:hover, .select-field select:hover { border-color: #9fa9a2; }
 .field-control input:focus, .select-field select:focus { border-color: var(--teal); background: var(--surface); outline: 3px solid rgba(8, 127, 140, 0.13); }
 .field-suffix { position: absolute; top: 50%; right: 11px; transform: translateY(-50%); color: var(--muted); font-size: 11px; pointer-events: none; white-space: nowrap; }
+.field-control.has-stepper { display: flex; align-items: stretch; gap: 6px; }
+.field-control.has-stepper input { flex: 1; min-width: 0; text-align: center; }
+.field-control.has-stepper .field-suffix { right: 47px; }
+.stepper-button { flex: 0 0 40px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); cursor: pointer; min-height: 44px; }
+.stepper-button svg { width: 15px; height: 15px; }
+.stepper-button:hover { border-color: #9fa9a2; }
+.stepper-button:active { background: #eef2ee; }
 .field-hint { color: var(--muted); font-size: 10.5px; line-height: 1.45; }
 .inline-note { margin: -5px 0 17px; padding: 10px 12px; border-left: 3px solid var(--teal); background: var(--teal-soft); color: #385c61; font-size: 12px; line-height: 1.5; }
 .inline-note strong { color: #087d86; }

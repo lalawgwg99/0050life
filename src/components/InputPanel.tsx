@@ -130,7 +130,11 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
         <Field label="想幾歲退休" value={input.profile.retirementAge} onChange={(value) => update("profile", "retirementAge", value)} suffix="歲" min={40} max={85} />
         <Field label="希望規劃到" value={input.profile.longevityAge} onChange={(value) => update("profile", "longevityAge", value)} suffix="歲" min={60} max={110} hint="試算會一路算到這個年齡，建議填 90 歲以上" />
       </div>
-      <Field label="退休後每月生活費" value={input.spending.monthlyToday} onChange={(value) => update("spending", "monthlyToday", value)} suffix="元" step={1000} hint="請填今天物價下需要的金額" />
+      <Field label="退休後每月生活費" value={input.spending.monthlyToday} onChange={(value) => update("spending", "monthlyToday", value)} suffix="元" step={1000} hint="不含房租，請填今天物價下需要的金額" />
+      <div className="field-grid two">
+        <Field label="每月房租" value={input.spending.rentMonthlyToday ?? 0} onChange={(value) => update("spending", "rentMonthlyToday", value)} suffix="元" step={500} hint="有租屋再填，沒有就填 0" />
+        <Field label="房租每年上漲" value={(input.spending.rentInflationRate ?? 0.02) * 100} onChange={(value) => update("spending", "rentInflationRate", value / 100)} suffix="%" step={0.1} hint="長期平均約 2%，會跟生活費分開計算" />
+      </div>
       <details>
         <summary><SlidersHorizontal aria-hidden="true" /> 更多生活假設</summary>
         <div className="details-body">

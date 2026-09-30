@@ -24,6 +24,8 @@ export function validateInput(input: PlanningInput): InputError[] {
     [input.profile.retirementAge, "退休年齡", 0, "想幾歲退休"],
     [input.profile.longevityAge, "規劃年齡", 0, "希望規劃到"],
     [input.spending.monthlyToday, "每月生活費", 0, "退休後每月生活費"],
+    [input.spending.rentMonthlyToday ?? 0, "每月房租", 0, "每月房租"],
+    [input.spending.rentInflationRate ?? input.economy.inflationRate, "房租成長率", 0, "房租每年上漲"],
     [input.spending.medicalMonthlyToday ?? 0, "每月醫療預算", 0, "每月醫療預算"],
     [input.spending.medicalInflationRate ?? input.economy.inflationRate, "醫療費成長率", 0, "醫療費每年增加"],
     [input.economy.inflationRate, "物價上漲率", 0, "每年物價上漲（通膨）"],
@@ -80,6 +82,7 @@ export function validateInput(input: PlanningInput): InputError[] {
   if (!Number.isInteger(input.profile.birthYearROC) || !Number.isInteger(input.profile.birthMonth) || ages.some((age) => !Number.isInteger(age))) fail(0, "出生年月與各項年齡請填整數。");
   if (input.profile.longevityAge <= input.profile.retirementAge) fail(0, "規劃年齡必須晚於退休年齡。", "希望規劃到");
   if (input.spending.monthlyToday < 0) fail(0, "生活費不可為負數。", "退休後每月生活費");
+  if ((input.spending.rentMonthlyToday ?? 0) < 0) fail(0, "房租不可為負數。", "每月房租");
   if ((input.spending.medicalMonthlyToday ?? 0) < 0 || (input.spending.longTermCareMonthlyToday ?? 0) < 0) fail(0, "醫療與長照預算不可為負數。", "每月醫療預算");
   if (input.spending.longTermCareEnabled && (input.spending.longTermCareStartAge ?? 80) < input.profile.retirementAge) fail(0, "長照開始年齡不可早於退休年齡。", "從幾歲開始預留");
   if (input.spending.longTermCareEnabled && (input.spending.longTermCareStartAge ?? 80) > input.profile.longevityAge) fail(0, "長照開始年齡不可晚於規劃年齡。", "從幾歲開始預留");
@@ -92,7 +95,7 @@ export function validateInput(input: PlanningInput): InputError[] {
   if (input.laborInsurance.insuredYearsNow < 0 || laborInsuranceFutureYears(input) < 0 || input.laborInsurance.averageSalaryToday < 0) fail(1, "勞保年資與平均薪資不可為負數。", "目前勞保年資");
   if (input.nationalPension.enabled && (input.nationalPension.insuredYears <= 0 || input.nationalPension.insuredYears > 40)) fail(2, "國保年資請填大於 0、最多 40 年。", "已繳費的國保年資");
   if (input.laborPension.balanceNow < 0 || input.laborPension.monthlyWageToday < 0 || input.laborPension.seniorityYearsNow < 0 || laborPensionFutureYears(input) < 0) fail(3, "勞退餘額、年資與提繳工資不可為負數。", "目前專戶餘額");
-  const annualRates = [input.economy.inflationRate, input.laborInsurance.salaryGrowthRate, input.laborPension.wageGrowthRate, input.laborPension.returnRate, input.investment.contributionGrowthRate, input.investment.retirementGrossReturnRate, ...input.investment.holdings.map((holding) => holding.grossReturnRate)];
+  const annualRates = [input.economy.inflationRate, input.spending.rentInflationRate ?? input.economy.inflationRate, input.laborInsurance.salaryGrowthRate, input.laborPension.wageGrowthRate, input.laborPension.returnRate, input.investment.contributionGrowthRate, input.investment.retirementGrossReturnRate, ...input.investment.holdings.map((holding) => holding.grossReturnRate)];
   if (input.partTime.enabled) annualRates.push(input.partTime.growthRate);
   if (annualRates.some((rate) => rate <= -1)) fail(0, "每年變動比例必須大於 -100%。");
   const investmentFees = [input.investment.retirementFeeRate, ...input.investment.holdings.map((holding) => holding.feeRate)];
