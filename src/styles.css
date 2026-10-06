@@ -514,6 +514,11 @@ details summary svg { width: 14px; height: 14px; }
 .language-switcher-label { font-size: 12px; color: var(--muted); font-weight: 600; }
 .language-switcher select { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font-size: 13px; font-weight: 600; padding: 7px 8px; cursor: pointer; }
 .language-switcher select:focus { border-color: var(--teal); outline: 3px solid rgba(8, 127, 140, 0.13); }
+@media (max-width: 820px) {
+  .language-switcher-label { display: none; }
+  .language-switcher select { padding: 8px 6px; font-size: 12px; }
+  .app-header { padding: 0 14px; }
+}
 
 /* Hide number-input spinners: they clash with the suffix layout and are rarely used */
 .field-control input[type="number"]::-webkit-outer-spin-button,
