@@ -505,6 +505,12 @@ details summary svg { width: 14px; height: 14px; }
 .step-button.primary:hover { background: #067a85; }
 .step-button.secondary { flex: 0 0 auto; padding: 0 18px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }
 
+/* ---- Language switcher ---- */
+.language-switcher { display: inline-flex; align-items: center; gap: 6px; }
+.language-switcher-label { font-size: 12px; color: var(--muted); font-weight: 600; }
+.language-switcher select { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font-size: 13px; font-weight: 600; padding: 7px 8px; cursor: pointer; }
+.language-switcher select:focus { border-color: var(--teal); outline: 3px solid rgba(8, 127, 140, 0.13); }
+
 /* Hide number-input spinners: they clash with the suffix layout and are rarely used */
 .field-control input[type="number"]::-webkit-outer-spin-button,
 .field-control input[type="number"]::-webkit-inner-spin-button,

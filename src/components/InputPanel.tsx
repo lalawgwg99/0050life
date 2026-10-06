@@ -6,6 +6,7 @@ import { laborInsuranceFutureYears, laborPensionFutureYears } from "../domain/co
 import { formatMoney } from "../lib/format";
 import { laborInsuranceNormalAge } from "../rules/taiwan-2026";
 import { Field } from "./Field";
+import { useLocale } from "../i18n";
 
 interface InputPanelProps {
   input: PlanningInput;
@@ -21,15 +22,17 @@ const allocationOptions: Array<{ id: RetirementAllocation; name: string; mix: st
   { id: "custom", name: "自己設定", mix: "自行填寫報酬與費用" }
 ];
 
-const steps = [
-  { id: "profile", step: "第一步", title: "你的退休時間", icon: UserRound },
-  { id: "labor", step: "第二步", title: "勞保老年給付", icon: Landmark },
-  { id: "national", step: "第三步", title: "國民年金", icon: ShieldCheck },
-  { id: "pension", step: "第四步", title: "勞退個人專戶", icon: PiggyBank },
-  { id: "invest", step: "第五步", title: "自己的投資", icon: BriefcaseBusiness }
-];
+const stepIcons = [UserRound, Landmark, ShieldCheck, PiggyBank, BriefcaseBusiness];
+const stepIds = ["profile", "labor", "national", "pension", "invest"];
 
 export function InputPanel({ input, errors, onChange, onViewResults }: InputPanelProps) {
+  const { t } = useLocale();
+  const steps = stepIds.map((id, index) => ({
+    id,
+    step: t.steps.stepWord[index],
+    title: t.steps.titles[index],
+    icon: stepIcons[index]
+  }));
   const update = (section: keyof PlanningInput, field: string, value: number | string | boolean) => {
     onChange({
       ...input,
@@ -378,7 +381,7 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
         </div>
       )}
 
-      <nav className="step-nav" aria-label="填寫步驟">
+      <nav className="step-nav" aria-label={t.steps.label}>
         {steps.map((item, index) => {
           const Icon = item.icon;
           const state = index === activeStep ? "active" : index < activeStep ? "done" : "";
@@ -404,16 +407,16 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
       <div className="step-actions">
         {activeStep > 0 && (
           <button type="button" className="step-button secondary" onClick={() => goToStep(activeStep - 1)}>
-            <ArrowLeft aria-hidden="true" />上一步
+            <ArrowLeft aria-hidden="true" />{t.steps.prev}
           </button>
         )}
         {activeStep < steps.length - 1 ? (
           <button type="button" className="step-button primary" onClick={() => goToStep(activeStep + 1)}>
-            下一步：{steps[activeStep + 1].title}<ArrowRight aria-hidden="true" />
+            {t.steps.nextPrefix}{steps[activeStep + 1].title}<ArrowRight aria-hidden="true" />
           </button>
         ) : (
           <button type="button" className="step-button primary" onClick={onViewResults}>
-            查看試算結果<ArrowRight aria-hidden="true" />
+            {t.steps.viewResultsFull}<ArrowRight aria-hidden="true" />
           </button>
         )}
       </div>

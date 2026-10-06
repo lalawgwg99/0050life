@@ -6,6 +6,8 @@ import { PlanComparison } from "./components/PlanComparison";
 import { InvestmentPage } from "./components/InvestmentPage";
 import { IncomeTool } from "./components/IncomeTool";
 import { CashflowTool } from "./components/CashflowTool";
+import { LanguageSwitcher } from "./components/LanguageSwitcher";
+import { useLocale } from "./i18n";
 import { defaultInput } from "./defaults";
 import type { PlanningInput, ProjectionResult } from "./domain/types";
 import { validateInput } from "./domain/validation";
@@ -70,6 +72,7 @@ function loadSavedInput(): PlanningInput {
 }
 
 export default function App() {
+  const { t } = useLocale();
   const [page, setPage] = useState(() => {
     const hash = window.location.hash;
     return hash === "#investment" ? "investment" : hash === "#income" ? "income" : hash === "#cashflow" ? "cashflow" : "retirement";
@@ -119,36 +122,37 @@ export default function App() {
   return (
     <div className="app-shell">
       <header className="app-header">
-        <a className="brand" href="/" aria-label="0050 Life 首頁">
+        <a className="brand" href="/" aria-label={t.app.brandHomeLabel}>
           <span><ChartNoAxesCombined aria-hidden="true" /></span>
-          <div><strong>0050 Life</strong><small>退休規劃試算</small></div>
+          <div><strong>{t.app.brandTitle}</strong><small>{t.app.brandSubtitle}</small></div>
         </a>
-        <nav aria-label="主要功能">
-          <a href="/blog/index.html"><BookOpen aria-hidden="true" />退休筆記</a>
-          {page === "retirement" && <button type="button" className="icon-button" onClick={reset} aria-label="重新填寫" title="重新填寫"><RotateCcw aria-hidden="true" /></button>}
-          <button type="button" className="icon-button" onClick={() => window.print()} aria-label="列印結果" title="列印結果"><Printer aria-hidden="true" /></button>
+        <nav aria-label={t.app.navLabel}>
+          <a href="/blog/index.html"><BookOpen aria-hidden="true" />{t.app.blog}</a>
+          <LanguageSwitcher />
+          {page === "retirement" && <button type="button" className="icon-button" onClick={reset} aria-label={t.app.reset} title={t.app.reset}><RotateCcw aria-hidden="true" /></button>}
+          <button type="button" className="icon-button" onClick={() => window.print()} aria-label={t.app.print} title={t.app.print}><Printer aria-hidden="true" /></button>
         </nav>
       </header>
 
-      <nav className="tool-navigation" aria-label="試算工具"><a href="#retirement" aria-current={page === "retirement" ? "page" : undefined}>退休規劃</a><a href="#investment" aria-current={page === "investment" ? "page" : undefined}>投資成長</a><a href="#income" aria-current={page === "income" ? "page" : undefined}>退休收入</a><a href="#cashflow" aria-current={page === "cashflow" ? "page" : undefined}>退休現金流</a></nav>
+      <nav className="tool-navigation" aria-label={t.app.navLabel}><a href="#retirement" aria-current={page === "retirement" ? "page" : undefined}>{t.app.navRetirement}</a><a href="#investment" aria-current={page === "investment" ? "page" : undefined}>{t.app.navInvestment}</a><a href="#income" aria-current={page === "income" ? "page" : undefined}>{t.app.navIncome}</a><a href="#cashflow" aria-current={page === "cashflow" ? "page" : undefined}>{t.app.navCashflow}</a></nav>
       {page === "investment" ? <InvestmentPage input={input} onImport={(holdings, contributionGrowthRate) => {
         setComparison(null);
         setInput({ ...input, investment: { ...input.investment, holdings, contributionGrowthRate } });
         window.location.hash = "retirement";
         showMobileView("inputs");
       }} /> : page === "income" ? <IncomeTool input={input} /> : page === "cashflow" ? <CashflowTool input={input} /> : <>
-      <div className="mobile-tabs" role="tablist" aria-label="試算頁面">
-        <button type="button" role="tab" aria-selected={mobileView === "inputs"} className={mobileView === "inputs" ? "active" : ""} onClick={() => showMobileView("inputs")}><SlidersHorizontal aria-hidden="true" />填寫資料</button>
-        <button type="button" role="tab" aria-selected={mobileView === "results"} className={mobileView === "results" ? "active" : ""} onClick={() => showMobileView("results")}><ChartNoAxesCombined aria-hidden="true" />查看結果</button>
+      <div className="mobile-tabs" role="tablist" aria-label={t.app.mobileTabsLabel}>
+        <button type="button" role="tab" aria-selected={mobileView === "inputs"} className={mobileView === "inputs" ? "active" : ""} onClick={() => showMobileView("inputs")}><SlidersHorizontal aria-hidden="true" />{t.app.mobileTabInputs}</button>
+        <button type="button" role="tab" aria-selected={mobileView === "results"} className={mobileView === "results" ? "active" : ""} onClick={() => showMobileView("results")}><ChartNoAxesCombined aria-hidden="true" />{t.app.mobileTabResults}</button>
       </div>
 
       <main className="workspace">
         <aside className={mobileView === "inputs" ? "mobile-visible" : ""}><InputPanel input={input} errors={errors} onChange={setInput} onViewResults={viewResults} /></aside>
         <div className={`results-column ${mobileView === "results" ? "mobile-visible" : ""}`}>
           {errors.length > 0 ? (
-            <div className="empty-state"><EmptyIcon /><h1>先完成左側資料</h1><p>需要調整的地方會直接標示在輸入區。</p></div>
+            <div className="empty-state"><EmptyIcon /><h1>{t.empty.needInputsTitle}</h1><p>{t.empty.needInputsBody}</p></div>
           ) : calculation && "error" in calculation ? (
-            <div className="empty-state" role="alert"><EmptyIcon /><h1>這次沒有算完</h1><p>{calculation.error}</p></div>
+            <div className="empty-state" role="alert"><EmptyIcon /><h1>{t.empty.calcFailedTitle}</h1><p>{calculation.error}</p></div>
           ) : calculation && "result" in calculation ? (
             <ResultsPanel result={calculation.result} scenarios={calculation.scenarios} onChange={setInput}
               comparison={<PlanComparison current={calculation.result} saved={comparison} onSave={() => setComparison(calculation.result)} onRestore={() => comparison && setInput(comparison.input)} onClear={() => setComparison(null)} />} />
