@@ -26,7 +26,7 @@ type LegacyInvestment = Partial<PlanningInput["investment"]> & {
 function loadSavedInput(): PlanningInput {
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null") as { version?: number; input?: PlanningInput } | null;
-    if ((saved?.version === 1 || saved?.version === 2 || saved?.version === 3) && saved.input) {
+    if ((saved?.version === 1 || saved?.version === 2 || saved?.version === 3 || saved?.version === 4) && saved.input) {
       const oldInvestment = saved.input.investment as LegacyInvestment;
       const defaultHolding = defaultInput.investment.holdings[0];
       const holdings = Array.isArray(oldInvestment.holdings)
@@ -38,6 +38,10 @@ function loadSavedInput(): PlanningInput {
           grossReturnRate: oldInvestment.grossReturnRate ?? defaultHolding.grossReturnRate,
           feeRate: oldInvestment.feeRate ?? defaultHolding.feeRate
         }];
+      // v3 曾用 profile.region（taiwan/other）一次開關三個年金；v4 改為各自獨立開關
+      const wasOtherRegion = (saved.input.profile as { region?: string } | undefined)?.region === "other";
+      const savedLabor = saved.input.laborInsurance as { enabled?: boolean } | undefined;
+      const savedPension = saved.input.laborPension as { enabled?: boolean } | undefined;
       return {
         ...saved.input,
         asOf: defaultInput.asOf,
@@ -48,11 +52,13 @@ function loadSavedInput(): PlanningInput {
         laborInsurance: {
           ...defaultInput.laborInsurance,
           ...saved.input.laborInsurance,
+          enabled: savedLabor?.enabled ?? !wasOtherRegion,
           futureYearsMode: saved.input.laborInsurance.futureYearsMode ?? "custom"
         },
         laborPension: {
           ...defaultInput.laborPension,
           ...saved.input.laborPension,
+          enabled: savedPension?.enabled ?? !wasOtherRegion,
           futureYearsMode: saved.input.laborPension.futureYearsMode ?? "custom",
           mode: saved.input.laborPension.mode ?? defaultInput.laborPension.mode,
           lumpReinvestRate: saved.input.laborPension.lumpReinvestRate ?? defaultInput.laborPension.lumpReinvestRate
@@ -102,7 +108,7 @@ export default function App() {
   }, [errors.length, input]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 3, input }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 4, input }));
   }, [input]);
 
   useEffect(() => {

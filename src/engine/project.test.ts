@@ -232,20 +232,34 @@ describe("integrated monthly projection", () => {
     expect(twelfth.rentExpenseNominal).toBeGreaterThan(first.rentExpenseNominal);
   });
 
-  it("skips taiwan pension modules when region is other", () => {
+  it("skips pension modules when each is disabled", () => {
     const input = makeInput({
-      profile: { retirementAge: 65, longevityAge: 90, region: "other", currency: "USD" },
+      profile: { retirementAge: 65, longevityAge: 90, calendar: "ce", currency: "USD" },
       economy: { inflationRate: 0 },
       spending: { monthlyToday: 30_000 },
-      laborInsurance: { insuredYearsNow: 30, averageSalaryToday: 45_800, claimAge: 65 },
-      laborPension: { balanceNow: 2_000_000, mode: "lump", claimAge: 65 }
+      laborInsurance: { enabled: false, insuredYearsNow: 30, averageSalaryToday: 45_800, claimAge: 65 },
+      laborPension: { enabled: false, balanceNow: 2_000_000, mode: "lump", claimAge: 65 }
     });
     const result = projectPlan(input);
     expect(result.laborInsurance.initialMonthlyNominal).toBe(0);
+    expect(result.laborInsurance.eligibleForAnnuity).toBe(false);
     expect(result.laborPension.balanceAtClaim).toBe(0);
     expect(result.lumpPensionAmountAtRetirement).toBe(0);
     // 投資照常計算
     expect(result.projectedInvestmentAtRetirement).toBeGreaterThan(0);
+  });
+
+  it("keeps taiwan pension modules when enabled (overseas taiwanese case)", () => {
+    const input = makeInput({
+      profile: { retirementAge: 65, longevityAge: 90, calendar: "ce", currency: "USD" },
+      economy: { inflationRate: 0 },
+      spending: { monthlyToday: 30_000 },
+      laborInsurance: { enabled: true, insuredYearsNow: 30, insuredYearsFuture: 0, futureYearsMode: "custom", averageSalaryToday: 45_800, claimAge: 65 },
+      laborPension: { enabled: true, balanceNow: 2_000_000, seniorityYearsNow: 20, seniorityYearsFuture: 0, futureYearsMode: "custom", mode: "lump", claimAge: 65 }
+    });
+    const result = projectPlan(input);
+    expect(result.laborInsurance.initialMonthlyNominal).toBeGreaterThan(0);
+    expect(result.laborPension.balanceAtClaim).toBeGreaterThan(0);
   });
 
   it("supports an early-retirement crash return path", () => {

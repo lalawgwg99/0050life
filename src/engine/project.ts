@@ -33,14 +33,8 @@ export function projectPlan(input: PlanningInput, options?: { retirementReturnPa
   const errors = validateInput(input);
   if (errors.length > 0) throw new Error(errors.join("\n"));
 
-  // 非台灣地區：勞保／國保／勞退不適用，直接歸零，只規劃投資與支出
-  const effectiveInput: PlanningInput = (input.profile.region ?? "taiwan") === "taiwan" ? input : {
-    ...input,
-    laborInsurance: { ...input.laborInsurance, insuredYearsNow: 0, insuredYearsFuture: 0, averageSalaryToday: 0 },
-    nationalPension: { ...input.nationalPension, enabled: false, insuredYears: 0 },
-    laborPension: { ...input.laborPension, balanceNow: 0, seniorityYearsNow: 0, seniorityYearsFuture: 0, monthlyWageToday: 0 }
-  };
-  const input_ = effectiveInput;
+  // 各年金模組自己看 enabled 決定算不算（勞保／勞退／國保各自獨立開關）
+  const input_ = input;
 
   const birth = birthSerial(input_.profile.birthYearROC, input_.profile.birthMonth);
   const endMonth = monthAtAge(birth, input_.profile.longevityAge);
@@ -65,17 +59,17 @@ export function projectPlan(input: PlanningInput, options?: { retirementReturnPa
   const warnings = [
     "未來規定、物價與投資表現可能改變；這是依目前資料做的規劃，不是給付保證。"
   ];
-  if (input_.laborPension.mode === "monthly") {
+  if (input_.laborPension.enabled !== false && input_.laborPension.mode === "monthly") {
     warnings.push("勞退按月領依請領年齡、目前公告的平均餘命與利率估算；實際按季發給，申請前請再用勞保局資料核對。");
   }
-  if (input_.laborInsurance.indexation === "threshold") {
+  if (input_.laborInsurance.enabled !== false && input_.laborInsurance.indexation === "threshold") {
     warnings.push("勞保年金依假設物價模擬累計達 5% 才調整，實際金額仍依未來公告。");
   }
   if (nationalPension.enabled) {
     warnings.push("國保金額依目前月投保金額與已繳年資估算；欠費、曾領其他社會保險給付等情況，可能影響 A 式資格，請以勞保局核定為準。");
     if (nationalPension.claimMonth >= endMonth) warnings.push("目前規劃終點早於 65 歲，國保尚未開始領取，因此沒有放進這段退休現金流。");
   }
-  if (laborInsurance.eligibleByCombinedYears) {
+  if (input_.laborInsurance.enabled !== false && laborInsurance.eligibleByCombinedYears) {
     warnings.push("勞保年資未滿 15 年，本次依勞保與國保合計年資滿 15 年的條件估算勞保年金；實際資格請以勞保局核定為準。");
   }
 

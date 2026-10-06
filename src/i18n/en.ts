@@ -29,12 +29,23 @@ export const en: Strings = {
     viewResultsFull: "View results",
     nextPrefix: "Next: "
   },
-  region: {
-    label: "Where will you retire?",
-    hint: "Taiwan includes labor insurance, national pension & labor pension; other countries plan investments and spending only",
-    taiwan: "Taiwan",
-    other: "Other country",
-    currencyLabel: "Currency"
+  pensionSetup: {
+    label: "Pension coverage",
+    hint: "Quick presets set everything at once; you can also toggle each. Only enable what you actually have",
+    taiwanPreset: "Taiwan",
+    otherPreset: "Other country",
+    labor: "Labor Insurance",
+    laborDesc: "Worked in Taiwan with labor insurance years",
+    national: "National Pension",
+    nationalDesc: "Paid national pension in Taiwan",
+    pension: "Labor Pension",
+    pensionDesc: "Employer contributed to labor pension account",
+    currencyLabel: "Currency",
+    calendarLabel: "Birth year calendar",
+    calendarROC: "ROC",
+    calendarCE: "CE",
+    birthYearROC: "Birth year (ROC)",
+    birthYearCE: "Birth year"
   },
   common: {
     back: "Back",

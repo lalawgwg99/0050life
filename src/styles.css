@@ -101,6 +101,15 @@ svg { flex: 0 0 auto; }
 .region-label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
 .region-control .mode-control { margin-bottom: 8px; }
 .region-control .field-hint { margin: 0 0 4px; }
+.pension-toggles { margin: 6px 0 2px; }
+.pension-toggles .toggle-field { min-height: 0; padding: 9px 0; border-top: 1px solid var(--line); }
+.pension-toggles .toggle-field:first-child { border-top: 0; }
+.pension-toggles .toggle-field > span:last-child { display: flex; flex-direction: column; gap: 1px; }
+.pension-toggles .toggle-field small { font-size: 11px; font-weight: 500; color: var(--muted); }
+.calendar-toggle { display: inline-flex; gap: 3px; padding: 3px; margin-bottom: 6px; border-radius: 8px; background: var(--soft); }
+.calendar-toggle button { height: 30px; padding: 0 12px; border: 0; border-radius: 6px; color: var(--muted); background: transparent; font-size: 12px; font-weight: 700; }
+.calendar-toggle button.active { color: #087d86; background: var(--surface); box-shadow: 0 1px 3px rgba(27, 43, 52, 0.12); }
+.birth-year-field > .field { margin-bottom: 0; }
 .currency-field { display: flex; align-items: center; gap: 10px; margin-top: 10px; font-size: 13px; font-weight: 600; }
 .currency-field select { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); font-size: 14px; padding: 8px 10px; }
 

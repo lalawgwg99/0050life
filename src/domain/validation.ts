@@ -18,9 +18,11 @@ export function validateInput(input: PlanningInput): InputError[] {
   const fail = (step: number, message: string, field?: string, holdingId?: string) => {
     errors.push({ message, step, field, holdingId });
   };
-  const isTaiwan = (input.profile.region ?? "taiwan") === "taiwan";
+  const stepOn = [true, input.laborInsurance.enabled !== false, input.nationalPension.enabled, input.laborPension.enabled !== false, true];
+  const useCE = input.profile.calendar === "ce";
+  const birthYearLabel = useCE ? "出生年份" : "民國出生年";
   const values: Array<[number, string, number, string?, string?]> = [
-    [input.profile.birthYearROC, "出生年", 0, "民國出生年"],
+    [input.profile.birthYearROC, "出生年", 0, birthYearLabel],
     [input.profile.birthMonth, "出生月份", 0, "出生月份"],
     [input.profile.retirementAge, "退休年齡", 0, "想幾歲退休"],
     [input.profile.longevityAge, "規劃年齡", 0, "希望規劃到"],
@@ -76,7 +78,7 @@ export function validateInput(input: PlanningInput): InputError[] {
   const holdingNames = input.investment.holdings.map((holding) => holding.name.trim()).filter((name) => name !== "");
   if (new Set(holdingNames).size !== holdingNames.length) fail(4, "投資名稱不能重複，請幫每筆取不同的名字。");
 
-  if (input.profile.birthYearROC < 1 || input.profile.birthYearROC > 140) fail(0, "出生年請填民國 1 至 140 年。", "民國出生年");
+  if (input.profile.birthYearROC < 1 || input.profile.birthYearROC > 140) fail(0, useCE ? `出生年份請填西元 ${1 + 1911} 至 ${140 + 1911} 年。` : "出生年請填民國 1 至 140 年。", birthYearLabel);
   if (input.profile.birthMonth < 1 || input.profile.birthMonth > 12) fail(0, "出生月份請填 1 至 12。", "出生月份");
   if (input.profile.retirementAge < 18 || input.profile.retirementAge > 100) fail(0, "退休年齡請填 18 至 100 歲。", "想幾歲退休");
   if (input.profile.longevityAge > 120) fail(0, "規劃年齡最多可填到 120 歲。", "希望規劃到");
@@ -149,8 +151,6 @@ export function validateInput(input: PlanningInput): InputError[] {
     fail(3, "勞退年資未滿 15 年，不能使用月退休金模式。");
   }
 
-  // 非台灣地區不使用勞保／國保／勞退，只保留退休時間（0）與投資（4）的驗證
-  if (!isTaiwan) return errors.filter((error) => error.step === 0 || error.step === 4);
-
-  return errors;
+  // 關掉的年金模組不驗證（步驟也會隱藏）
+  return errors.filter((error) => stepOn[error.step] !== false);
 }

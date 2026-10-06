@@ -27,12 +27,23 @@ export const zhTW = {
     viewResultsFull: "查看試算結果",
     nextPrefix: "下一步："
   },
-  region: {
-    label: "你在哪裡退休？",
-    hint: "台灣會計算勞保、國民年金與勞退；其他國家只規劃自己的投資與支出",
-    taiwan: "台灣",
-    other: "其他國家",
-    currencyLabel: "幣別"
+  pensionSetup: {
+    label: "適用年金制度",
+    hint: "快捷鍵一次設好，也可以單獨開關；在台灣工作過、有年資才需要打開",
+    taiwanPreset: "台灣",
+    otherPreset: "其他國家",
+    labor: "勞工保險",
+    laborDesc: "曾在台灣工作、有勞保年資",
+    national: "國民年金",
+    nationalDesc: "曾在台灣繳過國保",
+    pension: "勞退新制",
+    pensionDesc: "雇主有提繳勞退專戶",
+    currencyLabel: "幣別",
+    calendarLabel: "出生年曆法",
+    calendarROC: "民國",
+    calendarCE: "西元",
+    birthYearROC: "民國出生年",
+    birthYearCE: "出生年份（西元）"
   },
   common: {
     back: "返回",

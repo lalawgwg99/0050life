@@ -4,10 +4,11 @@ import { validateInput } from "./validation";
 
 const validInput: PlanningInput = {
   asOf: { year: 2026, month: 9 },
-  profile: { birthYearROC: 80, birthMonth: 4, retirementAge: 65, longevityAge: 90, region: "taiwan", currency: "TWD" },
+  profile: { birthYearROC: 80, birthMonth: 4, retirementAge: 65, longevityAge: 90, calendar: "roc", currency: "TWD" },
   spending: { monthlyToday: 50_000 },
   economy: { inflationRate: 0.02 },
   laborInsurance: {
+    enabled: true,
     insuredYearsNow: 10,
     insuredYearsFuture: 29,
     futureYearsMode: "custom",
@@ -18,6 +19,7 @@ const validInput: PlanningInput = {
   },
   nationalPension: { enabled: false, insuredYears: 0, aFormulaEligible: false, indexation: "threshold" },
   laborPension: {
+    enabled: true,
     balanceNow: 300_000,
     seniorityYearsNow: 10,
     seniorityYearsFuture: 29,
@@ -156,5 +158,25 @@ describe("input validation", () => {
       nationalPension: { ...validInput.nationalPension, enabled: true, insuredYears: 5 }
     };
     expect(validateInput(input).some((error) => error.message.includes("不能套用延後請領"))).toBe(true);
+  });
+
+  it("skips validation for disabled pension modules", () => {
+    const input: PlanningInput = {
+      ...validInput,
+      laborInsurance: { ...validInput.laborInsurance, enabled: false, insuredYearsNow: -5, averageSalaryToday: -100 },
+      laborPension: { ...validInput.laborPension, enabled: false, balanceNow: -100 },
+      nationalPension: { ...validInput.nationalPension, enabled: false }
+    };
+    expect(validateInput(input)).toEqual([]);
+  });
+
+  it("uses CE wording for birth year when calendar is ce", () => {
+    const input: PlanningInput = {
+      ...validInput,
+      profile: { ...validInput.profile, calendar: "ce", birthYearROC: 200 }
+    };
+    const errors = validateInput(input);
+    expect(errors.some((error) => error.message.includes("西元"))).toBe(true);
+    expect(errors.some((error) => error.message.includes("民國"))).toBe(false);
   });
 });

@@ -25,12 +25,18 @@ const allocationOptions: Array<{ id: RetirementAllocation; name: string; mix: st
 
 const stepIcons = [UserRound, Landmark, ShieldCheck, PiggyBank, BriefcaseBusiness];
 const stepIds = ["profile", "labor", "national", "pension", "invest"];
-const TAIWAN_ONLY_STEPS = new Set(["labor", "national", "pension"]);
 
 export function InputPanel({ input, errors, onChange, onViewResults }: InputPanelProps) {
   const { t } = useLocale();
-  const isTaiwan = (input.profile.region ?? "taiwan") === "taiwan";
-  const visibleStepIds = stepIds.filter((id) => isTaiwan || !TAIWAN_ONLY_STEPS.has(id));
+  // 步驟顯示跟著年金模組開關走：關掉的模組不計算、步驟也隱藏
+  const stepOn: Record<string, boolean> = {
+    profile: true,
+    labor: input.laborInsurance.enabled !== false,
+    national: input.nationalPension.enabled,
+    pension: input.laborPension.enabled !== false,
+    invest: true
+  };
+  const visibleStepIds = stepIds.filter((id) => stepOn[id]);
   const steps = visibleStepIds.map((id, visibleIndex) => {
     const index = stepIds.indexOf(id);
     return {
@@ -76,6 +82,28 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
     });
   };
   const normalAge = laborInsuranceNormalAge(input.profile.birthYearROC);
+  // 快捷預設：一次設好三個年金開關＋年曆（＋台灣預設台幣）；之後仍可單獨微調
+  const applyPreset = (preset: "taiwan" | "other") => {
+    if (preset === "taiwan") {
+      onChange({
+        ...input,
+        profile: { ...input.profile, calendar: "roc", currency: "TWD" },
+        laborInsurance: { ...input.laborInsurance, enabled: true },
+        laborPension: { ...input.laborPension, enabled: true }
+      });
+    } else {
+      onChange({
+        ...input,
+        profile: { ...input.profile, calendar: "ce" },
+        laborInsurance: { ...input.laborInsurance, enabled: false },
+        nationalPension: { ...input.nationalPension, enabled: false },
+        laborPension: { ...input.laborPension, enabled: false }
+      });
+    }
+  };
+  const isTaiwanPreset = input.laborInsurance.enabled !== false && input.laborPension.enabled !== false && input.profile.calendar === "roc";
+  const isOtherPreset = input.laborInsurance.enabled === false && !input.nationalPension.enabled && input.laborPension.enabled === false && input.profile.calendar === "ce";
+  const useCE = input.profile.calendar === "ce";
   const futureLaborYears = laborInsuranceFutureYears(input);
   const futurePensionYears = laborPensionFutureYears(input);
   const laborYears = input.laborInsurance.insuredYearsNow + futureLaborYears;
@@ -94,7 +122,7 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
   const activeSectionRef = useRef<HTMLDivElement>(null);
   const firstRender = useRef(true);
   const goToStep = (index: number) => setActiveStep(Math.max(0, Math.min(steps.length - 1, index)));
-  // 原始步驟編號（0-4）對應到目前可見步驟的位置；台灣以外地區只顯示 profile(0) 與 invest(4)
+  // 原始步驟編號（0-4）對應到目前可見步驟的位置
   const visibleIndexOf = (originalStep: number): number => {
     const id = stepIds[originalStep];
     const visible = visibleStepIds.indexOf(id);
@@ -141,23 +169,48 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
       </div>
       <p className="step-why">先決定什麼時候退休、每個月要花多少，後面才能算出錢夠不夠用。</p>
       <div className="region-control">
-        <span className="region-label">{t.region.label}</span>
-        <div className="mode-control" role="group" aria-label={t.region.label}>
-          <button type="button" className={(input.profile.region ?? "taiwan") === "taiwan" ? "active" : ""} onClick={() => update("profile", "region", "taiwan")}>{t.region.taiwan}</button>
-          <button type="button" className={input.profile.region === "other" ? "active" : ""} onClick={() => update("profile", "region", "other")}>{t.region.other}</button>
+        <span className="region-label">{t.pensionSetup.label}</span>
+        <div className="mode-control" role="group" aria-label={t.pensionSetup.label}>
+          <button type="button" className={isTaiwanPreset ? "active" : ""} onClick={() => applyPreset("taiwan")}>{t.pensionSetup.taiwanPreset}</button>
+          <button type="button" className={isOtherPreset ? "active" : ""} onClick={() => applyPreset("other")}>{t.pensionSetup.otherPreset}</button>
         </div>
-        <p className="field-hint">{t.region.hint}</p>
-        {input.profile.region === "other" && (
-          <label className="currency-field">
-            <span>{t.region.currencyLabel}</span>
-            <select value={input.profile.currency ?? "TWD"} onChange={(event) => update("profile", "currency", event.target.value)}>
-              {CURRENCIES.map((c) => <option key={c.code} value={c.code}>{c.label}</option>)}
-            </select>
+        <p className="field-hint">{t.pensionSetup.hint}</p>
+        <div className="pension-toggles">
+          <label className="toggle-field compact-toggle">
+            <input type="checkbox" role="switch" checked={input.laborInsurance.enabled !== false} onChange={(event) => update("laborInsurance", "enabled", event.target.checked)} />
+            <span className="toggle-control" aria-hidden="true" />
+            <span>{t.pensionSetup.labor}<small>{t.pensionSetup.laborDesc}</small></span>
           </label>
-        )}
+          <label className="toggle-field compact-toggle">
+            <input type="checkbox" role="switch" checked={input.nationalPension.enabled} onChange={(event) => update("nationalPension", "enabled", event.target.checked)} />
+            <span className="toggle-control" aria-hidden="true" />
+            <span>{t.pensionSetup.national}<small>{t.pensionSetup.nationalDesc}</small></span>
+          </label>
+          <label className="toggle-field compact-toggle">
+            <input type="checkbox" role="switch" checked={input.laborPension.enabled !== false} onChange={(event) => update("laborPension", "enabled", event.target.checked)} />
+            <span className="toggle-control" aria-hidden="true" />
+            <span>{t.pensionSetup.pension}<small>{t.pensionSetup.pensionDesc}</small></span>
+          </label>
+        </div>
+        <label className="currency-field">
+          <span>{t.pensionSetup.currencyLabel}</span>
+          <select value={input.profile.currency ?? "TWD"} onChange={(event) => update("profile", "currency", event.target.value)}>
+            {CURRENCIES.map((c) => <option key={c.code} value={c.code}>{c.label}</option>)}
+          </select>
+        </label>
       </div>
       <div className="field-grid two">
-        <Field label="民國出生年" value={input.profile.birthYearROC} onChange={(value) => update("profile", "birthYearROC", value)} suffix="年" min={30} max={110} />
+        <div className="birth-year-field">
+          <div className="calendar-toggle" role="group" aria-label={t.pensionSetup.calendarLabel}>
+            <button type="button" className={!useCE ? "active" : ""} onClick={() => update("profile", "calendar", "roc")}>{t.pensionSetup.calendarROC}</button>
+            <button type="button" className={useCE ? "active" : ""} onClick={() => update("profile", "calendar", "ce")}>{t.pensionSetup.calendarCE}</button>
+          </div>
+          {useCE ? (
+            <Field label={t.pensionSetup.birthYearCE} value={input.profile.birthYearROC + 1911} onChange={(value) => update("profile", "birthYearROC", Math.round(value - 1911))} suffix="年" min={1941} max={2021} />
+          ) : (
+            <Field label={t.pensionSetup.birthYearROC} value={input.profile.birthYearROC} onChange={(value) => update("profile", "birthYearROC", value)} suffix="年" min={30} max={110} />
+          )}
+        </div>
         <Field label="出生月份" value={input.profile.birthMonth} onChange={(value) => update("profile", "birthMonth", value)} suffix="月" min={1} max={12} />
         <Field label="想幾歲退休" value={input.profile.retirementAge} onChange={(value) => update("profile", "retirementAge", value)} suffix="歲" min={40} max={85} />
         <Field label="希望規劃到" value={input.profile.longevityAge} onChange={(value) => update("profile", "longevityAge", value)} suffix="歲" min={60} max={110} hint="試算會一路算到這個年齡，建議填 90 歲以上" />
@@ -404,7 +457,7 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
   const allStepSections = stepSections;
   const visibleStepSections = allStepSections.filter((section) => {
     const key = section.key as string | null;
-    return key === null || !TAIWAN_ONLY_STEPS.has(key);
+    return key === null || (stepOn[key] ?? true);
   });
 
   useEffect(() => {

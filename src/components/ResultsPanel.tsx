@@ -57,13 +57,16 @@ export function ResultsPanel({ result, scenarios, onChange, comparison }: Result
   const pledgeCallDrop = pledge?.enabled && pledge.loanToValue > 0 ? Math.max(0, 1 - pledge.maintenanceRate * pledge.loanToValue) : 0;
   const yearsToRetirement = Math.max(0, retirementOffset / 12);
   const depletedRecord = result.depletedMonth === null ? null : result.records.find((record) => record.month === result.depletedMonth) ?? null;
+  // 五國研究共同結論：「錢幾歲用完」是第一指標，放首屏
+  const depletedAge = depletedRecord ? depletedRecord.age : result.depletedMonth === null ? null : ageAtMonth(birth, result.depletedMonth);
   const chartData = result.records
     .filter((_, index) => index % 12 === 0 || index === result.records.length - 1)
     .map((record) => ({ age: Number(record.age.toFixed(1)), assets: Math.round(toToday(record.totalRetirementAssetsNominal, record.month)) }));
-  const isTaiwan = (input.profile.region ?? "taiwan") === "taiwan";
-  const chartMarkers = !isTaiwan ? [] : [
-    { age: ageAtMonth(birthSerial(input.profile.birthYearROC, input.profile.birthMonth), result.laborPension.claimMonth), label: input.laborPension.mode === "lump" ? "勞退一次領" : "勞退開始" },
-    ...(result.laborInsurance.eligibleForAnnuity ? [{ age: ageAtMonth(birthSerial(input.profile.birthYearROC, input.profile.birthMonth), result.laborInsurance.claimMonth), label: "勞保開始" }] : [])
+  const laborOn = input.laborInsurance.enabled !== false;
+  const pensionOn = input.laborPension.enabled !== false;
+  const chartMarkers = [
+    ...(pensionOn ? [{ age: ageAtMonth(birthSerial(input.profile.birthYearROC, input.profile.birthMonth), result.laborPension.claimMonth), label: input.laborPension.mode === "lump" ? "勞退一次領" : "勞退開始" }] : []),
+    ...(laborOn && result.laborInsurance.eligibleForAnnuity ? [{ age: ageAtMonth(birthSerial(input.profile.birthYearROC, input.profile.birthMonth), result.laborInsurance.claimMonth), label: "勞保開始" }] : [])
   ].filter((marker, index, all) => all.findIndex((m) => Math.abs(m.age - marker.age) < 0.6) === index);
   const laborValue = result.laborInsurance.eligibleForAnnuity
     ? toToday(result.laborInsurance.initialMonthlyNominal, result.laborInsurance.claimMonth)
@@ -76,8 +79,10 @@ export function ResultsPanel({ result, scenarios, onChange, comparison }: Result
   const partTimeStartNominal = input.partTime.monthlyToday * growthFactor(input.partTime.growthRate, partTimeStartMonth - asOf);
   const partTimeValue = toToday(partTimeStartNominal, partTimeStartMonth);
   const statusGood = summary.meetsPlan;
-  const includedIncome = ["勞保", "勞退"];
-  if (result.nationalPension.enabled) includedIncome.splice(1, 0, "國保");
+  const includedIncome: string[] = [];
+  if (laborOn) includedIncome.push("勞保");
+  if (result.nationalPension.enabled) includedIncome.push("國保");
+  if (pensionOn) includedIncome.push("勞退");
   if (input.partTime.enabled) includedIncome.push("兼職收入");
   const extraMonthly = useMemo(() => estimateAdditionalMonthlyInvestment(input, result), [input, result]);
   const affordableSpending = useMemo(() => estimateAffordableMonthlySpending(input, result), [input, result]);
@@ -103,8 +108,8 @@ export function ResultsPanel({ result, scenarios, onChange, comparison }: Result
   const firstMonthTaxToday = retirementRecord ? toToday(retirementRecord.taxNominal, retirementRecord.month) : 0;
   const timelineItems = [
     { id: "retirement", month: retirementMonth, title: "開始退休", detail: `${input.profile.retirementAge} 歲`, kind: "retirement" },
-    { id: "labor-pension", month: result.laborPension.claimMonth, title: input.laborPension.mode === "monthly" ? "開始領勞退" : "勞退一次領", detail: `${input.laborPension.claimAge} 歲`, kind: "pension" },
-    { id: "labor-insurance", month: result.laborInsurance.claimMonth, title: "開始領勞保", detail: `${input.laborInsurance.claimAge} 歲`, kind: "labor" },
+    ...(pensionOn ? [{ id: "labor-pension", month: result.laborPension.claimMonth, title: input.laborPension.mode === "monthly" ? "開始領勞退" : "勞退一次領", detail: `${input.laborPension.claimAge} 歲`, kind: "pension" }] : []),
+    ...(laborOn ? [{ id: "labor-insurance", month: result.laborInsurance.claimMonth, title: "開始領勞保", detail: `${input.laborInsurance.claimAge} 歲`, kind: "labor" }] : []),
     ...(result.nationalPension.enabled ? [{ id: "national", month: result.nationalPension.claimMonth, title: "開始領國保", detail: "65 歲", kind: "national" }] : []),
     ...(input.partTime.enabled ? [{ id: "part-time", month: partTimeStartMonth, title: "開始兼職", detail: `${input.partTime.startAge} 歲`, kind: "work" }] : []),
     { id: "end", month: monthAtAge(birth, input.profile.longevityAge), title: "規劃終點", detail: `${input.profile.longevityAge} 歲`, kind: "end" }
@@ -141,8 +146,8 @@ export function ResultsPanel({ result, scenarios, onChange, comparison }: Result
       <section className="result-overview">
         <div className="overview-copy">
           <span className="eyebrow">全部換成今天的物價</span>
-          <h1>{statusGood ? `目前準備可支應到 ${input.profile.longevityAge} 歲` : `退休準備還差 ${formatCompactMoney(gapToday)} 元`}</h1>
-          <p>{input.profile.retirementAge} 歲退休・規劃到 {input.profile.longevityAge} 歲・距離退休約 {yearsToRetirement.toFixed(1)} 年</p>
+          <h1>{statusGood ? `目前準備可支應到 ${input.profile.longevityAge} 歲` : depletedAge !== null ? `資產約 ${depletedAge.toFixed(0)} 歲會用完` : `退休準備還差 ${formatCompactMoney(gapToday)} 元`}</h1>
+          <p>{input.profile.retirementAge} 歲退休・規劃到 {input.profile.longevityAge} 歲・距離退休約 {yearsToRetirement.toFixed(1)} 年{!statusGood && `・距離目標還差 ${formatCompactMoney(gapToday)}`}</p>
         </div>
         <div className={`status-mark ${statusGood ? "good" : "attention"}`}>
           {statusGood ? <Check aria-hidden="true" /> : <CircleAlert aria-hidden="true" />}
@@ -162,7 +167,7 @@ export function ResultsPanel({ result, scenarios, onChange, comparison }: Result
         <article className="metric-card"><span>{statusGood ? "超過目標" : "距離目標還差"}</span><strong>{formatMoney(statusGood ? summary.surplus : gapToday)}</strong></article>
       </div>
 
-      <p className="result-caution">{statusGood ? "這是每年照設定報酬計算的結果，不保證市場下跌時也足夠。" : `約 ${depletedRecord?.age.toFixed(1)} 歲開始不足，可先比較下方的調整建議。`} <a href="#retirement-stress">查看不利情況 ↓</a></p>
+      <p className="result-caution">{statusGood ? "這是每年照設定報酬計算的結果，不保證市場下跌時也足夠。" : "可先比較下方的調整建議。"} <a href="#retirement-stress">查看不利情況 ↓</a></p>
 
       <section className="result-section cashflow-section">
         <div className="result-heading"><div><span>先看每個月</span><h2>退休第一個月，錢夠不夠用</h2></div><small>換算成今天的物價</small></div>
@@ -220,9 +225,9 @@ export function ResultsPanel({ result, scenarios, onChange, comparison }: Result
       <section className="result-section">
         <div className="result-heading"><div><span>分開看</span><h2>退休準備分開看</h2></div></div>
         <div className="source-list">
-          {isTaiwan && <article className="source-row"><span className="source-icon labor"><Landmark aria-hidden="true" /></span><div><h3>勞保</h3><p>{formatMonth(result.laborInsurance.claimMonth)} 開始</p></div><div className="source-value"><strong>{formatMoney(laborValue)}</strong><span>{result.laborInsurance.eligibleByCombinedYears ? "勞保＋國保合計後每月" : result.laborInsurance.eligibleForAnnuity ? "開始時每月金額" : "一次領估算"}</span></div></article>}
-          {isTaiwan && result.nationalPension.enabled && <article className="source-row"><span className="source-icon national"><ShieldCheck aria-hidden="true" /></span><div><h3>國民年金</h3><p>{formatMonth(result.nationalPension.claimMonth)} 開始</p></div><div className="source-value"><strong>{formatMoney(nationalPensionValue)}</strong><span>{result.nationalPension.formulaUsed} 式每月估算</span></div></article>}
-          {isTaiwan && <article className="source-row"><span className="source-icon pension"><PiggyBank aria-hidden="true" /></span><div><h3>勞退</h3><p>{formatMonth(result.laborPension.claimMonth)} 開始</p>{input.laborPension.mode === "lump" && <small className="source-note">一次領約 {formatMoney(lumpAmountToday)}；投入 {formatMoney(lumpInvestedToday)}，保留現金 {formatMoney(lumpCashToday)}</small>}</div><div className="source-value"><strong>{formatMoney(pensionValue)}</strong><span>{input.laborPension.mode === "monthly" ? "開始時每月估算" : "一次領估算"}</span></div></article>}
+          {laborOn && <article className="source-row"><span className="source-icon labor"><Landmark aria-hidden="true" /></span><div><h3>勞保</h3><p>{formatMonth(result.laborInsurance.claimMonth)} 開始</p></div><div className="source-value"><strong>{formatMoney(laborValue)}</strong><span>{result.laborInsurance.eligibleByCombinedYears ? "勞保＋國保合計後每月" : result.laborInsurance.eligibleForAnnuity ? "開始時每月金額" : "一次領估算"}</span></div></article>}
+          {result.nationalPension.enabled && <article className="source-row"><span className="source-icon national"><ShieldCheck aria-hidden="true" /></span><div><h3>國民年金</h3><p>{formatMonth(result.nationalPension.claimMonth)} 開始</p></div><div className="source-value"><strong>{formatMoney(nationalPensionValue)}</strong><span>{result.nationalPension.formulaUsed} 式每月估算</span></div></article>}
+          {pensionOn && <article className="source-row"><span className="source-icon pension"><PiggyBank aria-hidden="true" /></span><div><h3>勞退</h3><p>{formatMonth(result.laborPension.claimMonth)} 開始</p>{input.laborPension.mode === "lump" && <small className="source-note">一次領約 {formatMoney(lumpAmountToday)}；投入 {formatMoney(lumpInvestedToday)}，保留現金 {formatMoney(lumpCashToday)}</small>}</div><div className="source-value"><strong>{formatMoney(pensionValue)}</strong><span>{input.laborPension.mode === "monthly" ? "開始時每月估算" : "一次領估算"}</span></div></article>}
           <article className="source-row"><span className="source-icon invest"><TrendingUp aria-hidden="true" /></span><div><h3>自己的投資</h3><p>{formatMonth(retirementMonth)} 退休時</p></div><div className="source-value"><strong>{formatMoney(projectedToday)}</strong><span>退休時預計金額</span></div></article>
           {input.partTime.enabled && <article className="source-row"><span className="source-icon work"><BriefcaseBusiness aria-hidden="true" /></span><div><h3>兼職收入</h3><p>{input.partTime.startAge} 至 {input.partTime.endAge} 歲</p></div><div className="source-value"><strong>{formatMoney(partTimeValue)}</strong><span>開始時每月金額</span></div></article>}
         </div>

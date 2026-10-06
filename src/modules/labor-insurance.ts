@@ -10,6 +10,20 @@ export function projectLaborInsurance(input: PlanningInput, endMonth: number): L
   const asOf = toSerial(input.asOf.year, input.asOf.month);
   const claimMonth = monthAtAge(birth, input.laborInsurance.claimAge);
   const normalAge = laborInsuranceNormalAge(input.profile.birthYearROC);
+  if (input.laborInsurance.enabled === false) {
+    return {
+      eligibleForAnnuity: false,
+      eligibleByCombinedYears: false,
+      normalAge,
+      minimumClaimAge: normalAge - 5,
+      claimMonth,
+      insuredYearsAtClaim: 0,
+      initialMonthlyNominal: 0,
+      lumpSumNominal: 0,
+      events: new Map(),
+      ruleVersion: TAIWAN_RULES_2026.version
+    };
+  }
   const insuredYearsAtClaim = input.laborInsurance.insuredYearsNow + laborInsuranceFutureYears(input);
   const salaryAtClaim = input.laborInsurance.averageSalaryToday * growthFactor(
     input.laborInsurance.salaryGrowthRate,

@@ -18,6 +18,18 @@ export function projectLaborPension(input: PlanningInput, endMonth: number): Lab
   const eligibleForMonthly = seniorityAtClaim >= rules.minimumMonthlyYears;
   const events = new Map<number, number>();
   const accountByMonth = new Map<number, number>();
+  if (input.laborPension.enabled === false) {
+    return {
+      eligibleForMonthly: false,
+      claimMonth,
+      balanceAtRetirement: 0,
+      balanceAtClaim: 0,
+      initialMonthlyNominal: 0,
+      events,
+      accountByMonth,
+      ruleVersion: TAIWAN_RULES_2026.version
+    };
+  }
   let balance = input.laborPension.balanceNow;
   let balanceAtRetirement = retirementMonth <= asOf ? balance : 0;
   let balanceAtClaim = 0;

@@ -3,7 +3,7 @@ export type LaborIndexation = "threshold" | "none";
 export type RetirementAllocation = "steady" | "balanced" | "growth" | "custom";
 export type FutureYearsMode = "until-retirement" | "custom";
 
-export type Region = "taiwan" | "other";
+export type Calendar = "roc" | "ce";
 
 export interface WithdrawalRule {
   enabled: boolean;
@@ -44,10 +44,11 @@ export interface PlanningInput {
   asOf: { year: number; month: number };
   profile: {
     birthYearROC: number;
+    /** 內部一律以「民國年」存放（西元 − 1911）；顯示時再依 calendar 轉換 */
+    calendar: Calendar;
     birthMonth: number;
     retirementAge: number;
     longevityAge: number;
-    region: Region;
     currency: string;
   };
   spending: {
@@ -64,6 +65,8 @@ export interface PlanningInput {
     inflationRate: number;
   };
   laborInsurance: {
+    /** 關掉＝沒有勞保年資，整個模組不計算、步驟也隱藏 */
+    enabled: boolean;
     insuredYearsNow: number;
     insuredYearsFuture: number;
     futureYearsMode: FutureYearsMode;
@@ -79,6 +82,8 @@ export interface PlanningInput {
     indexation: LaborIndexation;
   };
   laborPension: {
+    /** 關掉＝沒有勞退專戶，整個模組不計算、步驟也隱藏 */
+    enabled: boolean;
     balanceNow: number;
     seniorityYearsNow: number;
     seniorityYearsFuture: number;
