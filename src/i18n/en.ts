@@ -21,7 +21,7 @@ export const en: Strings = {
   steps: {
     label: "Steps",
     names: ["Timeline", "Labor Insurance", "National Pension", "Labor Pension", "Investments"],
-    titles: ["Your retirement timeline", "Labor insurance benefits", "National pension", "Labor pension account", "Your investments"],
+    titles: ["Retirement timeline", "Labor insurance", "National pension", "Labor pension", "Investments"],
     stepWord: ["Step 1", "Step 2", "Step 3", "Step 4", "Step 5"],
     prev: "Back",
     next: "Next",

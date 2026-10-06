@@ -21,5 +21,14 @@ export function CashflowTool({ input }: { input: PlanningInput }) {
   });
   const ending = records.at(-1)?.today ?? 0;
   const depleted = withdrawalValue > 0 ? records.find(r => r.portfolioNominal <= 0)?.age : undefined;
-  return <main className="standalone-tool"><header><span className="eyebrow">0050 Life・退休現金流</span><h1>只看退休後資產夠不夠用</h1><p>這一頁不重新計算勞保或投資累積，只把你提供的退休資產拿來測試每月提領。</p></header><section className="tool-form"><label>退休時可用資產（當年帳面）<input type="number" value={assets} onChange={e => setAssets(e.target.value === "" ? "" : Number(e.target.value))} /></label><label>每月由資產支付（今天物價）<input type="number" value={monthlyWithdrawal} onChange={e => setMonthlyWithdrawal(e.target.value === "" ? "" : Number(e.target.value))} /></label><p>目前退休頁帶入的資產約 {formatMoney(result.projectedRetirementAssetsAtRetirement)}；這裡修改不會改變退休規劃。</p></section><section className="investment-answer"><span>規劃到 {input.profile.longevityAge} 歲後，預計剩下</span><h2>{formatMoney(ending)}</h2><p>{depleted ? `約 ${depleted.toFixed(0)} 歲開始不足` : "依目前簡化提領假設，規劃期間內尚未用完"}</p></section><h2>逐年資產（今天物價）</h2><table className="scenario-table"><thead><tr><th>年齡</th><th>資產餘額</th></tr></thead><tbody>{records.filter(r => Math.round(r.age) % 5 === input.profile.retirementAge % 5).map(r => <tr key={r.month}><td>{r.age.toFixed(0)} 歲</td><td>{formatMoney(r.today)}</td></tr>)}</tbody></table><p className="section-footnote">這是獨立提領試算，未加入收入接力、稅額、長照與市場波動；不要把本頁結果直接解讀成完整退休計畫。</p></main>;
+  // 每年只取一列（生日當月最接近整數年齡的那筆），避免同一年 12 筆重複
+  const seenYears = new Set<number>();
+  const yearlyRecords = records.filter(r => {
+    const ageYear = Math.round(r.age);
+    if (ageYear % 5 !== input.profile.retirementAge % 5) return false;
+    if (seenYears.has(ageYear)) return false;
+    seenYears.add(ageYear);
+    return true;
+  });
+  return <main className="standalone-tool"><header><span className="eyebrow">0050 Life・退休現金流</span><h1>只看退休後資產夠不夠用</h1><p>這一頁不重新計算勞保或投資累積，只把你提供的退休資產拿來測試每月提領。</p></header><section className="tool-form"><label>退休時可用資產（當年帳面）<input type="number" value={assets} onChange={e => setAssets(e.target.value === "" ? "" : Number(e.target.value))} /></label><label>每月由資產支付（今天物價）<input type="number" value={monthlyWithdrawal} onChange={e => setMonthlyWithdrawal(e.target.value === "" ? "" : Number(e.target.value))} /></label><p>目前退休頁帶入的資產約 {formatMoney(result.projectedRetirementAssetsAtRetirement)}；這裡修改不會改變退休規劃。</p></section><section className="investment-answer"><span>規劃到 {input.profile.longevityAge} 歲後，預計剩下</span><h2>{formatMoney(ending)}</h2><p>{depleted ? `約 ${depleted.toFixed(0)} 歲開始不足` : "依目前簡化提領假設，規劃期間內尚未用完"}</p></section><h2>逐年資產（今天物價）</h2><table className="scenario-table"><thead><tr><th>年齡</th><th>資產餘額</th></tr></thead><tbody>{yearlyRecords.map(r => <tr key={r.month}><td>{r.age.toFixed(0)} 歲</td><td>{formatMoney(r.today)}</td></tr>)}</tbody></table><p className="section-footnote">這是獨立提領試算，未加入收入接力、稅額、長照與市場波動；不要把本頁結果直接解讀成完整退休計畫。</p></main>;
 }

@@ -60,6 +60,10 @@ export function ResultsPanel({ result, scenarios, onChange, comparison }: Result
   const chartData = result.records
     .filter((_, index) => index % 12 === 0 || index === result.records.length - 1)
     .map((record) => ({ age: Number(record.age.toFixed(1)), assets: Math.round(toToday(record.totalRetirementAssetsNominal, record.month)) }));
+  const chartMarkers = [
+    { age: ageAtMonth(birthSerial(input.profile.birthYearROC, input.profile.birthMonth), result.laborPension.claimMonth), label: input.laborPension.mode === "lump" ? "勞退一次領" : "勞退開始" },
+    ...(result.laborInsurance.eligibleForAnnuity ? [{ age: ageAtMonth(birthSerial(input.profile.birthYearROC, input.profile.birthMonth), result.laborInsurance.claimMonth), label: "勞保開始" }] : [])
+  ].filter((marker, index, all) => all.findIndex((m) => Math.abs(m.age - marker.age) < 0.6) === index);
   const laborValue = result.laborInsurance.eligibleForAnnuity
     ? toToday(result.laborInsurance.initialMonthlyNominal, result.laborInsurance.claimMonth)
     : toToday(result.laborInsurance.lumpSumNominal, result.laborInsurance.claimMonth);
@@ -146,7 +150,13 @@ export function ResultsPanel({ result, scenarios, onChange, comparison }: Result
       </section>
 
       <div className="metric-grid">
-        <article className="metric-card primary"><span>退休時可運用資產</span><strong>{formatMoney(projectedTotalToday)}</strong><small>自己的投資 {formatMoney(projectedToday)} ＋勞退一次領 {formatMoney(toToday(result.lumpPensionAmountAtRetirement, retirementMonth))}</small></article>
+        <article className="metric-card primary"><span>退休時可運用資產</span><strong>{formatMoney(projectedTotalToday)}</strong><small>{(() => {
+          const lumpToday = toToday(result.lumpPensionAmountAtRetirement, retirementMonth);
+          const base = `自己的投資 ${formatMoney(projectedToday)}`;
+          if (lumpToday > 0) return `${base} ＋勞退一次領 ${formatMoney(lumpToday)}`;
+          if (input.laborPension.mode === "lump") return `${base}（勞退一次領約 ${formatMoney(lumpAmountToday)}，於 ${input.laborPension.claimAge} 歲領取）`;
+          return base;
+        })()}</small></article>
         <article className="metric-card"><span>依目前計畫需要的資產</span><strong>{formatMoney(requiredToday)}</strong></article>
         <article className="metric-card"><span>{statusGood ? "超過目標" : "距離目標還差"}</span><strong>{formatMoney(statusGood ? summary.surplus : gapToday)}</strong></article>
       </div>
@@ -192,7 +202,7 @@ export function ResultsPanel({ result, scenarios, onChange, comparison }: Result
 
       <section className="result-section chart-section">
         <div className="result-heading"><div><span>退休以後</span><h2>投資與保留現金還剩多少</h2></div><small>今天的物價・每月收支後</small></div>
-        <BalanceChart data={chartData} />
+        <BalanceChart data={chartData} markers={chartMarkers} />
         <div className="balance-milestones">{fiveYearBalances.map((record) => <div key={record.month}><span>{record.age.toFixed(0)} 歲</span><strong>{formatMoney(record.portfolioReal + toToday(record.cashReserveNominal, record.month))}</strong></div>)}</div>
       </section>
 

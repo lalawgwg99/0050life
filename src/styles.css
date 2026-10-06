@@ -88,13 +88,17 @@ svg { flex: 0 0 auto; }
 .field-control input:hover, .select-field select:hover { border-color: #9fa9a2; }
 .field-control input:focus, .select-field select:focus { border-color: var(--teal); background: var(--surface); outline: 3px solid rgba(8, 127, 140, 0.13); }
 .field-suffix { position: absolute; top: 50%; right: 11px; transform: translateY(-50%); color: var(--muted); font-size: 11px; pointer-events: none; white-space: nowrap; }
-.field-control.has-stepper { display: flex; align-items: stretch; gap: 6px; }
-.field-control.has-stepper input { flex: 1; min-width: 0; text-align: center; }
-.field-control.has-stepper .field-suffix { right: 47px; }
-.stepper-button { flex: 0 0 40px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); cursor: pointer; min-height: 44px; }
-.stepper-button svg { width: 15px; height: 15px; }
+.field-control.has-stepper { display: flex; align-items: stretch; gap: 4px; }
+.field-control.has-stepper input { flex: 1; min-width: 0; text-align: center; padding-left: 6px; padding-right: 6px; }
+.field-control.has-stepper .field-suffix { right: 38px; }
+.stepper-button { flex: 0 0 32px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); cursor: pointer; min-height: 44px; }
+.stepper-button svg { width: 14px; height: 14px; }
 .stepper-button:hover { border-color: #9fa9a2; }
 .stepper-button:active { background: #eef2ee; }
+
+/* ---- Chart event markers ---- */
+.chart-marker-line { stroke: #c98a2b; stroke-width: 1.5; stroke-dasharray: 5 4; opacity: 0.75; }
+.chart-marker-label { fill: #8a5f1c; font-size: 11px; font-weight: 700; }
 .field-hint { color: var(--muted); font-size: 10.5px; line-height: 1.45; }
 .inline-note { margin: -5px 0 17px; padding: 10px 12px; border-left: 3px solid var(--teal); background: var(--teal-soft); color: #385c61; font-size: 12px; line-height: 1.5; }
 .inline-note strong { color: #087d86; }
@@ -496,7 +500,7 @@ details summary svg { width: 14px; height: 14px; }
 .step-nav-text { min-width: 0; display: grid; gap: 1px; }
 .step-nav-text small { color: var(--teal); font-size: 10px; font-weight: 750; }
 .step-nav-item:not(.active):not(.done) .step-nav-text small { color: var(--muted); }
-.step-nav-text strong { font-size: 12px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.step-nav-text strong { font-size: 12px; font-weight: 700; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.3; }
 .step-body:focus { outline: none; }
 .step-actions { display: flex; gap: 10px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
 .step-button { flex: 1; min-height: 48px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; border-radius: 8px; font-size: 14px; font-weight: 750; }

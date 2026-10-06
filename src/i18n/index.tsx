@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { detectLocale, LOCALE_STORAGE_KEY } from "./types";
 import type { Locale } from "./types";
@@ -22,6 +22,9 @@ const LocaleContext = createContext<LocaleContextValue>({
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(detectLocale);
+  useEffect(() => {
+    document.documentElement.lang = locale === "en" ? "en" : "zh-Hant";
+  }, [locale]);
   const setLocale = useCallback((next: Locale) => {
     setLocaleState(next);
     try {
@@ -29,7 +32,6 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     } catch {
       // ignore storage errors
     }
-    document.documentElement.lang = next === "en" ? "en" : "zh-Hant";
   }, []);
   const value = useMemo(
     () => ({ locale, setLocale, t: DICTS[locale] }),

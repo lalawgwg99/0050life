@@ -72,6 +72,8 @@ export function validateInput(input: PlanningInput): InputError[] {
   }
   if (errors.length > 0) return errors;
   if (input.investment.holdings.some((holding) => holding.name.trim() === "")) fail(4, "每筆投資都需要填名稱。");
+  const holdingNames = input.investment.holdings.map((holding) => holding.name.trim()).filter((name) => name !== "");
+  if (new Set(holdingNames).size !== holdingNames.length) fail(4, "投資名稱不能重複，請幫每筆取不同的名字。");
 
   if (input.profile.birthYearROC < 1 || input.profile.birthYearROC > 140) fail(0, "出生年請填民國 1 至 140 年。", "民國出生年");
   if (input.profile.birthMonth < 1 || input.profile.birthMonth > 12) fail(0, "出生月份請填 1 至 12。", "出生月份");
