@@ -33,22 +33,31 @@ export function projectPlan(input: PlanningInput, options?: { retirementReturnPa
   const errors = validateInput(input);
   if (errors.length > 0) throw new Error(errors.join("\n"));
 
-  const birth = birthSerial(input.profile.birthYearROC, input.profile.birthMonth);
-  const endMonth = monthAtAge(birth, input.profile.longevityAge);
-  const laborInsurance = projectLaborInsurance(input, endMonth);
-  const nationalPension = projectNationalPension(input, endMonth, laborInsurance.eligibleForAnnuity);
-  const laborPension = projectLaborPension(input, endMonth);
-  const investmentHoldings = projectInvestmentHoldingsAtRetirement(input);
+  // 非台灣地區：勞保／國保／勞退不適用，直接歸零，只規劃投資與支出
+  const effectiveInput: PlanningInput = (input.profile.region ?? "taiwan") === "taiwan" ? input : {
+    ...input,
+    laborInsurance: { ...input.laborInsurance, insuredYearsNow: 0, insuredYearsFuture: 0, averageSalaryToday: 0 },
+    nationalPension: { ...input.nationalPension, enabled: false, insuredYears: 0 },
+    laborPension: { ...input.laborPension, balanceNow: 0, seniorityYearsNow: 0, seniorityYearsFuture: 0, monthlyWageToday: 0 }
+  };
+  const input_ = effectiveInput;
+
+  const birth = birthSerial(input_.profile.birthYearROC, input_.profile.birthMonth);
+  const endMonth = monthAtAge(birth, input_.profile.longevityAge);
+  const laborInsurance = projectLaborInsurance(input_, endMonth);
+  const nationalPension = projectNationalPension(input_, endMonth, laborInsurance.eligibleForAnnuity);
+  const laborPension = projectLaborPension(input_, endMonth);
+  const investmentHoldings = projectInvestmentHoldingsAtRetirement(input_);
   const projectedInvestmentAtRetirement = investmentHoldings.reduce((sum, holding) => sum + holding.projectedValueNominal, 0);
-  const lumpPensionAmountAtRetirement = input.laborPension.mode === "lump" && laborPension.claimMonth === monthAtAge(birth, input.profile.retirementAge)
+  const lumpPensionAmountAtRetirement = input_.laborPension.mode === "lump" && laborPension.claimMonth === monthAtAge(birth, input_.profile.retirementAge)
     ? laborPension.balanceAtClaim
     : 0;
-  const lumpPensionReinvestedAtRetirement = lumpPensionAmountAtRetirement * (input.laborPension.lumpReinvestRate ?? 1);
+  const lumpPensionReinvestedAtRetirement = lumpPensionAmountAtRetirement * (input_.laborPension.lumpReinvestRate ?? 1);
   const lumpPensionCashAtRetirement = lumpPensionAmountAtRetirement - lumpPensionReinvestedAtRetirement;
   const projectedRetirementAssetsAtRetirement = projectedInvestmentAtRetirement + lumpPensionAmountAtRetirement;
-  const requiredInvestmentAtRetirement = solveRequiredInvestment(input, laborInsurance, nationalPension, laborPension);
+  const requiredInvestmentAtRetirement = solveRequiredInvestment(input_, laborInsurance, nationalPension, laborPension);
   const requiredRetirementAssetsAtRetirement = requiredInvestmentAtRetirement + lumpPensionAmountAtRetirement;
-  const simulation = simulateRetirement(input, laborInsurance, nationalPension, laborPension, projectedInvestmentAtRetirement, options?.retirementReturnPath);
+  const simulation = simulateRetirement(input_, laborInsurance, nationalPension, laborPension, projectedInvestmentAtRetirement, options?.retirementReturnPath);
   const investmentGapAtRetirement = Math.max(0, requiredRetirementAssetsAtRetirement - projectedRetirementAssetsAtRetirement);
   const readiness = requiredInvestmentAtRetirement === 0
     ? 1
@@ -56,10 +65,10 @@ export function projectPlan(input: PlanningInput, options?: { retirementReturnPa
   const warnings = [
     "未來規定、物價與投資表現可能改變；這是依目前資料做的規劃，不是給付保證。"
   ];
-  if (input.laborPension.mode === "monthly") {
+  if (input_.laborPension.mode === "monthly") {
     warnings.push("勞退按月領依請領年齡、目前公告的平均餘命與利率估算；實際按季發給，申請前請再用勞保局資料核對。");
   }
-  if (input.laborInsurance.indexation === "threshold") {
+  if (input_.laborInsurance.indexation === "threshold") {
     warnings.push("勞保年金依假設物價模擬累計達 5% 才調整，實際金額仍依未來公告。");
   }
   if (nationalPension.enabled) {

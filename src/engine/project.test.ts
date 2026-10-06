@@ -232,6 +232,22 @@ describe("integrated monthly projection", () => {
     expect(twelfth.rentExpenseNominal).toBeGreaterThan(first.rentExpenseNominal);
   });
 
+  it("skips taiwan pension modules when region is other", () => {
+    const input = makeInput({
+      profile: { retirementAge: 65, longevityAge: 90, region: "other", currency: "USD" },
+      economy: { inflationRate: 0 },
+      spending: { monthlyToday: 30_000 },
+      laborInsurance: { insuredYearsNow: 30, averageSalaryToday: 45_800, claimAge: 65 },
+      laborPension: { balanceNow: 2_000_000, mode: "lump", claimAge: 65 }
+    });
+    const result = projectPlan(input);
+    expect(result.laborInsurance.initialMonthlyNominal).toBe(0);
+    expect(result.laborPension.balanceAtClaim).toBe(0);
+    expect(result.lumpPensionAmountAtRetirement).toBe(0);
+    // 投資照常計算
+    expect(result.projectedInvestmentAtRetirement).toBeGreaterThan(0);
+  });
+
   it("supports an early-retirement crash return path", () => {
     const input = makeInput({ spending: { monthlyToday: 80_000 } });
     const normal = projectPlan(input);

@@ -7,6 +7,7 @@ import { formatMoney } from "../lib/format";
 import { laborInsuranceNormalAge } from "../rules/taiwan-2026";
 import { Field } from "./Field";
 import { useLocale } from "../i18n";
+import { CURRENCIES } from "../lib/format";
 
 interface InputPanelProps {
   input: PlanningInput;
@@ -24,15 +25,21 @@ const allocationOptions: Array<{ id: RetirementAllocation; name: string; mix: st
 
 const stepIcons = [UserRound, Landmark, ShieldCheck, PiggyBank, BriefcaseBusiness];
 const stepIds = ["profile", "labor", "national", "pension", "invest"];
+const TAIWAN_ONLY_STEPS = new Set(["labor", "national", "pension"]);
 
 export function InputPanel({ input, errors, onChange, onViewResults }: InputPanelProps) {
   const { t } = useLocale();
-  const steps = stepIds.map((id, index) => ({
-    id,
-    step: t.steps.stepWord[index],
-    title: t.steps.titles[index],
-    icon: stepIcons[index]
-  }));
+  const isTaiwan = (input.profile.region ?? "taiwan") === "taiwan";
+  const visibleStepIds = stepIds.filter((id) => isTaiwan || !TAIWAN_ONLY_STEPS.has(id));
+  const steps = visibleStepIds.map((id, visibleIndex) => {
+    const index = stepIds.indexOf(id);
+    return {
+      id,
+      step: t.steps.stepWord[visibleIndex] ?? t.steps.stepWord[index],
+      title: t.steps.titles[index],
+      icon: stepIcons[index]
+    };
+  });
   const update = (section: keyof PlanningInput, field: string, value: number | string | boolean) => {
     onChange({
       ...input,
@@ -87,8 +94,14 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
   const activeSectionRef = useRef<HTMLDivElement>(null);
   const firstRender = useRef(true);
   const goToStep = (index: number) => setActiveStep(Math.max(0, Math.min(steps.length - 1, index)));
+  // 原始步驟編號（0-4）對應到目前可見步驟的位置；台灣以外地區只顯示 profile(0) 與 invest(4)
+  const visibleIndexOf = (originalStep: number): number => {
+    const id = stepIds[originalStep];
+    const visible = visibleStepIds.indexOf(id);
+    return visible >= 0 ? visible : 0;
+  };
   const jumpToError = (error: InputError) => {
-    goToStep(error.step);
+    goToStep(visibleIndexOf(error.step));
     if (!error.field) return;
     window.setTimeout(() => {
       const root = panelTopRef.current;
@@ -127,6 +140,22 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
         <div><span>第一步</span><h2>你的退休時間</h2></div>
       </div>
       <p className="step-why">先決定什麼時候退休、每個月要花多少，後面才能算出錢夠不夠用。</p>
+      <div className="region-control">
+        <span className="region-label">{t.region.label}</span>
+        <div className="mode-control" role="group" aria-label={t.region.label}>
+          <button type="button" className={(input.profile.region ?? "taiwan") === "taiwan" ? "active" : ""} onClick={() => update("profile", "region", "taiwan")}>{t.region.taiwan}</button>
+          <button type="button" className={input.profile.region === "other" ? "active" : ""} onClick={() => update("profile", "region", "other")}>{t.region.other}</button>
+        </div>
+        <p className="field-hint">{t.region.hint}</p>
+        {input.profile.region === "other" && (
+          <label className="currency-field">
+            <span>{t.region.currencyLabel}</span>
+            <select value={input.profile.currency ?? "TWD"} onChange={(event) => update("profile", "currency", event.target.value)}>
+              {CURRENCIES.map((c) => <option key={c.code} value={c.code}>{c.label}</option>)}
+            </select>
+          </label>
+        )}
+      </div>
       <div className="field-grid two">
         <Field label="民國出生年" value={input.profile.birthYearROC} onChange={(value) => update("profile", "birthYearROC", value)} suffix="年" min={30} max={110} />
         <Field label="出生月份" value={input.profile.birthMonth} onChange={(value) => update("profile", "birthMonth", value)} suffix="月" min={1} max={12} />
@@ -372,6 +401,18 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
     </section>
   ];
 
+  const allStepSections = stepSections;
+  const visibleStepSections = allStepSections.filter((section) => {
+    const key = section.key as string | null;
+    return key === null || !TAIWAN_ONLY_STEPS.has(key);
+  });
+
+  useEffect(() => {
+    if (activeStep >= visibleStepSections.length) {
+      setActiveStep(visibleStepSections.length - 1);
+    }
+  }, [activeStep, visibleStepSections.length]);
+
   return (
     <div className="input-panel" ref={panelTopRef}>
       {errors.length > 0 && (
@@ -401,7 +442,7 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
       </nav>
 
       <div ref={activeSectionRef} tabIndex={-1} className="step-body">
-        {stepSections[activeStep]}
+        {visibleStepSections[activeStep]}
       </div>
 
       <div className="step-actions">

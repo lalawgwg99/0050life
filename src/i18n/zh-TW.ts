@@ -27,6 +27,13 @@ export const zhTW = {
     viewResultsFull: "查看試算結果",
     nextPrefix: "下一步："
   },
+  region: {
+    label: "你在哪裡退休？",
+    hint: "台灣會計算勞保、國民年金與勞退；其他國家只規劃自己的投資與支出",
+    taiwan: "台灣",
+    other: "其他國家",
+    currencyLabel: "幣別"
+  },
   common: {
     back: "返回",
     confirm: "確定",

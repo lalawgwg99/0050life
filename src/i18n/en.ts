@@ -29,6 +29,13 @@ export const en: Strings = {
     viewResultsFull: "View results",
     nextPrefix: "Next: "
   },
+  region: {
+    label: "Where will you retire?",
+    hint: "Taiwan includes labor insurance, national pension & labor pension; other countries plan investments and spending only",
+    taiwan: "Taiwan",
+    other: "Other country",
+    currencyLabel: "Currency"
+  },
   common: {
     back: "Back",
     confirm: "OK",

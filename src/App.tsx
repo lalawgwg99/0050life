@@ -8,6 +8,7 @@ import { IncomeTool } from "./components/IncomeTool";
 import { CashflowTool } from "./components/CashflowTool";
 import { LanguageSwitcher } from "./components/LanguageSwitcher";
 import { useLocale } from "./i18n";
+import { setDisplaySettings } from "./lib/format";
 import { defaultInput } from "./defaults";
 import type { PlanningInput, ProjectionResult } from "./domain/types";
 import { validateInput } from "./domain/validation";
@@ -40,6 +41,7 @@ function loadSavedInput(): PlanningInput {
       return {
         ...saved.input,
         asOf: defaultInput.asOf,
+        profile: { ...defaultInput.profile, ...(saved.input.profile as Partial<PlanningInput["profile"]>) },
         spending: { ...defaultInput.spending, ...saved.input.spending },
         partTime: { ...defaultInput.partTime, ...saved.input.partTime },
         nationalPension: { ...defaultInput.nationalPension, ...saved.input.nationalPension },
@@ -72,7 +74,7 @@ function loadSavedInput(): PlanningInput {
 }
 
 export default function App() {
-  const { t } = useLocale();
+  const { t, locale } = useLocale();
   const [page, setPage] = useState(() => {
     const hash = window.location.hash;
     return hash === "#investment" ? "investment" : hash === "#income" ? "income" : hash === "#cashflow" ? "cashflow" : "retirement";
@@ -102,6 +104,10 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 3, input }));
   }, [input]);
+
+  useEffect(() => {
+    setDisplaySettings({ currency: input.profile.currency ?? "TWD", locale });
+  }, [input.profile.currency, locale]);
 
   const reset = () => {
     localStorage.removeItem(STORAGE_KEY);

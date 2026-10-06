@@ -7,7 +7,7 @@ type DeepPartial<T> = T extends unknown[] ? T : {
 export function makeInput(overrides: DeepPartial<PlanningInput> = {}): PlanningInput {
   const base: PlanningInput = {
     asOf: { year: 2026, month: 9 },
-    profile: { birthYearROC: 80, birthMonth: 4, retirementAge: 65, longevityAge: 90 },
+    profile: { birthYearROC: 80, birthMonth: 4, retirementAge: 65, longevityAge: 90, region: "taiwan", currency: "TWD" },
     spending: { monthlyToday: 50_000 },
     economy: { inflationRate: 0.02 },
     laborInsurance: {

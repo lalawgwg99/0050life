@@ -18,6 +18,7 @@ export function validateInput(input: PlanningInput): InputError[] {
   const fail = (step: number, message: string, field?: string, holdingId?: string) => {
     errors.push({ message, step, field, holdingId });
   };
+  const isTaiwan = (input.profile.region ?? "taiwan") === "taiwan";
   const values: Array<[number, string, number, string?, string?]> = [
     [input.profile.birthYearROC, "出生年", 0, "民國出生年"],
     [input.profile.birthMonth, "出生月份", 0, "出生月份"],
@@ -147,6 +148,9 @@ export function validateInput(input: PlanningInput): InputError[] {
   if (input.laborPension.mode === "monthly" && pensionYears < TAIWAN_RULES_2026.laborPension.minimumMonthlyYears) {
     fail(3, "勞退年資未滿 15 年，不能使用月退休金模式。");
   }
+
+  // 非台灣地區不使用勞保／國保／勞退，只保留退休時間（0）與投資（4）的驗證
+  if (!isTaiwan) return errors.filter((error) => error.step === 0 || error.step === 4);
 
   return errors;
 }

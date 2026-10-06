@@ -3,6 +3,8 @@ export type LaborIndexation = "threshold" | "none";
 export type RetirementAllocation = "steady" | "balanced" | "growth" | "custom";
 export type FutureYearsMode = "until-retirement" | "custom";
 
+export type Region = "taiwan" | "other";
+
 export interface WithdrawalRule {
   enabled: boolean;
   annualRate: number;
@@ -45,6 +47,8 @@ export interface PlanningInput {
     birthMonth: number;
     retirementAge: number;
     longevityAge: number;
+    region: Region;
+    currency: string;
   };
   spending: {
     monthlyToday: number;
