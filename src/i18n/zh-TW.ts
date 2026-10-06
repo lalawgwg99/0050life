@@ -54,6 +54,13 @@ export const zhTW = {
     needInputsTitle: "先完成左側資料",
     needInputsBody: "需要調整的地方會直接標示在輸入區。",
     calcFailedTitle: "這次沒有算完"
+  },
+  chart: {
+    title: "退休後投資資產變化",
+    ageLabel: (age: number) => `${age.toFixed(0)} 歲`,
+    desc: (minAgeLabel: string, minAssets: string, maxAgeLabel: string, maxAssets: string) =>
+      `從 ${minAgeLabel} 的 ${minAssets}，到 ${maxAgeLabel} 的 ${maxAssets}。`,
+    pointTip: (ageLabel: string, assets: string) => `${ageLabel}：${assets}`
   }
 };
 

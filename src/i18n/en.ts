@@ -56,5 +56,12 @@ export const en: Strings = {
     needInputsTitle: "Finish your inputs first",
     needInputsBody: "Fields that need attention are marked in the input panel.",
     calcFailedTitle: "Calculation did not finish"
+  },
+  chart: {
+    title: "Retirement investment balance over time",
+    ageLabel: (age: number) => `age ${age.toFixed(0)}`,
+    desc: (minAgeLabel: string, minAssets: string, maxAgeLabel: string, maxAssets: string) =>
+      `From ${minAssets} at ${minAgeLabel}, to ${maxAssets} at ${maxAgeLabel}.`,
+    pointTip: (ageLabel: string, assets: string) => `${ageLabel}: ${assets}`
   }
 };
