@@ -118,6 +118,10 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
   const monthlyInvestmentTotal = input.investment.holdings.reduce((sum, holding) => sum + (Number.isFinite(holding.monthlyContributionToday) ? holding.monthlyContributionToday : 0), 0);
 
   const [activeStep, setActiveStep] = useState(0);
+  const visibleIndexByKey: Record<string, number> = {};
+  visibleStepIds.forEach((id, index) => { visibleIndexByKey[id] = index; });
+  // 步驟標題的「第幾步」跟著實際可見步驟走（年金開關會隱藏步驟）
+  const StepNum = ({ stepKey }: { stepKey: string }) => <span>{t.steps.stepWord[visibleIndexByKey[stepKey] ?? 0] ?? `第${(visibleIndexByKey[stepKey] ?? 0) + 1}步`}</span>;
   const panelTopRef = useRef<HTMLDivElement>(null);
   const activeSectionRef = useRef<HTMLDivElement>(null);
   const firstRender = useRef(true);
@@ -165,7 +169,7 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
     <section className="input-section" key="profile">
       <div className="section-heading">
         <UserRound aria-hidden="true" />
-        <div><span>第一步</span><h2>你的退休時間</h2></div>
+        <div><StepNum stepKey="profile" /><h2>你的退休時間</h2></div>
       </div>
       <p className="step-why">先決定什麼時候退休、每個月要花多少，後面才能算出錢夠不夠用。</p>
       <div className="region-control">
@@ -256,7 +260,7 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
     <section className="input-section" key="labor">
       <div className="section-heading">
         <Landmark aria-hidden="true" />
-        <div><span>第二步</span><h2>勞保老年給付</h2></div>
+        <div><StepNum stepKey="labor" /><h2>勞保老年給付</h2></div>
       </div>
       <p className="step-why">勞保老年給付是退休後每個月固定的收入。填你的年資和薪資，就能估出每個月領多少。</p>
       <div className="inline-note">你的法定年齡是 <strong>{normalAge} 歲</strong>，最早可從 {normalAge - 5} 歲開始領。</div>
@@ -291,7 +295,7 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
     <section className="input-section" key="national">
       <div className="section-heading">
         <ShieldCheck aria-hidden="true" />
-        <div><span>第三步</span><h2>國民年金</h2></div>
+        <div><StepNum stepKey="national" /><h2>國民年金</h2></div>
       </div>
       <p className="step-why">如果有段時間沒上班、沒保勞保，那段期間可能保的是國民年金，也可以領一筆。都沒保過就直接跳下一步。</p>
       <label className="toggle-field section-toggle">
@@ -325,7 +329,7 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
     <section className="input-section" key="pension">
       <div className="section-heading">
         <PiggyBank aria-hidden="true" />
-        <div><span>第四步</span><h2>勞退個人專戶</h2></div>
+        <div><StepNum stepKey="pension" /><h2>勞退個人專戶</h2></div>
       </div>
       <p className="step-why">勞退是公司每個月幫你存的退休金。60 歲後可以一次領出來，也可以按月領。</p>
       <div className="mode-control" role="group" aria-label="勞退領取方式">
@@ -371,7 +375,7 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
     <section className="input-section" key="invest">
       <div className="section-heading">
         <BriefcaseBusiness aria-hidden="true" />
-        <div><span>第五步</span><h2>自己的投資</h2></div>
+        <div><StepNum stepKey="invest" /><h2>自己的投資</h2></div>
       </div>
       <p className="step-why">這裡填你自己存的投資。退休時會跟前面的勞保、勞退加在一起算。</p>
       <p className="brand-note"><strong>0050 Life</strong> 可以從 0050 開始；有其他股票或基金，再逐筆加入。每一筆會用自己的報酬與費用分開複利，退休時才加總。<a href="/blog/investment-calculator-guide.html" target="_blank" rel="noreferrer">教學</a></p>
