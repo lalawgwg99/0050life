@@ -63,5 +63,21 @@ export const en: Strings = {
     desc: (minAgeLabel: string, minAssets: string, maxAgeLabel: string, maxAssets: string) =>
       `From ${minAssets} at ${minAgeLabel}, to ${maxAssets} at ${maxAgeLabel}.`,
     pointTip: (ageLabel: string, assets: string) => `${ageLabel}: ${assets}`
+  },
+  cashflow: {
+    eyebrow: "0050 Life · Retirement Cash Flow",
+    title: "Can your retirement assets last?",
+    intro: "This page doesn't recalculate pensions or investment growth — it stress-tests your monthly withdrawals against the assets you bring in.",
+    assetsLabel: "Assets at retirement (nominal at that time)",
+    withdrawalLabel: "Monthly spending from assets (today's prices)",
+    assetsNote: (assets: string) => `Pre-filled with about ${assets} from the retirement page; changes here don't affect your retirement plan.`,
+    answerPrefix: (age: number) => `Through age ${age}, projected balance`,
+    depleted: (age: number) => `Runs short around age ${age.toFixed(0)}`,
+    notDepleted: "Under these simplified withdrawal assumptions, assets last through the planning period",
+    yearlyTitle: "Year-by-year balance (today's prices)",
+    colAge: "Age",
+    colBalance: "Balance",
+    ageLabel: (age: number) => `age ${age.toFixed(0)}`,
+    footnote: "This is a standalone withdrawal test — it ignores income relay, taxes, long-term care, and market volatility. Don't read it as a complete retirement plan."
   }
 };

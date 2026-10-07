@@ -61,6 +61,22 @@ export const zhTW = {
     desc: (minAgeLabel: string, minAssets: string, maxAgeLabel: string, maxAssets: string) =>
       `從 ${minAgeLabel} 的 ${minAssets}，到 ${maxAgeLabel} 的 ${maxAssets}。`,
     pointTip: (ageLabel: string, assets: string) => `${ageLabel}：${assets}`
+  },
+  cashflow: {
+    eyebrow: "0050 Life・退休現金流",
+    title: "只看退休後資產夠不夠用",
+    intro: "這一頁不重新計算勞保或投資累積，只把你提供的退休資產拿來測試每月提領。",
+    assetsLabel: "退休時可用資產（當年帳面）",
+    withdrawalLabel: "每月由資產支付（今天物價）",
+    assetsNote: (assets: string) => `目前退休頁帶入的資產約 ${assets}；這裡修改不會改變退休規劃。`,
+    answerPrefix: (age: number) => `規劃到 ${age} 歲後，預計剩下`,
+    depleted: (age: number) => `約 ${age.toFixed(0)} 歲開始不足`,
+    notDepleted: "依目前簡化提領假設，規劃期間內尚未用完",
+    yearlyTitle: "逐年資產（今天物價）",
+    colAge: "年齡",
+    colBalance: "資產餘額",
+    ageLabel: (age: number) => `${age.toFixed(0)} 歲`,
+    footnote: "這是獨立提領試算，未加入收入接力、稅額、長照與市場波動；不要把本頁結果直接解讀成完整退休計畫。"
   }
 };
 
