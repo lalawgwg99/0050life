@@ -1,0 +1,164 @@
+:root {
+  --paper: #f6f3ea;
+  --paper-2: #ede8d8;
+  --ink: #1d2a25;
+  --ink-soft: #5c6b64;
+  --brand: #17493b;
+  --brand-deep: #0f352a;
+  --gold: #b98a1f;
+  --danger: #a63a2b;
+  --card: #fffdf7;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 32px;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: var(--brand);
+  color: var(--paper);
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.topbar nav a {
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-size: 14px;
+  margin-left: 22px;
+}
+.topbar nav a:hover { color: var(--brand); text-decoration: underline; }
+
+.hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 24px 20px 40px;
+}
+
+.kicker {
+  font-size: 13px;
+  letter-spacing: 0.28em;
+  color: var(--ink-soft);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.hero-number {
+  font-size: clamp(110px, 24vw, 210px);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--brand-deep);
+  font-variant-numeric: tabular-nums;
+}
+.hero-number.funded { color: var(--brand); font-size: clamp(72px, 15vw, 130px); }
+
+.hero-sub {
+  margin-top: 10px;
+  font-size: 17px;
+  color: var(--ink-soft);
+  max-width: 560px;
+}
+
+.ring-wrap {
+  position: relative;
+  margin-top: 34px;
+}
+
+.ring-bg {
+  fill: none;
+  stroke: var(--paper-2);
+  stroke-width: 14;
+}
+.ring-fg {
+  fill: none;
+  stroke: var(--brand);
+  stroke-width: 14;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 80px 80px;
+  transition: stroke-dashoffset 0.8s ease;
+}
+.ring-fg.low { stroke: var(--danger); }
+.ring-fg.mid { stroke: var(--gold); }
+
+.ring-label {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.ring-label span { font-size: 34px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.ring-label small { font-size: 12px; color: var(--ink-soft); letter-spacing: 0.12em; }
+
+.stats {
+  display: flex;
+  gap: 14px;
+  margin-top: 36px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.stat {
+  background: var(--card);
+  border: 1px solid #e3dcc8;
+  border-radius: 14px;
+  padding: 16px 22px;
+  min-width: 190px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.stat-label { font-size: 12px; color: var(--ink-soft); letter-spacing: 0.04em; }
+.stat-value { font-size: 22px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.tip {
+  margin-top: 30px;
+  font-size: 14px;
+  color: var(--ink-soft);
+  max-width: 620px;
+  line-height: 1.6;
+}
+.tip strong { color: var(--brand-deep); }
+
+.foot {
+  text-align: center;
+  padding: 18px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  border-top: 1px solid #e3dcc8;
+}

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>New Tab — 0050life Retirement Countdown</title>
+<link rel="stylesheet" href="newtab.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">50</span> 0050life</div>
+    <nav>
+      <a href="#" id="adjustLink">Adjust plan</a>
+      <a href="https://0050life.pages.dev/" target="_blank" rel="noopener">Full calculator ↗</a>
+    </nav>
+  </header>
+
+  <main class="hero">
+    <p class="kicker" id="kicker">YOUR MONEY RUNS OUT AT AGE</p>
+    <div class="hero-number" id="heroNumber">–</div>
+    <p class="hero-sub" id="heroSub"></p>
+
+    <div class="ring-wrap">
+      <svg class="ring" viewBox="0 0 160 160" width="160" height="160" aria-hidden="true">
+        <circle cx="80" cy="80" r="70" class="ring-bg"/>
+        <circle cx="80" cy="80" r="70" class="ring-fg" id="ringFg"/>
+      </svg>
+      <div class="ring-label"><span id="progressPct">–</span><small>funded</small></div>
+    </div>
+
+    <section class="stats">
+      <div class="stat"><span class="stat-label">Projected at retirement</span><span class="stat-value" id="statProjected">–</span></div>
+      <div class="stat"><span class="stat-label">Required to last to <span id="statLongevity">90</span></span><span class="stat-value" id="statRequired">–</span></div>
+      <div class="stat"><span class="stat-label">Monthly saving now</span><span class="stat-value" id="statSaving">–</span></div>
+    </section>
+
+    <p class="tip" id="tip"></p>
+  </main>
+
+  <footer class="foot">
+    Simplified estimate · Not financial advice · Data stays in your browser
+  </footer>
+
+<script type="module" src="newtab.js"></script>
+</body>
+</html>

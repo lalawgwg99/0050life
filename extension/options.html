@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Plan settings — 0050life Retirement Countdown</title>
+<link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <div class="brand"><span class="brand-mark">50</span> 0050life</div>
+      <h1>Your retirement plan</h1>
+      <p class="lede">These numbers power every new tab. All data stays in your browser — nothing is uploaded.</p>
+    </header>
+
+    <form id="planForm">
+      <section class="card">
+        <h2>You</h2>
+        <div class="grid">
+          <label>Current age<input type="number" name="currentAge" min="18" max="100" step="1" required></label>
+          <label>Retire at age<input type="number" name="retireAge" min="18" max="100" step="1" required></label>
+          <label>Plan to age<input type="number" name="longevityAge" min="18" max="110" step="1" required></label>
+          <label>Currency
+            <select name="currency" id="currencySel"></select>
+          </label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Saving</h2>
+        <div class="grid">
+          <label>Saved so far<input type="number" name="currentSavings" min="0" step="100"></label>
+          <label>Saving per month<input type="number" name="monthlySaving" min="0" step="50"></label>
+          <label>Annual return % (before retirement)<input type="number" name="annualReturn" step="0.5"></label>
+          <label>Annual return % (after retirement)<input type="number" name="retireReturn" step="0.5"></label>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2>Spending</h2>
+        <div class="grid">
+          <label>Monthly spending in retirement (today's money)<input type="number" name="monthlySpending" min="0" step="100"></label>
+          <label>Monthly pension / social security (today's money)<input type="number" name="monthlyPension" min="0" step="100"></label>
+          <label>Inflation %<input type="number" name="inflation" step="0.5"></label>
+        </div>
+      </section>
+
+      <div class="actions">
+        <button type="submit" class="primary">Save plan</button>
+        <button type="button" id="resetBtn" class="ghost">Reset to defaults</button>
+        <span class="saved" id="savedMsg" hidden>Saved ✓</span>
+      </div>
+    </form>
+
+    <footer>
+      Simplified estimate · Not financial advice ·
+      <a href="https://0050life.pages.dev/" target="_blank" rel="noopener">Full 0050life calculator ↗</a>
+    </footer>
+  </main>
+<script type="module" src="options.js"></script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+:root {
+  --paper: #f6f3ea;
+  --ink: #1d2a25;
+  --ink-soft: #5c6b64;
+  --brand: #17493b;
+  --card: #fffdf7;
+  --line: #e3dcc8;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+.wrap { max-width: 720px; margin: 0 auto; padding: 40px 24px 60px; }
+
+.brand {
+  font-weight: 700; font-size: 16px;
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 18px;
+}
+.brand-mark {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px; border-radius: 9px;
+  background: var(--brand); color: var(--paper);
+  font-size: 14px; font-weight: 800;
+}
+
+h1 { font-size: 30px; margin-bottom: 8px; }
+.lede { color: var(--ink-soft); margin-bottom: 28px; line-height: 1.6; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 18px;
+}
+.card h2 { font-size: 17px; margin-bottom: 16px; }
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+
+input, select {
+  font-size: 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+input:focus, select:focus {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+  border-color: var(--brand);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 8px;
+}
+
+button {
+  font-size: 15px;
+  padding: 12px 26px;
+  border-radius: 12px;
+  cursor: pointer;
+  border: none;
+}
+button.primary { background: var(--brand); color: #fff; font-weight: 700; }
+button.primary:hover { background: #0f352a; }
+button.ghost { background: transparent; color: var(--ink-soft); border: 1px solid var(--line); }
+button.ghost:hover { color: var(--ink); }
+
+.saved { color: var(--brand); font-weight: 600; font-size: 14px; }
+
+footer {
+  margin-top: 40px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  text-align: center;
+}
+footer a { color: var(--brand); }
