@@ -28,6 +28,8 @@ const stepIds = ["profile", "labor", "national", "pension", "invest"];
 
 export function InputPanel({ input, errors, onChange, onViewResults }: InputPanelProps) {
   const { t } = useLocale();
+  const ip = t.inputProfile;
+  const u = t.common.units;
   // 步驟顯示跟著年金模組開關走：關掉的模組不計算、步驟也隱藏
   const stepOn: Record<string, boolean> = {
     profile: true,
@@ -169,9 +171,9 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
     <section className="input-section" key="profile">
       <div className="section-heading">
         <UserRound aria-hidden="true" />
-        <div><StepNum stepKey="profile" /><h2>你的退休時間</h2></div>
+        <div><StepNum stepKey="profile" /><h2>{t.steps.titles[0]}</h2></div>
       </div>
-      <p className="step-why">先決定什麼時候退休、每個月要花多少，後面才能算出錢夠不夠用。</p>
+      <p className="step-why">{ip.why}</p>
       <div className="region-control">
         <span className="region-label">{t.pensionSetup.label}</span>
         <div className="mode-control" role="group" aria-label={t.pensionSetup.label}>
@@ -210,48 +212,48 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
             <button type="button" className={useCE ? "active" : ""} onClick={() => update("profile", "calendar", "ce")}>{t.pensionSetup.calendarCE}</button>
           </div>
           {useCE ? (
-            <Field label={t.pensionSetup.birthYearCE} value={input.profile.birthYearROC + 1911} onChange={(value) => update("profile", "birthYearROC", Math.round(value - 1911))} suffix="年" min={1941} max={2021} />
+            <Field label={t.pensionSetup.birthYearCE} value={input.profile.birthYearROC + 1911} onChange={(value) => update("profile", "birthYearROC", Math.round(value - 1911))} suffix={u.year} min={1941} max={2021} />
           ) : (
-            <Field label={t.pensionSetup.birthYearROC} value={input.profile.birthYearROC} onChange={(value) => update("profile", "birthYearROC", value)} suffix="年" min={30} max={110} />
+            <Field label={t.pensionSetup.birthYearROC} value={input.profile.birthYearROC} onChange={(value) => update("profile", "birthYearROC", value)} suffix={u.year} min={30} max={110} />
           )}
         </div>
-        <Field label="出生月份" value={input.profile.birthMonth} onChange={(value) => update("profile", "birthMonth", value)} suffix="月" min={1} max={12} />
-        <Field label="想幾歲退休" value={input.profile.retirementAge} onChange={(value) => update("profile", "retirementAge", value)} suffix="歲" min={40} max={85} />
-        <Field label="希望規劃到" value={input.profile.longevityAge} onChange={(value) => update("profile", "longevityAge", value)} suffix="歲" min={60} max={110} hint="試算會一路算到這個年齡，建議填 90 歲以上" />
+        <Field label={ip.birthMonth} value={input.profile.birthMonth} onChange={(value) => update("profile", "birthMonth", value)} suffix={u.month} min={1} max={12} />
+        <Field label={ip.retirementAge} value={input.profile.retirementAge} onChange={(value) => update("profile", "retirementAge", value)} suffix={u.age} min={40} max={85} />
+        <Field label={ip.longevityAge} value={input.profile.longevityAge} onChange={(value) => update("profile", "longevityAge", value)} suffix={u.age} min={60} max={110} hint={ip.longevityHint} />
       </div>
-      <Field label="退休後每月生活費" value={input.spending.monthlyToday} onChange={(value) => update("spending", "monthlyToday", value)} suffix="元" step={1000} hint="不含房租，請填今天物價下需要的金額" />
+      <Field label={ip.monthlySpending} value={input.spending.monthlyToday} onChange={(value) => update("spending", "monthlyToday", value)} suffix={u.money} step={1000} hint={ip.monthlySpendingHint} />
       <div className="field-grid two">
-        <Field label="每月房租" value={input.spending.rentMonthlyToday ?? 0} onChange={(value) => update("spending", "rentMonthlyToday", value)} suffix="元" step={500} hint="有租屋再填，沒有就填 0" />
-        <Field label="房租每年上漲" value={(input.spending.rentInflationRate ?? 0.02) * 100} onChange={(value) => update("spending", "rentInflationRate", value / 100)} suffix="%" step={0.1} hint="長期平均約 2%，會跟生活費分開計算" />
+        <Field label={ip.rentMonthly} value={input.spending.rentMonthlyToday ?? 0} onChange={(value) => update("spending", "rentMonthlyToday", value)} suffix={u.money} step={500} hint={ip.rentMonthlyHint} />
+        <Field label={ip.rentInflation} value={(input.spending.rentInflationRate ?? 0.02) * 100} onChange={(value) => update("spending", "rentInflationRate", value / 100)} suffix={u.percent} step={0.1} hint={ip.rentInflationHint} />
       </div>
       <details>
-        <summary><SlidersHorizontal aria-hidden="true" /> 更多生活假設</summary>
+        <summary><SlidersHorizontal aria-hidden="true" /> {ip.moreAssumptions}</summary>
         <div className="details-body">
-          <Field label="每年物價上漲（通膨）" value={input.economy.inflationRate * 100} onChange={(value) => update("economy", "inflationRate", value / 100)} suffix="%" step={0.1} />
-          <div className="subsection-label">醫療與長照（選填）</div>
+          <Field label={ip.inflation} value={input.economy.inflationRate * 100} onChange={(value) => update("economy", "inflationRate", value / 100)} suffix={u.percent} step={0.1} />
+          <div className="subsection-label">{ip.medicalSection}</div>
           <div className="field-grid two">
-            <Field label="每月醫療預算" value={input.spending.medicalMonthlyToday ?? 0} onChange={(value) => update("spending", "medicalMonthlyToday", value)} suffix="元" step={500} hint="慢性病、看診與自費項目，可先填 0" />
-            <Field label="醫療費每年增加" value={(input.spending.medicalInflationRate ?? 0.03) * 100} onChange={(value) => update("spending", "medicalInflationRate", value / 100)} suffix="%" step={0.1} />
+            <Field label={ip.medicalMonthly} value={input.spending.medicalMonthlyToday ?? 0} onChange={(value) => update("spending", "medicalMonthlyToday", value)} suffix={u.money} step={500} hint={ip.medicalMonthlyHint} />
+            <Field label={ip.medicalInflation} value={(input.spending.medicalInflationRate ?? 0.03) * 100} onChange={(value) => update("spending", "medicalInflationRate", value / 100)} suffix={u.percent} step={0.1} />
           </div>
           <label className="toggle-field">
             <input type="checkbox" role="switch" checked={input.spending.longTermCareEnabled ?? false} onChange={(event) => update("spending", "longTermCareEnabled", event.target.checked)} />
-            <span className="toggle-control" aria-hidden="true" /><span>預留長照費用</span>
+            <span className="toggle-control" aria-hidden="true" /><span>{ip.longTermCareEnabled}</span>
           </label>
           {input.spending.longTermCareEnabled && <div className="field-grid two optional-fields">
-            <Field label="從幾歲開始預留" value={input.spending.longTermCareStartAge ?? 80} onChange={(value) => update("spending", "longTermCareStartAge", value)} suffix="歲" />
-            <Field label="每月長照預算" value={input.spending.longTermCareMonthlyToday ?? 0} onChange={(value) => update("spending", "longTermCareMonthlyToday", value)} suffix="元" step={1000} hint="請填今天物價下的金額" />
+            <Field label={ip.longTermCareStartAge} value={input.spending.longTermCareStartAge ?? 80} onChange={(value) => update("spending", "longTermCareStartAge", value)} suffix={u.age} />
+            <Field label={ip.longTermCareMonthly} value={input.spending.longTermCareMonthlyToday ?? 0} onChange={(value) => update("spending", "longTermCareMonthlyToday", value)} suffix={u.money} step={1000} hint={ip.longTermCareMonthlyHint} />
           </div>}
           <label className="toggle-field">
             <input type="checkbox" role="switch" checked={input.partTime.enabled} onChange={(event) => update("partTime", "enabled", event.target.checked)} />
             <span className="toggle-control" aria-hidden="true" />
-            <span>退休後有兼職收入</span>
+            <span>{ip.partTimeEnabled}</span>
           </label>
           {input.partTime.enabled && (
             <div className="field-grid two optional-fields">
-              <Field label="每月兼職收入" value={input.partTime.monthlyToday} onChange={(value) => update("partTime", "monthlyToday", value)} suffix="元" step={1000} hint="請填今天物價下的金額" />
-              <Field label="兼職開始年齡" value={input.partTime.startAge} onChange={(value) => update("partTime", "startAge", value)} suffix="歲" />
-              <Field label="兼職結束年齡" value={input.partTime.endAge} onChange={(value) => update("partTime", "endAge", value)} suffix="歲" />
-              <Field label="收入每年增加" value={input.partTime.growthRate * 100} onChange={(value) => update("partTime", "growthRate", value / 100)} suffix="%" step={0.1} />
+              <Field label={ip.partTimeMonthly} value={input.partTime.monthlyToday} onChange={(value) => update("partTime", "monthlyToday", value)} suffix={u.money} step={1000} hint={ip.partTimeMonthlyHint} />
+              <Field label={ip.partTimeStartAge} value={input.partTime.startAge} onChange={(value) => update("partTime", "startAge", value)} suffix={u.age} />
+              <Field label={ip.partTimeEndAge} value={input.partTime.endAge} onChange={(value) => update("partTime", "endAge", value)} suffix={u.age} />
+              <Field label={ip.partTimeGrowth} value={input.partTime.growthRate * 100} onChange={(value) => update("partTime", "growthRate", value / 100)} suffix={u.percent} step={0.1} />
             </div>
           )}
         </div>

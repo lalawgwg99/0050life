@@ -50,7 +50,45 @@ export const en: Strings = {
   common: {
     back: "Back",
     confirm: "OK",
-    cancel: "Cancel"
+    cancel: "Cancel",
+    units: {
+      year: "yrs",
+      month: "mo",
+      age: "yrs old",
+      money: "",
+      percent: "%"
+    },
+    stepDown: (label: string) => `Decrease ${label}`,
+    stepUp: (label: string) => `Increase ${label}`
+  },
+  inputProfile: {
+    why: "Decide when to retire and how much you'll spend each month — everything else flows from these two.",
+    birthMonth: "Birth month",
+    retirementAge: "Retire at age",
+    longevityAge: "Plan through age",
+    longevityHint: "The planner runs through this age — 90 or above is a safe choice.",
+    monthlySpending: "Monthly living expenses after retirement",
+    monthlySpendingHint: "Excluding rent, in today's prices",
+    rentMonthly: "Monthly rent",
+    rentMonthlyHint: "Only if you rent — enter 0 otherwise",
+    rentInflation: "Annual rent increase",
+    rentInflationHint: "Long-run average is about 2%; calculated separately from living expenses",
+    moreAssumptions: "More living assumptions",
+    inflation: "Annual inflation",
+    medicalSection: "Healthcare & long-term care (optional)",
+    medicalMonthly: "Monthly medical budget",
+    medicalMonthlyHint: "Chronic conditions, visits, and out-of-pocket costs — 0 is fine to start",
+    medicalInflation: "Annual medical cost growth",
+    longTermCareEnabled: "Set aside a long-term care budget",
+    longTermCareStartAge: "Start reserving from age",
+    longTermCareMonthly: "Monthly long-term care budget",
+    longTermCareMonthlyHint: "In today's prices",
+    partTimeEnabled: "Part-time income after retirement",
+    partTimeMonthly: "Monthly part-time income",
+    partTimeMonthlyHint: "In today's prices",
+    partTimeStartAge: "Part-time starts at age",
+    partTimeEndAge: "Part-time ends at age",
+    partTimeGrowth: "Annual income growth"
   },
   empty: {
     needInputsTitle: "Finish your inputs first",

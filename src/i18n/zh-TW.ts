@@ -48,7 +48,45 @@ export const zhTW = {
   common: {
     back: "返回",
     confirm: "確定",
-    cancel: "取消"
+    cancel: "取消",
+    units: {
+      year: "年",
+      month: "月",
+      age: "歲",
+      money: "元",
+      percent: "%"
+    },
+    stepDown: (label: string) => `減少${label}`,
+    stepUp: (label: string) => `增加${label}`
+  },
+  inputProfile: {
+    why: "先決定什麼時候退休、每個月要花多少，後面才能算出錢夠不夠用。",
+    birthMonth: "出生月份",
+    retirementAge: "想幾歲退休",
+    longevityAge: "希望規劃到",
+    longevityHint: "試算會一路算到這個年齡，建議填 90 歲以上",
+    monthlySpending: "退休後每月生活費",
+    monthlySpendingHint: "不含房租，請填今天物價下需要的金額",
+    rentMonthly: "每月房租",
+    rentMonthlyHint: "有租屋再填，沒有就填 0",
+    rentInflation: "房租每年上漲",
+    rentInflationHint: "長期平均約 2%，會跟生活費分開計算",
+    moreAssumptions: "更多生活假設",
+    inflation: "每年物價上漲（通膨）",
+    medicalSection: "醫療與長照（選填）",
+    medicalMonthly: "每月醫療預算",
+    medicalMonthlyHint: "慢性病、看診與自費項目，可先填 0",
+    medicalInflation: "醫療費每年增加",
+    longTermCareEnabled: "預留長照費用",
+    longTermCareStartAge: "從幾歲開始預留",
+    longTermCareMonthly: "每月長照預算",
+    longTermCareMonthlyHint: "請填今天物價下的金額",
+    partTimeEnabled: "退休後有兼職收入",
+    partTimeMonthly: "每月兼職收入",
+    partTimeMonthlyHint: "請填今天物價下的金額",
+    partTimeStartAge: "兼職開始年齡",
+    partTimeEndAge: "兼職結束年齡",
+    partTimeGrowth: "收入每年增加"
   },
   empty: {
     needInputsTitle: "先完成左側資料",
