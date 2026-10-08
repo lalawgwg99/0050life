@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 300px;
+    font-family: -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    background: #f6f3ea;
+    color: #1d2a25;
+    padding: 18px;
+  }
+  .brand { font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .brand-mark {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; border-radius: 8px;
+    background: #17493b; color: #f6f3ea; font-size: 12px; font-weight: 800;
+  }
+  .headline { font-size: 15px; line-height: 1.5; margin-bottom: 12px; }
+  .headline strong { font-size: 26px; color: #0f352a; }
+  .bar { height: 10px; background: #ede8d8; border-radius: 6px; overflow: hidden; margin-bottom: 6px; }
+  .bar > div { height: 100%; background: #17493b; border-radius: 6px; transition: width .5s ease; }
+  .pct { font-size: 12px; color: #5c6b64; margin-bottom: 14px; }
+  .links { display: flex; gap: 10px; }
+  .links a {
+    flex: 1; text-align: center; font-size: 13px; text-decoration: none;
+    padding: 9px 0; border-radius: 9px;
+  }
+  .links a.primary { background: #17493b; color: #fff; font-weight: 600; }
+  .links a.ghost { border: 1px solid #e3dcc8; color: #5c6b64; }
+</style>
+</head>
+<body>
+  <div class="brand"><span class="brand-mark">50</span> FI Countdown</div>
+  <p class="headline" id="headline">Loading…</p>
+  <div class="bar"><div id="barFg" style="width:0%"></div></div>
+  <p class="pct" id="pctLine"></p>
+  <div class="links">
+    <a href="#" id="adjustLink" class="ghost">Adjust plan</a>
+    <a href="https://0050life.pages.dev/" target="_blank" rel="noopener" class="primary">Full calculator</a>
+  </div>
+<script type="module" src="popup.js"></script>
+</body>
+</html>
