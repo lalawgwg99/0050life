@@ -3,6 +3,7 @@ import type { Strings } from "./zh-TW";
 export const en: Strings = {
   app: {
     calcError: "Calculation failed.",
+    pageTitle: "0050 Life | Retirement Cash Flow Planner",
     brandTitle: "0050 Life",
     brandSubtitle: "Retirement Planner",
     brandHomeLabel: "0050 Life home",
@@ -233,6 +234,7 @@ export const en: Strings = {
     pensionLumpNote: (month: string) => `${month}: labor pension lump sum, split into investments and cash as set.`,
     laborLumpNote: (month: string) => `${month}: labor insurance lump sum, added to cash reserve.`,
     closing: "“Covered by assets” shows where spending comes from; whether it holds up is in the summary and stress tests above.",
+    dateRange: (from: string, to: string) => `${from} – ${to}`,
     sourceLabor: "Labor insurance",
     sourceNational: "National pension",
     sourcePensionMonthly: "Monthly pension",

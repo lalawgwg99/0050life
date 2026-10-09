@@ -1,6 +1,7 @@
 export const zhTW = {
   app: {
     calcError: "目前無法完成計算。",
+    pageTitle: "0050 Life｜退休現金流規劃",
     brandTitle: "0050 Life",
     brandSubtitle: "退休規劃試算",
     brandHomeLabel: "0050 Life 首頁",
@@ -231,6 +232,7 @@ export const zhTW = {
     pensionLumpNote: (month: string) => `${month} 領取勞退一次金，按設定分入投資與保留現金。`,
     laborLumpNote: (month: string) => `${month} 領取勞保一次金，加入保留現金。`,
     closing: "「需由資產支應」是生活費的來源分配，能否付得出來請看上方總結及壓力測試。",
+    dateRange: (from: string, to: string) => `${from}～${to}`,
     sourceLabor: "勞保",
     sourceNational: "國保",
     sourcePensionMonthly: "勞退月領",

@@ -111,9 +111,11 @@ export default function App() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 4, input }));
   }, [input]);
 
+  // render 期間同步（不能放 useEffect：useMemo 會在 effect 前用舊設定算出中文格式，造成首屏中英混雜）
+  setDisplaySettings({ currency: input.profile.currency ?? "TWD", locale });
   useEffect(() => {
-    setDisplaySettings({ currency: input.profile.currency ?? "TWD", locale });
-  }, [input.profile.currency, locale]);
+    document.title = t.app.pageTitle;
+  }, [t]);
 
   const reset = () => {
     localStorage.removeItem(STORAGE_KEY);
