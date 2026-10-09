@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, BriefcaseBusiness, Check, Landmark, PiggyBank, P
 import type { PlanningInput, RetirementAllocation } from "../domain/types";
 import type { InputError } from "../domain/validation";
 import { laborInsuranceFutureYears, laborPensionFutureYears } from "../domain/coverage";
+import { estimateNationalYearsOnEnable } from "../modules/national-pension";
 import { formatMoney } from "../lib/format";
 import { laborInsuranceNormalAge } from "../rules/taiwan-2026";
 import { Field } from "./Field";
@@ -58,6 +59,15 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
       ...input,
       [section]: { ...(input[section] as object), [field]: value }
     });
+  };
+  // 國保開關：打開時若年資為 0，依勞保年資推估預填（可再手動調整），避免直接觸發驗證錯誤
+  const toggleNationalPension = (checked: boolean) => {
+    const nationalPension = { ...input.nationalPension, enabled: checked };
+    if (checked && nationalPension.insuredYears <= 0) {
+      const estimate = estimateNationalYearsOnEnable(input);
+      if (estimate > 0) nationalPension.insuredYears = estimate;
+    }
+    onChange({ ...input, nationalPension });
   };
   const updateInvestment = (changes: Partial<PlanningInput["investment"]>) => {
     onChange({ ...input, investment: { ...input.investment, ...changes } });
@@ -196,7 +206,7 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
             <span>{t.pensionSetup.labor}<small>{t.pensionSetup.laborDesc}</small></span>
           </label>
           <label className="toggle-field compact-toggle">
-            <input type="checkbox" role="switch" checked={input.nationalPension.enabled} onChange={(event) => update("nationalPension", "enabled", event.target.checked)} />
+            <input type="checkbox" role="switch" checked={input.nationalPension.enabled} onChange={(event) => toggleNationalPension(event.target.checked)} />
             <span className="toggle-control" aria-hidden="true" />
             <span>{t.pensionSetup.national}<small>{t.pensionSetup.nationalDesc}</small></span>
           </label>
@@ -309,7 +319,7 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
       </div>
       <p className="step-why">{ina.why}</p>
       <label className="toggle-field section-toggle">
-        <input type="checkbox" role="switch" checked={input.nationalPension.enabled} onChange={(event) => update("nationalPension", "enabled", event.target.checked)} />
+        <input type="checkbox" role="switch" checked={input.nationalPension.enabled} onChange={(event) => toggleNationalPension(event.target.checked)} />
         <span className="toggle-control" aria-hidden="true" />
         <span>{ina.enabled}</span>
       </label>

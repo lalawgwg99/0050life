@@ -1,5 +1,6 @@
 import { growthFactor } from "../domain/rates";
 import { birthSerial, fromSerial, monthAtAge, toSerial } from "../domain/time";
+import { laborInsuranceFutureYears } from "../domain/coverage";
 import type { NationalPensionProjection, PlanningInput } from "../domain/types";
 import { TAIWAN_RULES_2026 } from "../rules/taiwan-2026";
 
@@ -67,4 +68,24 @@ export function projectNationalPension(
     events,
     ruleVersion: TAIWAN_RULES_2026.version
   };
+}
+
+/**
+ * 使用者打開國保開關時，若年資為 0，依其勞保年資推估一段可編輯的初始值，
+ * 避免一按試算就跳「年資請填大於 0」驗證。無法推估（例如勞保已涵蓋整個區間）
+ * 時回傳 0，維持原行為（由驗證引導使用者填寫）。
+ *
+ * 國民年金被保險人年齡：年滿 25 歲、未滿 65 歲。推估＝（可投保年數）－（勞保年資）。
+ */
+const NATIONAL_PENSION_START_AGE = 25;
+const NATIONAL_PENSION_MAX_YEARS = 40;
+
+export function estimateNationalYearsOnEnable(input: PlanningInput): number {
+  const rules = TAIWAN_RULES_2026.nationalPension;
+  const coverableYears = Math.min(input.profile.retirementAge, rules.eligibleAge) - NATIONAL_PENSION_START_AGE;
+  const laborYears = input.laborInsurance.enabled === false
+    ? 0
+    : input.laborInsurance.insuredYearsNow + laborInsuranceFutureYears(input);
+  const estimate = coverableYears - laborYears;
+  return Math.max(0, Math.min(NATIONAL_PENSION_MAX_YEARS, Math.round(estimate * 10) / 10));
 }

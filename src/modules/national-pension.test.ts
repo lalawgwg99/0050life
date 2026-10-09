@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { birthSerial, monthAtAge } from "../domain/time";
 import { makeInput } from "../test-fixtures";
-import { projectNationalPension } from "./national-pension";
+import { projectNationalPension, estimateNationalYearsOnEnable } from "./national-pension";
 
 describe("national pension", () => {
   it("uses B formula when the user receives a labor insurance annuity", () => {
@@ -58,5 +58,39 @@ describe("national pension", () => {
     const result = projectNationalPension(input, monthAtAge(birth, 90), false);
 
     expect(result.initialMonthlyNominal).toBeCloseTo(21_103 * 5 * 0.013, 8);
+  });
+});
+
+describe("estimateNationalYearsOnEnable", () => {
+  it("estimates the gap between the national-pension window and labor insurance years", () => {
+    // fixture：退休 65 歲、勞保 10＋29＝39 年 → 65-25-39＝1
+    const input = makeInput();
+    expect(estimateNationalYearsOnEnable(input)).toBe(1);
+  });
+
+  it("returns 0 when labor insurance already covers the whole window", () => {
+    const input = makeInput({
+      laborInsurance: { insuredYearsNow: 20, insuredYearsFuture: 20, futureYearsMode: "custom" }
+    });
+    expect(estimateNationalYearsOnEnable(input)).toBe(0);
+  });
+
+  it("ignores labor years when the labor module is disabled", () => {
+    const input = makeInput({ laborInsurance: { enabled: false } });
+    // 65-25＝40，上限 40
+    expect(estimateNationalYearsOnEnable(input)).toBe(40);
+  });
+
+  it("caps coverage at the claim age when retiring before 65", () => {
+    const input = makeInput({ profile: { retirementAge: 60 } });
+    // 60-25-39＜0 → 0
+    expect(estimateNationalYearsOnEnable(input)).toBe(0);
+  });
+
+  it("rounds fractional estimates to one decimal", () => {
+    const input = makeInput({
+      laborInsurance: { insuredYearsNow: 10, insuredYearsFuture: 28.75, futureYearsMode: "custom" }
+    });
+    expect(estimateNationalYearsOnEnable(input)).toBe(1.3);
   });
 });
