@@ -1,5 +1,6 @@
 import { birthSerial, monthAtAge } from "../domain/time";
 import type { PlanningInput, ProjectionResult, ScenarioResult } from "../domain/types";
+import { zhTW, type Strings } from "../i18n/zh-TW";
 import { validateInput } from "../domain/validation";
 import { projectLaborInsurance } from "../modules/labor-insurance";
 import { projectLaborPension } from "../modules/labor-pension";
@@ -11,7 +12,8 @@ function solveRequiredInvestment(
   input: PlanningInput,
   laborInsurance: ReturnType<typeof projectLaborInsurance>,
   nationalPension: ReturnType<typeof projectNationalPension>,
-  laborPension: ReturnType<typeof projectLaborPension>
+  laborPension: ReturnType<typeof projectLaborPension>,
+  solveError: string = zhTW.project.solveError
 ): number {
   const succeeds = (balance: number) => simulateRetirement(input, laborInsurance, nationalPension, laborPension, balance).depletedMonth === null;
   if (succeeds(0)) return 0;
@@ -19,7 +21,7 @@ function solveRequiredInvestment(
   let low = 0;
   let high = Math.max(1_000_000, input.spending.monthlyToday * 12 * 10);
   while (!succeeds(high) && high < 1_000_000_000_000) high *= 2;
-  if (!succeeds(high)) throw new Error("在可支援的計算範圍內找不到足夠退休本金。");
+  if (!succeeds(high)) throw new Error(solveError);
 
   for (let iteration = 0; iteration < 80; iteration += 1) {
     const middle = (low + high) / 2;
@@ -29,7 +31,7 @@ function solveRequiredInvestment(
   return high;
 }
 
-export function projectPlan(input: PlanningInput, options?: { retirementReturnPath?: (monthIndex: number, normalMonthlyReturn: number) => number }): ProjectionResult {
+export function projectPlan(input: PlanningInput, options?: { retirementReturnPath?: (monthIndex: number, normalMonthlyReturn: number) => number }, w: Strings["project"]["warnings"] = zhTW.project.warnings): ProjectionResult {
   const errors = validateInput(input);
   if (errors.length > 0) throw new Error(errors.join("\n"));
 
@@ -56,21 +58,19 @@ export function projectPlan(input: PlanningInput, options?: { retirementReturnPa
   const readiness = requiredInvestmentAtRetirement === 0
     ? 1
     : Math.min(1, projectedRetirementAssetsAtRetirement / requiredRetirementAssetsAtRetirement);
-  const warnings = [
-    "未來規定、物價與投資表現可能改變；這是依目前資料做的規劃，不是給付保證。"
-  ];
+  const warnings = [w.general];
   if (input_.laborPension.enabled !== false && input_.laborPension.mode === "monthly") {
-    warnings.push("勞退按月領依請領年齡、目前公告的平均餘命與利率估算；實際按季發給，申請前請再用勞保局資料核對。");
+    warnings.push(w.pensionMonthly);
   }
   if (input_.laborInsurance.enabled !== false && input_.laborInsurance.indexation === "threshold") {
-    warnings.push("勞保年金依假設物價模擬累計達 5% 才調整，實際金額仍依未來公告。");
+    warnings.push(w.laborIndexation);
   }
   if (nationalPension.enabled) {
-    warnings.push("國保金額依目前月投保金額與已繳年資估算；欠費、曾領其他社會保險給付等情況，可能影響 A 式資格，請以勞保局核定為準。");
-    if (nationalPension.claimMonth >= endMonth) warnings.push("目前規劃終點早於 65 歲，國保尚未開始領取，因此沒有放進這段退休現金流。");
+    warnings.push(w.nationalEstimate);
+    if (nationalPension.claimMonth >= endMonth) warnings.push(w.nationalNotStarted);
   }
   if (input_.laborInsurance.enabled !== false && laborInsurance.eligibleByCombinedYears) {
-    warnings.push("勞保年資未滿 15 年，本次依勞保與國保合計年資滿 15 年的條件估算勞保年金；實際資格請以勞保局核定為準。");
+    warnings.push(w.laborCombined);
   }
 
   return {
@@ -98,11 +98,11 @@ export function projectPlan(input: PlanningInput, options?: { retirementReturnPa
   };
 }
 
-export function projectScenarios(input: PlanningInput): ScenarioResult[] {
+export function projectScenarios(input: PlanningInput, names: [string, string, string] = [zhTW.project.scenarioLow, zhTW.project.scenarioBase, zhTW.project.scenarioHigh]): ScenarioResult[] {
   const cases: Array<{ name: ScenarioResult["name"]; delta: number }> = [
-    { name: "報酬較低", delta: -0.02 },
-    { name: "照目前填寫", delta: 0 },
-    { name: "報酬較高", delta: 0.02 }
+    { name: names[0], delta: -0.02 },
+    { name: names[1], delta: 0 },
+    { name: names[2], delta: 0.02 }
   ];
   return cases.map(({ name, delta }) => {
     const retirementReturnRate = Math.max(-0.99, input.investment.retirementGrossReturnRate + delta);

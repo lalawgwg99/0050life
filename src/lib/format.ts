@@ -16,15 +16,15 @@ export function getDisplaySettings(): DisplaySettings {
 }
 
 export const CURRENCIES = [
-  { code: "TWD", label: "TWD 新台幣" },
-  { code: "USD", label: "USD 美元" },
-  { code: "EUR", label: "EUR 歐元" },
-  { code: "JPY", label: "JPY 日圓" },
-  { code: "GBP", label: "GBP 英鎊" },
-  { code: "CNY", label: "CNY 人民幣" },
-  { code: "HKD", label: "HKD 港幣" },
-  { code: "SGD", label: "SGD 新加坡幣" },
-  { code: "AUD", label: "AUD 澳幣" }
+  { code: "TWD", label: "TWD 新台幣", labelEn: "TWD New Taiwan Dollar" },
+  { code: "USD", label: "USD 美元", labelEn: "USD US Dollar" },
+  { code: "EUR", label: "EUR 歐元", labelEn: "EUR Euro" },
+  { code: "JPY", label: "JPY 日圓", labelEn: "JPY Japanese Yen" },
+  { code: "GBP", label: "GBP 英鎊", labelEn: "GBP British Pound" },
+  { code: "CNY", label: "CNY 人民幣", labelEn: "CNY Chinese Yuan" },
+  { code: "HKD", label: "HKD 港幣", labelEn: "HKD Hong Kong Dollar" },
+  { code: "SGD", label: "SGD 新加坡幣", labelEn: "SGD Singapore Dollar" },
+  { code: "AUD", label: "AUD 澳幣", labelEn: "AUD Australian Dollar" }
 ];
 
 export function formatMoney(value: number, currency?: string): string {
@@ -39,7 +39,7 @@ export function formatMoney(value: number, currency?: string): string {
 
 export function formatCompactMoney(value: number): string {
   if (!Number.isFinite(value)) return "--";
-  if (settings.currency === "TWD" || settings.currency === "CNY") {
+  if (settings.locale !== "en" && (settings.currency === "TWD" || settings.currency === "CNY")) {
     if (Math.abs(value) >= 10_000_000) return `${(value / 10_000_000).toFixed(1)} 千萬`;
     if (Math.abs(value) >= 10_000) return `${Math.round(value / 10_000)} 萬`;
     return `${Math.round(value).toLocaleString("zh-TW")}`;

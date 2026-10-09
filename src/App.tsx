@@ -97,15 +97,15 @@ export default function App() {
   const [input, setInput] = useState<PlanningInput>(loadSavedInput);
   const [comparison, setComparison] = useState<ProjectionResult | null>(null);
   const [mobileView, setMobileView] = useState<"inputs" | "results">("inputs");
-  const errors = useMemo(() => validateInput(input), [input]);
+  const errors = useMemo(() => validateInput(input, t), [input, t]);
   const calculation = useMemo(() => {
     if (errors.length > 0) return null;
     try {
-      return { result: projectPlan(input), scenarios: projectScenarios(input) };
+      return { result: projectPlan(input, undefined, t.project.warnings), scenarios: projectScenarios(input, [t.project.scenarioLow, t.project.scenarioBase, t.project.scenarioHigh]) };
     } catch (error) {
-      return { error: error instanceof Error ? error.message : "目前無法完成計算。" };
+      return { error: error instanceof Error ? error.message : t.app.calcError };
     }
-  }, [errors.length, input]);
+  }, [errors.length, input, t]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 4, input }));

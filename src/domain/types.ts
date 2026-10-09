@@ -205,7 +205,7 @@ export interface ProjectionResult {
 }
 
 export interface ScenarioResult {
-  name: "報酬較低" | "照目前填寫" | "報酬較高";
+  name: string;
   retirementReturnRate: number;
   result: ProjectionResult;
 }
