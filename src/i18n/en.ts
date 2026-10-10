@@ -655,5 +655,27 @@ export const en: Strings = {
     markerPensionStart: "Pension starts",
     markerLaborStart: "Labor ins. starts",
     fallbackHoldingName: "Retirement fund"
+  },
+  quick: {
+    tabQuick: "Quick",
+    tabFull: "Full",
+    modeLabel: "Input mode",
+    eyebrow: "30-second quick calc",
+    title: "6 numbers, answer first",
+    intro: "Fill in 6 numbers to see when your assets run out; expand to full inputs for pensions and details.",
+    currentAge: "Current age",
+    retirementAge: "Planned retirement age",
+    savings: "Current savings",
+    monthlyInvestment: "Monthly investment",
+    monthlySpending: "Monthly spending in retirement",
+    returnRate: "Expected annual return",
+    needAll: "Fill in all 6 fields to see the live result.",
+    depleted: (age: string) => `Assets run out at about age ${age}`,
+    depletedSub: (money: string) => `About ${money} at retirement (today's value)`,
+    ok: (age: string) => `Savings last until age ${age}`,
+    okSub: (money: string) => `Estimated surplus ${money} (today's value)`,
+    expand: "Fine-tune with full inputs",
+    expandNote: "Carries these 6 numbers into the full form, where pensions and details can be adjusted.",
+    footnote: "Quick calc covers only your own investments, excluding labor insurance, labor pension, national pension and part-time income. Educational estimate only; returns not guaranteed."
   }
 };

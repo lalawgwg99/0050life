@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { BookOpen, ChartNoAxesCombined, Printer, RotateCcw, SlidersHorizontal } from "lucide-react";
 import { InputPanel } from "./components/InputPanel";
+import { QuickCalc } from "./components/QuickCalc";
+import { isQuickInputComplete, quickInputFromPlanning, quickInputToPlanning, type QuickInput } from "./domain/quick-calc";
 import { ResultsPanel } from "./components/ResultsPanel";
 import { PlanComparison } from "./components/PlanComparison";
 import { InvestmentPage } from "./components/InvestmentPage";
@@ -15,6 +17,21 @@ import { validateInput } from "./domain/validation";
 import { projectPlan, projectScenarios } from "./engine/project";
 
 const STORAGE_KEY = "0050life-web-v3";
+const QUICK_STORAGE_KEY = "0050life-quick-v1";
+
+/** 快算 6 欄獨立存檔：完整輸入保持不動，切換模式不互相覆蓋 */
+function loadSavedQuick(base: PlanningInput): QuickInput {
+  try {
+    const saved = JSON.parse(localStorage.getItem(QUICK_STORAGE_KEY) ?? "null") as Partial<QuickInput> | null;
+    if (saved && [saved.currentAge, saved.retirementAge, saved.savings, saved.monthlyInvestment, saved.monthlySpending, saved.returnRatePercent]
+      .every((value) => typeof value === "number" && Number.isFinite(value))) {
+      return saved as QuickInput;
+    }
+  } catch {
+    // Broken browser storage should never prevent the calculator from opening.
+  }
+  return quickInputFromPlanning(base);
+}
 
 type LegacyInvestment = Partial<PlanningInput["investment"]> & {
   assetsNow?: number;
@@ -95,32 +112,60 @@ export default function App() {
     return () => window.removeEventListener("hashchange", navigate);
   }, []);
   const [input, setInput] = useState<PlanningInput>(loadSavedInput);
+  const [inputMode, setInputMode] = useState<"quick" | "full">("quick");
+  const [quickInput, setQuickInput] = useState<QuickInput>(() => loadSavedQuick(input));
   const [comparison, setComparison] = useState<ProjectionResult | null>(null);
   const [mobileView, setMobileView] = useState<"inputs" | "results">("inputs");
-  const errors = useMemo(() => validateInput(input, t), [input, t]);
+  // 快算模式：以 6 欄映射出的有效輸入計算；完整輸入保持不動，切回完整模式還在
+  const quickReady = inputMode === "quick" && isQuickInputComplete(quickInput);
+  const effectiveInput = useMemo(
+    () => quickReady ? quickInputToPlanning(quickInput, input, t.results.fallbackHoldingName) : input,
+    [quickReady, quickInput, input, t]
+  );
+  const errors = useMemo(() => validateInput(effectiveInput, t), [effectiveInput, t]);
   const calculation = useMemo(() => {
     if (errors.length > 0) return null;
     try {
-      return { result: projectPlan(input, undefined, t.project.warnings), scenarios: projectScenarios(input, [t.project.scenarioLow, t.project.scenarioBase, t.project.scenarioHigh]) };
+      return { result: projectPlan(effectiveInput, undefined, t.project.warnings), scenarios: projectScenarios(effectiveInput, [t.project.scenarioLow, t.project.scenarioBase, t.project.scenarioHigh]) };
     } catch (error) {
       return { error: error instanceof Error ? error.message : t.app.calcError };
     }
-  }, [errors.length, input, t]);
+  }, [errors.length, effectiveInput, t]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ version: 4, input }));
   }, [input]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(QUICK_STORAGE_KEY, JSON.stringify(quickInput));
+    } catch {
+      // ignore storage errors
+    }
+  }, [quickInput]);
 
   // render 期間同步（不能放 useEffect：useMemo 會在 effect 前用舊設定算出中文格式，造成首屏中英混雜）
-  setDisplaySettings({ currency: input.profile.currency ?? "TWD", locale });
+  setDisplaySettings({ currency: effectiveInput.profile.currency ?? "TWD", locale });
   useEffect(() => {
     document.title = t.app.pageTitle;
   }, [t]);
 
   const reset = () => {
     localStorage.removeItem(STORAGE_KEY);
+    try {
+      localStorage.removeItem(QUICK_STORAGE_KEY);
+    } catch {
+      // ignore storage errors
+    }
     setInput(defaultInput);
+    setQuickInput(quickInputFromPlanning(defaultInput));
     setComparison(null);
+  };
+  const expandQuick = () => {
+    // 把 6 個數字帶入完整表單（承諾寫在展開按鈕下方說明），再切到完整模式
+    if (isQuickInputComplete(quickInput)) {
+      setInput(quickInputToPlanning(quickInput, input, t.results.fallbackHoldingName));
+    }
+    setInputMode("full");
   };
   const showMobileView = (view: "inputs" | "results") => {
     setMobileView(view);
@@ -132,6 +177,8 @@ export default function App() {
       document.querySelector(".results-column")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
   };
+  const quickResult: ProjectionResult | null = calculation?.result ?? null;
+  const quickCalcError: string | null = calculation?.error ?? null;
 
   return (
     <div className="app-shell">
@@ -161,9 +208,27 @@ export default function App() {
       </div>
 
       <main className="workspace">
-        <aside className={mobileView === "inputs" ? "mobile-visible" : ""}><InputPanel input={input} errors={errors} onChange={setInput} onViewResults={viewResults} /></aside>
+        <aside className={mobileView === "inputs" ? "mobile-visible" : ""}>
+          <div className="mode-toggle" role="tablist" aria-label={t.quick.modeLabel}>
+            <button type="button" role="tab" aria-selected={inputMode === "quick"} className={inputMode === "quick" ? "active" : ""} onClick={() => setInputMode("quick")}>{t.quick.tabQuick}</button>
+            <button type="button" role="tab" aria-selected={inputMode === "full"} className={inputMode === "full" ? "active" : ""} onClick={() => setInputMode("full")}>{t.quick.tabFull}</button>
+          </div>
+          {inputMode === "quick" ? (
+            <QuickCalc
+              quick={quickInput}
+              onChange={setQuickInput}
+              result={quickResult}
+              calcError={quickCalcError}
+              onExpand={expandQuick}
+            />
+          ) : (
+            <InputPanel input={input} errors={errors} onChange={setInput} onViewResults={viewResults} />
+          )}
+        </aside>
         <div className={`results-column ${mobileView === "results" ? "mobile-visible" : ""}`}>
-          {errors.length > 0 ? (
+          {inputMode === "quick" && !quickReady ? (
+            <div className="empty-state"><EmptyIcon /><h1>{t.quick.eyebrow}</h1><p>{t.quick.needAll}</p></div>
+          ) : errors.length > 0 ? (
             <div className="empty-state"><EmptyIcon /><h1>{t.empty.needInputsTitle}</h1><p>{t.empty.needInputsBody}</p></div>
           ) : calculation && "error" in calculation ? (
             <div className="empty-state" role="alert"><EmptyIcon /><h1>{t.empty.calcFailedTitle}</h1><p>{calculation.error}</p></div>

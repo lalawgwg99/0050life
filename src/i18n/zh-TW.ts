@@ -653,6 +653,28 @@ export const zhTW = {
     markerPensionStart: "勞退開始",
     markerLaborStart: "勞保開始",
     fallbackHoldingName: "退休準備"
+  },
+  quick: {
+    tabQuick: "快算",
+    tabFull: "完整",
+    modeLabel: "輸入模式",
+    eyebrow: "30 秒快算",
+    title: "6 個數字，先看答案",
+    intro: "填 6 個數字，馬上看到資產幾歲用完；要調勞保、稅務等細節再展開完整參數。",
+    currentAge: "目前年齡",
+    retirementAge: "預計退休年齡",
+    savings: "已有儲蓄",
+    monthlyInvestment: "每月可投入",
+    monthlySpending: "退休後每月花費",
+    returnRate: "預估年化報酬率",
+    needAll: "把 6 個欄位填完，就會即時算出結果。",
+    depleted: (age: string) => `資產約在 ${age} 歲用完`,
+    depletedSub: (money: string) => `退休時約有 ${money}（今日幣值）`,
+    ok: (age: string) => `準備金可撐到 ${age} 歲`,
+    okSub: (money: string) => `預估結餘 ${money}（今日幣值）`,
+    expand: "用完整參數微調",
+    expandNote: "會把這 6 個數字帶入完整表單，勞保、勞退、國民年金等細節都能調。",
+    footnote: "快算版只計算自己的投資儲蓄，不含勞保、勞退、國民年金與兼職收入；數字為教育試算，不保證報酬。"
   }
 };
 

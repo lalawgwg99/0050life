@@ -60,6 +60,26 @@ svg { flex: 0 0 auto; }
 .workspace { display: grid; grid-template-columns: minmax(390px, 430px) minmax(0, 1fr); min-height: calc(100vh - 68px); }
 .workspace > aside { background: #fbfcfc; border-right: 1px solid var(--line); }
 .input-panel { padding: 8px 26px 70px; }
+
+/* ---- 首屏快算版：模式切換＋6 欄快算表單 ---- */
+.mode-toggle { display: flex; gap: 4px; margin: 14px 26px 0; padding: 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+.mode-toggle button { flex: 1; border: 0; border-radius: 7px; background: transparent; color: var(--muted); font-size: 13px; font-weight: 700; padding: 9px 0; cursor: pointer; }
+.mode-toggle button.active { background: var(--teal); color: #fff; }
+.quick-calc { padding: 20px 26px 70px; display: grid; gap: 16px; }
+.quick-intro { display: grid; gap: 6px; }
+.quick-intro h2 { margin: 0; font-size: 17px; font-weight: 750; }
+.quick-intro p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
+.quick-answer { border: 1px solid var(--line); border-radius: 12px; background: var(--surface); padding: 18px; display: grid; gap: 8px; justify-items: center; text-align: center; }
+.quick-hint { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.65; }
+.quick-status { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; }
+.quick-status svg { width: 22px; height: 22px; }
+.quick-status.good { background: #e3f4ec; color: #157a3e; }
+.quick-status.attention { background: #fdf0e4; color: #b25b09; }
+.quick-headline { font-size: 19px; font-weight: 800; line-height: 1.4; }
+.quick-sub { color: var(--muted); font-size: 13px; }
+.quick-expand { width: 100%; }
+.quick-expand-note, .quick-footnote { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.7; }
+.quick-footnote { border-top: 1px dashed var(--line); padding-top: 12px; }
 .input-section { padding: 27px 0 28px; border-bottom: 1px solid var(--line); }
 .input-section:last-child { border-bottom: 0; }
 .section-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 19px; }
