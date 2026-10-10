@@ -398,7 +398,7 @@ export function InputPanel({ input, errors, onChange, onViewResults }: InputPane
         <div><StepNum stepKey="invest" /><h2>{t.steps.titles[4]}</h2></div>
       </div>
       <p className="step-why">{iv.why}</p>
-      <p className="brand-note"><strong>0050 Life</strong> {iv.brandSuffix}<a href="/blog/investment-calculator-guide.html" target="_blank" rel="noreferrer">{iv.tutorial}</a></p>
+      <p className="brand-note"><strong>{t.app.brandTitle}</strong> {iv.brandSuffix}<a href="/blog/investment-calculator-guide.html" target="_blank" rel="noreferrer">{iv.tutorial}</a></p>
       <div className="holding-list">
         {input.investment.holdings.map((holding, index) => (
           <article className="holding-item" key={holding.id} data-holding-id={holding.id}>

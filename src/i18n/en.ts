@@ -3,10 +3,10 @@ import type { Strings } from "./zh-TW";
 export const en: Strings = {
   app: {
     calcError: "Calculation failed.",
-    pageTitle: "0050 Life | Retirement Cash Flow Planner",
-    brandTitle: "0050 Life",
+    pageTitle: "NestEgg | Retirement Cash Flow Planner",
+    brandTitle: "NestEgg",
     brandSubtitle: "Retirement Planner",
-    brandHomeLabel: "0050 Life home",
+    brandHomeLabel: "NestEgg home",
     blog: "Retirement Notes",
     reset: "Start over",
     print: "Print results",
@@ -100,7 +100,7 @@ export const en: Strings = {
   investTool: {
     checkInput: "Please check your inputs",
     defaultHolding: "My investment",
-    eyebrow: "0050 Life · Investment calculator",
+    eyebrow: "NestEgg · Investment calculator",
     title: "Get your investments straight first",
     intro: "Excludes labor insurance, labor pension and national pension. Starts from your retirement page data; changes here don't overwrite your plan.",
     modesLabel: "Calculator mode",
@@ -241,7 +241,7 @@ export const en: Strings = {
     sourceWork: "Part-time"
   },
   incomeTool: {
-    eyebrow: "0050 Life · Retirement income",
+    eyebrow: "NestEgg · Retirement income",
     title: "Only retirement income sources",
     intro: "Counts labor insurance, national pension, monthly labor pension and part-time work — investments aren't treated as fixed income.",
     noticeTitle: "Investment balances not counted here",
@@ -485,7 +485,7 @@ export const en: Strings = {
     pointTip: (ageLabel: string, assets: string) => `${ageLabel}: ${assets}`
   },
   cashflow: {
-    eyebrow: "0050 Life · Retirement Cash Flow",
+    eyebrow: "NestEgg · Retirement Cash Flow",
     title: "Can your retirement assets last?",
     intro: "This page doesn't recalculate pensions or investment growth — it stress-tests your monthly withdrawals against the assets you bring in.",
     assetsLabel: "Assets at retirement (nominal at that time)",

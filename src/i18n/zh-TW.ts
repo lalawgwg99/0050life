@@ -1,10 +1,10 @@
 export const zhTW = {
   app: {
     calcError: "目前無法完成計算。",
-    pageTitle: "0050 Life｜退休現金流規劃",
-    brandTitle: "0050 Life",
+    pageTitle: "老本｜退休現金流規劃",
+    brandTitle: "老本",
     brandSubtitle: "退休規劃試算",
-    brandHomeLabel: "0050 Life 首頁",
+    brandHomeLabel: "老本首頁",
     blog: "退休筆記",
     reset: "重新填寫",
     print: "列印結果",
@@ -98,7 +98,7 @@ export const zhTW = {
   investTool: {
     checkInput: "請檢查輸入",
     defaultHolding: "我的投資",
-    eyebrow: "0050 Life・獨立投資試算",
+    eyebrow: "老本・獨立投資試算",
     title: "先把自己的投資算清楚",
     intro: "不含勞保、勞退或國保。沿用退休頁的投資資料，這裡的修改不會自動覆蓋原方案。",
     modesLabel: "投資試算方式",
@@ -239,7 +239,7 @@ export const zhTW = {
     sourceWork: "兼職"
   },
   incomeTool: {
-    eyebrow: "0050 Life・退休收入",
+    eyebrow: "老本・退休收入",
     title: "只看退休後有哪些收入",
     intro: "這一頁只計算勞保、國保、勞退月領和選用的兼職，不把投資資產算成固定收入。",
     noticeTitle: "本頁不計算投資餘額",
@@ -483,7 +483,7 @@ export const zhTW = {
     pointTip: (ageLabel: string, assets: string) => `${ageLabel}：${assets}`
   },
   cashflow: {
-    eyebrow: "0050 Life・退休現金流",
+    eyebrow: "老本・退休現金流",
     title: "只看退休後資產夠不夠用",
     intro: "這一頁不重新計算勞保或投資累積，只把你提供的退休資產拿來測試每月提領。",
     assetsLabel: "退休時可用資產（當年帳面）",
