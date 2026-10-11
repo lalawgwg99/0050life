@@ -20,6 +20,17 @@
   --gold-soft: #fff7e7;
 }
 
+.move-banner {
+  display: flex; align-items: center; justify-content: center; gap: 12px;
+  flex-wrap: wrap; padding: 10px 16px;
+  background: #0e9da8; color: #fff; font-size: 13px;
+}
+.move-banner a {
+  color: #fff; font-weight: 700; text-decoration: underline;
+  text-underline-offset: 3px; white-space: nowrap;
+}
+
+
 * { box-sizing: border-box; }
 html { background: var(--soft); }
 body { margin: 0; min-width: 320px; background: var(--soft); }

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { BookOpen, ChartNoAxesCombined, Printer, RotateCcw, SlidersHorizontal } from "lucide-react";
+import { BookOpen, ChartNoAxesCombined, Download, Printer, RotateCcw, SlidersHorizontal, Upload } from "lucide-react";
 import { InputPanel } from "./components/InputPanel";
 import { QuickCalc } from "./components/QuickCalc";
 import { isQuickInputComplete, quickInputFromPlanning, quickInputToPlanning, type QuickInput } from "./domain/quick-calc";
@@ -149,6 +149,49 @@ export default function App() {
     document.title = t.app.pageTitle;
   }, [t]);
 
+  const exportData = () => {
+    try {
+      const payload = {
+        app: "nestegg",
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        input,
+        quick: (() => {
+          try { return JSON.parse(localStorage.getItem(QUICK_STORAGE_KEY) ?? "null"); } catch { return null; }
+        })(),
+      };
+      const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "nestegg-data.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      // 下載失敗時靜默略過，不影響試算
+    }
+  };
+
+  const importData = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        const parsed = JSON.parse(String(reader.result)) as { app?: string; input?: PlanningInput; quick?: QuickInput };
+        if (parsed?.app !== "nestegg" || !parsed.input || typeof parsed.input !== "object") {
+          window.alert(t.app.importError);
+          return;
+        }
+        setInput({ ...defaultInput, ...parsed.input });
+        if (parsed.quick) {
+          try { localStorage.setItem(QUICK_STORAGE_KEY, JSON.stringify(parsed.quick)); } catch { /* 忽略 */ }
+        }
+      } catch {
+        window.alert(t.app.importError);
+      }
+    };
+    reader.readAsText(file);
+  };
+
   const reset = () => {
     localStorage.removeItem(STORAGE_KEY);
     try {
@@ -182,6 +225,10 @@ export default function App() {
 
   return (
     <div className="app-shell">
+      <div className="move-banner" role="note">
+        <span>{t.app.movedNote}</span>
+        <a href="https://taicalc.com/nestegg">{t.app.movedCta}</a>
+      </div>
       <header className="app-header">
         <a className="brand" href="/" aria-label={t.app.brandHomeLabel}>
           <span><ChartNoAxesCombined aria-hidden="true" /></span>
@@ -191,6 +238,12 @@ export default function App() {
           <a href="/blog/index.html"><BookOpen aria-hidden="true" />{t.app.blog}</a>
           <LanguageSwitcher />
           {page === "retirement" && <button type="button" className="icon-button" onClick={reset} aria-label={t.app.reset} title={t.app.reset}><RotateCcw aria-hidden="true" /></button>}
+          <button type="button" className="icon-button" onClick={exportData} aria-label={t.app.exportData} title={t.app.exportData}><Download aria-hidden="true" /></button>
+          <label className="icon-button" aria-label={t.app.importData} title={t.app.importData}>
+            <Upload aria-hidden="true" />
+            <input type="file" accept="application/json,.json" className="sr-only" aria-hidden="true" tabIndex={-1}
+              onChange={(e) => { const f = e.target.files?.[0]; if (f) importData(f); e.target.value = ""; }} />
+          </label>
           <button type="button" className="icon-button" onClick={() => window.print()} aria-label={t.app.print} title={t.app.print}><Printer aria-hidden="true" /></button>
         </nav>
       </header>
